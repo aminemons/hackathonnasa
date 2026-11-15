@@ -17,8 +17,10 @@ HAZARDS = {
     "eq": ("Earthquakes", "USGS ComCat"),
     "ls": ("Landslides", "NASA EONET"),
     "gl": ("Glacial lakes", "Published ESA Sentinel-1 / NASA ITS_LIVE study"),
+    "fi": ("Wildfires", "NASA EONET"),
+    "fl": ("Floods", "NASA EONET"),
 }
-CATEGORIES = {"ls": "landslides"}
+CATEGORIES = {"ls": "landslides", "fi": "wildfires", "fl": "floods"}
 GLOF_DATA = Path(__file__).resolve().parents[1] / "server_data" / "glof"
 MAX_RESPONSE = 7_000_000
 
@@ -193,7 +195,7 @@ def _glacial_lake_observations():
 
 def collect(hazard, min_mag=5.0, days=1):
     if hazard not in HAZARDS:
-        raise ValueError("Unknown hazard; use eq, ls, or gl")
+        raise ValueError("Unknown hazard; use eq, ls, gl, fi, or fl")
     try:
         magnitude = float(min_mag)
     except (TypeError, ValueError) as exc:
@@ -204,7 +206,7 @@ def collect(hazard, min_mag=5.0, days=1):
         raise ValueError('Earthquake period must be 1, 7, or 30 days')
     now = datetime.now(timezone.utc)
     records = (_usgs(magnitude, now, days) if hazard == "eq" else
-               _eonet(hazard) if hazard == "ls" else _glacial_lake_observations())
+               _glacial_lake_observations() if hazard == "gl" else _eonet(hazard))
     records.sort(key=lambda event: event["time"], reverse=True)
     return {
         "hazard": hazard, "label": HAZARDS[hazard][0], "source": HAZARDS[hazard][1],

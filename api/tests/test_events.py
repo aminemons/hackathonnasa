@@ -34,7 +34,7 @@ class SourceMonitorTests(unittest.TestCase):
     @patch.object(events, "_request")
     def test_eonet_empty_is_valid_but_not_a_warning(self, request):
         request.return_value = {"events": []}
-        for hazard in ("ls",):
+        for hazard in ("ls", "fi", "fl"):
             with self.subTest(hazard=hazard):
                 result = events.collect(hazard)
                 self.assertEqual(result["status"], "ok")
