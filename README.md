@@ -21,8 +21,12 @@ In the **Landslides** dataset category, open:
 - **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
   explicitly NOT the August landslide's detection model.
 
-The chatbot is implemented using an **open-source LangGraph StateGraph**
-for deterministic intent routing and a strict UI-tool allowlist. It
+The chatbot defines an **open-source LangGraph StateGraph** for deterministic
+intent routing and a strict UI-tool allowlist. Vercel uses the equivalent
+lightweight deterministic fallback (without installing LangGraph) because the
+full dependency exceeded Vercel's Python serverless bundle limit. For an
+actual LangGraph runtime on a self-hosted server, install
+\`requirements-chat-langgraph.txt\`. It
 does **not** use a generative language model or paid API. Map-science
 answers are deliberately limited to verifiable descriptions and available
 tools. This repository is open source under MIT (see LICENSE);
