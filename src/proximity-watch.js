@@ -24,7 +24,7 @@ export function initializeProximityWatch(TP) {
     <div id="proximity-result" aria-live="polite"></div>`;
   document.querySelector('#aGlobal').before(root);
   const $=s=>root.querySelector(s);
-  let busy=false,seen=new Set(),baseline=false;
+  let busy=false,seen=new Set(),baseline=false,generation=0;
   const coords=()=>{
     const lat=$('#proximity-lat').value,lon=$('#proximity-lon').value;
     if(!lat.trim()||!lon.trim())throw Error('Enter the latitude and longitude of a documented or suspected landslide');
@@ -36,14 +36,16 @@ export function initializeProximityWatch(TP) {
     const c=TP.map.getCenter();$('#proximity-lat').value=c.lat.toFixed(5);$('#proximity-lon').value=c.lng.toFixed(5);
   };
   async function inspect(site,provenance='Manually nominated site · landslide not automatically verified') {
+    const requestGeneration=generation,siteName=$('#proximity-name').value;
     const query=new URLSearchParams({...site,radius_m:500});
     const response=await fetch('/api/exposure?'+query,{signal:AbortSignal.timeout(24000)});
     const result=await response.json();
     if(!response.ok)throw Error(result.error||'OSM source unavailable');
+    if(requestGeneration!==generation)return null;
     const review=proximityReview(result),n=result.nearest_m;
     $('#proximity-result').innerHTML=`<article class="proximity-result ${review.alert?'needs-review':''}">
       <div class="section-meta">${review.alert?'Proximity review alert':'Screening result'}</div>
-      <h4>${esc(review.title)}</h4><p>${esc($('#proximity-name').value)} · ${site.lat.toFixed(5)}, ${site.lon.toFixed(5)}</p>
+      <h4>${esc(review.title)}</h4><p>${esc(siteName)} · ${site.lat.toFixed(5)}, ${site.lon.toFixed(5)}</p>
       <dl><div><dt>Nearest mapped building</dt><dd>${meters(n.buildings)}</dd></div><div><dt>Nearest school / clinic</dt><dd>${meters(n.sensitive_places)}</dd></div><div><dt>Nearest road</dt><dd>${meters(n.roads)}</dd></div></dl>
       <p>${esc(provenance)}</p><p class="field-note">OSM source: ${esc(date(result.osm_timestamp))} · ${esc(result.availability?.mode||'provider response')} · checked ${esc(date(Date.now()))}. Buildings within 150 m or schools/clinics within 100 m trigger human-activity review; roads within 150 m trigger access review. These are experimental screening thresholds.</p>
       <p><strong>People present: unknown. Debris impact: unknown.</strong> Missing assets cannot establish safety. <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors · ODbL</a></p>
@@ -51,9 +53,9 @@ export function initializeProximityWatch(TP) {
     return review;
   }
   $('#proximity-form').onsubmit=async e=>{
-    e.preventDefault();if(busy)return;busy=true;$('#proximity-check').disabled=true;
+    e.preventDefault();if(busy)return;generation++;busy=true;$('#proximity-check').disabled=true;
     $('#proximity-result').innerHTML='';$('#proximity-status').textContent='Checking mapped assets within 500 m…';
-    try{await inspect(coords());$('#proximity-status').textContent='Proximity check complete'}
+    try{const review=await inspect(coords());$('#proximity-status').textContent=review?'Proximity check complete':'Site changed · run a new check'}
     catch(e){$('#proximity-status').textContent='Exposure unknown · '+(e.name==='TimeoutError'?'OSM request timed out':e.message)}
     finally{busy=false;$('#proximity-check').disabled=false}
   };
@@ -75,12 +77,12 @@ export function initializeProximityWatch(TP) {
       for(const event of fresh.slice(0,3)) {
         const review=await inspect(event,'NASA EONET report: '+event.title+' · '+date(event.time));
         seen.add(event.id);
-        if(review.alert)TP.toast('New landslide report close to mapped human activity · review the Alarm panel');
+        if(review?.alert)TP.toast('New landslide report close to mapped human activity · review the Alarm panel');
       }
     }catch(e){$('#proximity-status').textContent='Watch unavailable · '+e.message}
     finally{busy=false}
   }
   $('#proximity-watch').onchange=()=>{baseline=false;seen.clear();if($('#proximity-watch').checked)tick();else $('#proximity-status').textContent='Report watch off'};
-  for(const id of ['#proximity-lat','#proximity-lon'])$(id).onchange=()=>{baseline=false;seen.clear();$('#proximity-watch').checked=false;$('#proximity-result').innerHTML='';$('#proximity-status').textContent='Site changed · run a new check'};
+  for(const id of ['#proximity-lat','#proximity-lon'])$(id).onchange=()=>{generation++;baseline=false;seen.clear();$('#proximity-watch').checked=false;$('#proximity-result').innerHTML='';$('#proximity-status').textContent='Site changed · run a new check'};
   setInterval(tick,600000);document.addEventListener('visibilitychange',tick);
 }

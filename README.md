@@ -1,3 +1,5 @@
+> **Jury submission:** https://terrapulse-nasa-submission.vercel.app — managed Vercel production hosting with same-origin Python APIs; no SSH server or temporary tunnel is required. The global map uses Equal Earth; local imagery uses Regional detail. The Alarm page provides experimental mapped-activity proximity reviews, not emergency warnings.
+
 # TerraPulse
 
 ## Reliability, science and low-compute deployment (November 2026)

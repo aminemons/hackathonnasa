@@ -115,6 +115,7 @@ function clearAnalysisLayer() {
   }
 }
 function toggleMapLayer(layer) {
+  TP.showRegional?.();
   clearAnalysisLayer();
   activeLayer = layer.addTo(TP.map);
   TP.go('Map');
@@ -398,7 +399,7 @@ async function applyAction(action) {
   if(!action||typeof action!=='object')return;
   const kind=action.type, name=action.value;
   if(kind==='open_tool'&&legalPanels.has(name)){tools[name]();return;}
-  if(kind==='basemap'&&legalBasemaps.has(name)){TP.setBase(name);return;}
+  if(kind==='basemap'&&legalBasemaps.has(name)){TP.showRegional?.();TP.setBase(name);return;}
   if(kind==='tab'&&legalTabs.has(name)){TP.openTab(name);return;}
   if(kind==='page'&&legalPages.has(name)){TP.go(name);return;}
   if(kind==='clear'){TP.clearAll();return;}
@@ -407,7 +408,7 @@ async function applyAction(action) {
   }
   if(kind==='zoom'&&Number.isFinite(action.lon)&&Number.isFinite(action.lat)
       &&Math.abs(action.lat)<=85&&Math.abs(action.lon)<=180) {
-    TP.go('Map');TP.map.setView([action.lat,action.lon],Math.min(10,Math.max(2,action.zoom||6)));return;
+    TP.showRegional?.();TP.go('Map');TP.map.setView([action.lat,action.lon],Math.min(10,Math.max(2,action.zoom||6)));return;
   }
   if(kind==='period'&&[1,7,30].includes(action.days))TP.setPeriod(action.days);
 }
