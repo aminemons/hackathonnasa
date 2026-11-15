@@ -168,10 +168,40 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clea
 const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{const d=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
  const l=L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${d}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`,{maxNativeZoom:lvl,opacity:.85,attribution:'NASA GIBS',className:cls});
  let ok=0,bad=0;l.on('tileload',()=>ok++);l.on('tileerror',()=>{bad++;if(bad===8&&!ok)toast('No image found for '+id.replace(/_/g,' ')+' on '+d+'. Try an earlier date under Time.')});return l};
-const eonet=(cat,color,rad=7)=>async()=>{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=${cat}`);const g=L.layerGroup();let n=0;
- d.events.forEach(e=>{const gm=e.geometry[e.geometry.length-1];if(!gm||gm.type!=='Point')return;n++;
- L.circleMarker([gm.coordinates[1],gm.coordinates[0]],{radius:rad,color:'#fff',weight:1.5,fillColor:color,fillOpacity:.95}).bindPopup(`<b>${esc(e.title)}</b><br>${gm.date.slice(0,10)}<br><a target=_blank href="${e.link}">details</a>`).addTo(g)});
- if(!n)toast('NASA EONET has no open '+cat+' events right now, so there is nothing to draw.');return g};
+const eonet=(cat,color,rad=7)=>async()=>{
+ const mapped={landslides:'ls',wildfires:'fi',floods:'fl'},hazard=mapped[cat];
+ let records=[],source='NASA EONET';
+ if(hazard){
+   const d=await fetchJ('/api/events?hazard='+hazard);
+   if(d.status!=='ok'||d.hazard!==hazard||!Array.isArray(d.records))
+     throw Error('NASA source status could not be verified');
+   records=d.records;
+ }else{
+   const d=await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category='+encodeURIComponent(cat)+'&limit=200');
+   records=(d.events||[]).map(e=>{
+     const gm=e.geometry?.at(-1);
+     const c=gm?.type==='Point'?gm.coordinates:null;
+     return{id:e.id,title:e.title||'Reported event',time:Date.parse(gm?.date||''),
+       lat:Array.isArray(c)?c[1]:null,lon:Array.isArray(c)?c[0]:null,url:e.link};
+   });
+ }
+ const g=L.layerGroup();let drawn=0;
+ records.forEach(e=>{
+   if(!Number.isFinite(e.lat)||!Number.isFinite(e.lon))return;
+   drawn++;
+   const date=Number.isFinite(e.time)?new Date(e.time).toUTCString():'Date unavailable';
+   const url=typeof e.url==='string'&&e.url.startsWith('https://')?e.url:'#';
+   L.circleMarker([e.lat,e.lon],{renderer:CV,radius:rad,color:'#fff',weight:1.4,fillColor:color,fillOpacity:.92})
+     .bindPopup('<b>'+esc(e.title)+'</b><br>'+esc(date)+
+       '<br><small>NASA EONET reported event, not a warning</small><br><a target="_blank" rel="noopener" href="'+esc(url)+'">Source details</a>')
+     .addTo(g);
+ });
+ g.terrapulse={status:records.length?'ready':'empty',count:records.length,shown:drawn,source};
+ if(!records.length)toast('NASA EONET has no currently open '+cat+' reports. The dataset loaded successfully.');
+ else if(drawn<records.length)toast('NASA EONET returned '+records.length+
+   ' reports; '+(records.length-drawn)+' lack point coordinates and cannot be pinned exactly.');
+ return g;
+};
 const quakeFeed=(url,color)=>async()=>{const d=await fetchJ(url);const g=L.layerGroup();
  d.features.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
   L.circleMarker([la,lo],{radius:Math.max(6,m*2.4),color:'#fff',weight:2,fillColor:color,fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
