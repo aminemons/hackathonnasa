@@ -301,12 +301,12 @@ const quakesByDepth=async()=>{
  return group;
 };
 const FAULTS_EMBED=null;
-const FAULT_URLS=['https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults.geojson'];
+const FAULT_URLS=['/data/gem_active_faults_simplified.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults.geojson'];
 const faults=async()=>{let j=FAULTS_EMBED;
  for(const u of FAULT_URLS){if(j)break;try{const r=await fetch(u);if(r.ok)j=await r.json()}catch(e){}}
  if(!j)throw new Error('GEM faults file not reachable');
  return L.geoJSON(j,{style:{color:'#ff4d6d',weight:1.2,opacity:.9},onEachFeature:(f,l)=>{const p=f.properties||{};
-  l.bindPopup(`<b>${p.name||p.catalog_name||'Active fault'}</b>${p.slip_type?'<br>Slip type: '+p.slip_type:''}${p.net_slip_rate?'<br>Slip rate: '+p.net_slip_rate:''}<br><small>GEM Global Active Faults, CC BY-SA 4.0</small>`)}})};
+  l.bindPopup(`<b>${esc(p.name||p.catalog_name||'Active fault')}</b>${p.slip_type?'<br>Slip type: '+esc(p.slip_type):''}${p.net_slip_rate?'<br>Slip rate: '+esc(p.net_slip_rate):''}<br><small>GEM Global Active Faults, CC BY-SA 4.0 · generalized display</small>`)}})};
 /* ---------- past events (NASA EONET archive, loaded year by year) ---------- */
 const EV_HIST={},EV_NAME={};
 const xstat=t=>{const e=$('#xStat');if(e)e.textContent=t};
