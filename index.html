@@ -1,59 +1,458 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101819">
-<meta name="description" content="Explore satellite observations of floods, earthquakes and glacier change.">
-<title>TerraPulse</title>
-</head>
-<body>
-  <header class="topbar">
-    <a class="identity" href="./">TerraPulse</a>
-    <nav class="tabs" id="cases" aria-label="Select hazard"></nav>
-    <a class="partner" href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/" target="_blank" rel="noopener"><img src="./data/space-apps.png" alt="NASA Space Apps Challenge"></a>
-  </header>
-  <main class="workspace" aria-label="TerraPulse observation map">
-    <aside id="browse-panel" class="observation-panel" aria-label="Observations">
-      <div class="panel-top">
-        <div id="record" class="record"></div>
-        <div class="search-wrap"><label for="browse-filter" class="sr-only">Find observations by place</label><input id="browse-filter" type="search" placeholder="Find a place" autocomplete="off"></div>
-        <div id="regions" class="regions" aria-label="Regions"></div>
-        <div id="map-controls" class="layers" aria-label="Map layers and filters"></div>
-        <div id="evidence" class="evidence"></div>
-      </div>
-      <p id="browse-count" class="drawer-note" aria-live="polite"></p>
-      <ul id="browse-results" class="observation-list"></ul>
-      <nav id="browse-pages" aria-label="Observation pages"></nav>
-    </aside>
-    <div id="map-frame" class="map-frame">
-      <div id="map" class="map" aria-label="Geographic observation map"></div>
-      <div id="map-fallback" class="map-fallback" hidden></div>
-      <div class="map-tools">
-        <label class="control" id="basemap-control"><span class="sr-only">Base map</span><select id="basemap"><option value="satellite">Satellite</option><option value="atlas">Atlas</option></select></label>
-        <button class="quiet" id="reset-map" type="button" aria-label="Reset map view" title="Reset map view">⌂</button>
-        <button class="quiet" id="ask-toggle" type="button" aria-expanded="false" aria-controls="ask-panel">Ask TerraPulse</button>
-      </div>
-      <div id="map-note" class="map-note" aria-live="polite"></div>
-      <div id="legend" class="legend"></div>
-      <span id="fallback-credit" class="map-credit" hidden>NASA Blue Marble</span>
-      <section id="ask-panel" class="map-drawer" aria-label="Ask TerraPulse" hidden>
-        <header><h2>Ask TerraPulse</h2><button class="quiet" type="button" data-dismiss aria-label="Close chat">×</button></header>
-        <div id="ask-log" class="ask-log" role="log" aria-label="Conversation" aria-live="polite"></div>
-        <div class="ask-prompts">
-          <button class="quiet" type="button">Compare Guelma</button>
-          <button class="quiet" type="button">Show M5+ earthquakes</button>
-          <button class="quiet" type="button">Open Pine Island</button>
-        </div>
-        <form id="ask-form">
-          <label class="sr-only" for="ask-query">Ask about the map</label>
-          <input id="ask-query" placeholder="Ask about a place or layer" autocomplete="off" maxlength="240" required>
-          <button class="quiet" type="submit">Send</button>
-        </form>
-      </section>
-    </div>
-  </main>
-  <dialog id="reference" aria-label="Observation sources"><div id="reference-content"></div><form method="dialog"><button class="quiet" type="submit">Close</button></form></dialog>
-  <script type="module" src="/src/main.js"></script>
-</body>
-</html>
+<title>TerraPulse – Dancing with the SARs</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{--blue:#004aad;--navy:#00296b;--accent:#ff6b35;--ink:#0f2347;--line:#dbe3f1;--m:#5f6f8c;--bg:#f4f7fc}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.45 "Source Sans 3","Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);display:flex;flex-direction:column;background:var(--bg)}
+header{height:62px;flex:none;background:linear-gradient(90deg,var(--navy),var(--blue));color:#fff;display:flex;align-items:center;gap:16px;padding:0 18px;box-shadow:0 2px 10px #0004;z-index:900}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;flex:none}.logo img,.logo svg{width:100%;height:100%;object-fit:contain}
+.name{font-size:26px;font-weight:800;letter-spacing:2px;line-height:1}
+.slogan{font-size:12.5px;font-style:italic;opacity:.9;margin-top:3px}
+nav{margin-left:auto;display:flex;gap:4px}
+nav button{background:none;border:0;color:#fff;font:700 14px inherit;font-family:inherit;text-transform:uppercase;letter-spacing:.6px;padding:9px 16px;border-radius:20px;cursor:pointer;opacity:.85}
+nav button:hover{background:#ffffff22;opacity:1}nav button.on{background:#fff;color:var(--blue);opacity:1}
+.stage{flex:1;min-height:0;position:relative}
+.page{display:none;height:100%}.page.on{display:block}
+#pMap.on{display:flex}
+#side{width:340px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;transition:margin .2s;z-index:850}
+#side.hide{margin-left:-340px}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:11px 2px 9px;font:700 12px inherit;font-family:inherit;text-transform:uppercase;letter-spacing:.5px;color:var(--m);cursor:pointer}
+.tabs button.on{color:var(--blue);border-bottom-color:var(--blue)}
+.tc{display:none;padding:14px 16px;overflow:auto;flex:1}.tc.on{display:block}
+.tc h4{margin:0 0 10px;font-size:15px}
+.g{margin:14px 0 4px;color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:1px}
+input[type=text],input[type=number],input[type=date]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--blue)}
+label.r{display:flex;gap:9px;align-items:center;padding:3px 0;cursor:pointer}label.r input{accent-color:var(--blue)}
+details{border:1px solid var(--line);border-radius:10px;margin:6px 0;padding:0 11px;background:#fff}
+details[open]{background:#f9fbff}
+summary{cursor:pointer;padding:9px 0;font-weight:700;display:flex;justify-content:space-between;gap:8px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary em{color:var(--m);font-weight:400;font-style:normal;font-size:12px;white-space:nowrap}
+details label.r{padding:4px 0}details label.r:last-child{padding-bottom:10px}
+button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blue);background:#fff;color:var(--blue);border-radius:10px;font:700 13pxinherit;font-family:inherit;cursor:pointer}
+.seg{display:flex;gap:6px}.seg button{flex:1;padding:8px 2px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
+.seg button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+.lgd{display:flex;align-items:center;gap:9px;margin:6px 0}.sw{width:14px;height:14px;border-radius:50%;flex:none}
+.lv{font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;color:#fff;margin-right:4px}.lvWatch{background:#f59e0b}.lvWarning{background:#d62828}
+.acard{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.alert{background:var(--bg);border-left:4px solid var(--accent);padding:7px 10px;margin:7px 0;border-radius:8px}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 15px;font:700 14px inherit;font-family:inherit;cursor:pointer}
+.mw{flex:1;min-width:0;position:relative}
+#map{height:100%;background:#a8c7e0}
+.card{position:absolute;z-index:800;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 22px #0003}
+#sbT{top:10px;left:10px;width:38px;height:38px;cursor:pointer;font-size:18px;color:var(--blue);display:grid;place-items:center}
+#bm{top:10px;right:10px;border:0;background:none;box-shadow:none;text-align:right}
+#bmBtn{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 14px inherit;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px #0004}
+#bmList{display:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px #0003;margin-top:6px;overflow:hidden;text-align:left}
+#bmList.on{display:block}#bmList div{padding:9px 18px;cursor:pointer}#bmList div:hover{background:var(--bg)}#bmList div.on{background:#e3ecff;font-weight:700;color:var(--blue)}
+#info{left:56px;bottom:24px;padding:9px 13px;min-width:210px;pointer-events:none}
+#chat{right:12px;bottom:12px;width:340px;max-width:calc(100% - 24px);background:none;border:0;box-shadow:none}
+#chatBtn{float:right;display:flex;align-items:center;gap:12px;background:var(--navy);color:#fff;border:0;border-radius:30px;padding:9px 16px 9px 20px;font:700 15px inherit;font-family:inherit;cursor:pointer;box-shadow:0 5px 18px #0006}
+#chatBtn .logo{width:34px;height:34px}
+#chatBox{display:none;clear:both;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 8px 28px #0004}
+#chatBox.on{display:block}
+#chatHead{background:var(--blue);color:#fff;padding:10px 14px;font-weight:700}
+#log{height:250px;overflow:auto;padding:10px}
+.msg{margin:6px 0;padding:7px 11px;border-radius:12px;max-width:92%}
+.bot{background:var(--bg)}.me{background:var(--blue);color:#fff;margin-left:auto;width:fit-content}
+#cf{display:flex;gap:6px;padding:9px;border-top:1px solid var(--line)}
+.chip{display:inline-block;border:1px solid var(--blue);color:var(--blue);border-radius:14px;padding:1px 9px;margin:2px;cursor:pointer;font-size:12px}
+.doc{max-width:860px;margin:0 auto;padding:28px 22px;overflow:auto;height:100%}.doc h2{color:var(--blue)}.doc a{color:#1a5fd0}
+.ts{display:none}.ts.show{display:block}
+.seaice-grey{filter:grayscale(1) brightness(.55) contrast(1.3)}
+.leaflet-control-attribution{font-size:10px}
+@media(max-width:800px){#side{position:absolute;inset:0 auto 0 0;width:86%;max-width:340px}.slogan{display:none}nav button{padding:8px 9px;font-size:12px}}
+</style></head><body>
+<header>
+ <div class="brand"><div class="logo lslot"></div><div><div class="name">TerraPulse</div><div class="slogan">Dancing with the SARs: Natural disasters and all about earth</div></div></div>
+ <nav id="nav"><button data-p="Map" class="on">Map</button><button data-p="How">How</button><button data-p="Sources">Sources</button><button data-p="Alarm">Alarm</button></nav>
+</header>
+<div class="stage">
+ <section class="page on" id="pMap">
+  <aside id="side">
+   <div class="tabs" id="tabs"><button data-t="Dataset" class="on">Dataset</button><buttondata-t="Time">Time</button><button data-t="Legend">Legend</button><button data-t="Alarm">Alarm</button></div>
+   <div class="tc on" id="tDataset"><input type="text" id="dsq" placeholder="🔍 Search datasets (flood, faults, SAR…)"><div id="ds"></div></div>
+   <div class="tc" id="tTime">
+    <div id="tFocus" style="font-weight:700;color:var(--blue);margin-bottom:8px"></div>
+    <div class="ts" data-t="eq">
+     <h4>Earthquake period</h4><div class="seg" id="seg"><button data-d="1">24 h</button><button data-d="7" class="on">7 days</button><button data-d="30">30 days</button></div>
+     <div class="g">Minimum magnitude: <b id="magV">4.5</b></div><input type="range" id="mag" min="2" max="7" step="0.5" value="4.5">
+     <div class="g">Data</div><button class="btn" id="csv">Download earthquakes (CSV)</button></div>
+    <div class="ts" data-t="hist">
+     <div class="g">Historical earthquakes (USGS archive)</div>
+     <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="hFrom" min="1900" max="2100"> to <input type="number" id="hTo" min="1900" max="2100"></div>
+     <div class="g">Minimum magnitude</div>
+     <select id="hMag" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px"><option>5</option><option selected>6</option><option>6.5</option><option>7</option></select>
+     <p style="color:var(--m);font-size:12px">Default is the last 30 years. M5+ is about 45,000 events and takes a minute or so to load; M6+ is much faster.</p>
+     <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="hShow">Show on map</button><button class="btn" id="hCsv">Download CSV</button></div>
+     <div id="hStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
+    <div class="ts" data-t="glc">
+     <div class="g">Landslide catalog years</div>
+     <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="lFrom" placeholder="all" min="1900" max="2100"> to <input type="number" id="lTo" placeholder="all" min="1900" max="2100"></div>
+     <p style="color:var(--m);font-size:12px">Leave empty to show every year, then press the button.</p>
+     <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="lApply">Show landslides</button><button class="btn" id="lCsv">Download CSV</button></div></div>
+    <div class="ts" data-t="ehist">
+     <div class="g">Past events (NASA EONET archive)</div>
+     <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="xFrom" min="1990" max="2100"> to <input type="number" id="xTo" min="1990" max="2100"></div>
+     <p style="color:var(--m);font-size:12px">Applies to the “Past … events” datasets that are switched on. Default is the last 30 years. How far back NASA's archive really goes depends on the hazard; the line below shows the years found.</p>
+     <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="xShow">Load these years</button><button class="btn" id="xCsv">Download CSV</button></div>
+     <div id="xStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
+    <div class="ts" data-t="dated">
+     <div class="g">Satellite image date</div><input type="date" id="imgDate">
+     <p style="color:var(--m);font-size:12px">Applies to the daily NASA satellite layers that are switched on (flood detection, rain, fires, snow, sea ice, true colour…). Pick any past date to see the archive: MODIS and rain layers go back to about 2000, sea ice (AMSR2) and night lights (VIIRS) start around 2012, and each layer has its own start date.</p></div>
+   </div>
+   <div class="tc" id="tLegend"><h4>Legend</h4><div id="legend"></div></div>
+   <div class="tc" id="tAlarm"><h4 id="miniHead">Latest alerts</h4><div id="miniCtl"></div><div id="miniAlarm" style="color:var(--m)">No alerts yet.</div><p><a href="#" id="toAlarm" style="color:var(--blue);font-weight:700">Alarm settings →</a></p></div>
+  </aside>
+  <div class="mw">
+   <div id="map"></div>
+   <div class="card" id="sbT" title="Show / hide panel">☰</div>
+   <div class="card" id="toast" style="display:none;left:50%;top:12px;transform:translateX(-50%);padding:9px 14px;max-width:70%;text-align:center"></div>
+   <div class="card" id="bm"><button id="bmBtn">Base map ▾</button><div id="bmList"></div></div>
+   <div class="card" id="info"><b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div></div>
+   <div class="card" id="chat"><button id="chatBtn">Chat with chatbot <span class="logo lslot"></span></button>
+    <div id="chatBox"><div id="chatHead">TerraPulse assistant</div><div id="log"></div><form id="cf"><input type="text" id="ci" placeholder="e.g. show floods in Algeria" autocomplete="off"><button class="btn">Send</button></form></div></div>
+  </div>
+ </section>
+ <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>
+  <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: latest alerts for the five main hazards. <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
+  <p>Hover a country to see its earthquakes for the chosen period.</p>
+  <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
+  <p><b>SAR layers</b> (floods, land subsidence, glacial motion) come from Sentinel-1 via Google Earth Engine. Their links expire, so regenerate <code>layers.json</code> when they go blank.</p></div></section>
+ <section class="page" id="pSources"><div class="doc"><h2>Sources</h2><ul>
+  <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
+  <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>
+  <li><a target="_blank" href="https://eonet.gsfc.nasa.gov/">NASA EONET</a> – volcanoes, wildfires, storms, floods, landslides, drought</li>
+  <li><a target="_blank" href="https://landslides.nasa.gov">NASA Global Landslide Catalog</a> – reported landslides</li>
+  <li><a target="_blank" href="https://github.com/nvkelso/natural-earth-vector">Natural Earth</a> – glacier and ice shelf outlines</li>
+  <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – MODIS flood detection and snow cover, AMSR2 sea ice, rain, fires, imagery, night lights</li>
+  <li><a target="_blank" href="https://github.com/fraxen/tectonicplates">Tectonic plates (Bird, 2003)</a></li>
+  <li>Esri basemaps and hillshade; OpenStreetMap contributors</li>
+  <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
+  <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul></div></section>
+ <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
+  <p>Switch on the hazards you want to watch. New events show up below, with a browser notification and an optional sound. Earthquakes are checked every 2 minutes and the others every 10 minutes, while this page is open.</p>
+  <div id="aCards"></div>
+  <p><label class="r"><input type="checkbox" id="aSound" checked> Play a sound for new alerts</label></p>
+  <h3>Latest alerts</h3><div id="aList"></div></div></section>
+</div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const LOGO_SRCS=[];
+const LOGO='<svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"><circle cx="40" cy="62" r="20"/><circle cx="33" cy="58" r="1.5" fill="#fff"/><circle cx="46"cy="58" r="1.5" fill="#fff"/><path d="M31 67q9 8 18 0" stroke-width="4"/><path d="M26 44L12 12M38 42L34 8M50 44L58 14M57 52L82 36M60 66L96 84"/></svg>';
+$$('.lslot').forEach(el=>{el.innerHTML=LOGO;(function t(i){if(i>=LOGO_SRCS.length)return;const im=new Image();im.onload=()=>el.replaceChildren(im);im.onerror=()=>t(i+1);im.src=LOGO_SRCS[i]})(0)});
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ---------- base maps (satellite, streets, topographic) ---------- */
+const BM={Satellite:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',13,'Esri, Maxar, Earthstar Geographics'],
+ Streets:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',13,'Esri'],
+ Topographic:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',13,'Esri']};
+const map=L.map('map',{worldCopyJump:true,zoomControl:false,attributionControl:false}).setView([25,15],3);
+L.control.zoom({position:'bottomleft'}).addTo(map);L.control.attribution({position:'bottomleft',prefix:false}).addTo(map);
+let base;function setBase(n){if(!BM[n])return false;if(base)map.removeLayer(base);const b=BM[n];base=L.tileLayer(b[0],{maxZoom:b[1],attribution:b[2]}).addTo(map);base.bringToBack();
+ $$('#bmList div').forEach(d=>d.classList.toggle('on',d.textContent===n));return true}
+$('#bmList').innerHTML=Object.keys(BM).map(n=>`<div>${n}</div>`).join('');
+$('#bmList').onclick=e=>{if(e.target.tagName==='DIV'){setBase(e.target.textContent);$('#bmList').classList.remove('on')}};
+$('#bmBtn').onclick=()=>$('#bmList').classList.toggle('on');setBase('Satellite');
+const fetchJ=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()};
+const ymd=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+let quakes=[],period=7,minMag=4.5,imgDate=ymd(1);$('#imgDate').value=imgDate;$('#imgDate').max=ymd(0);
+/* ---------- dataset helpers ---------- */
+const COL={vol:'#e63946',fire:'#ff6b35',storm:'#c28be8',flood:'#3b8fe8',slide:'#ff2d95',dry:'#e8a23b'};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',8000)};
+const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{const d=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
+ const l=L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${d}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`,{maxNativeZoom:lvl,opacity:.85,attribution:'NASA GIBS',className:cls});
+ let ok=0,bad=0;l.on('tileload',()=>ok++);l.on('tileerror',()=>{bad++;if(bad===8&&!ok)toast('No image found for '+id.replace(/_/g,' ')+' on '+d+'. Try an earlier date under Time.')});return l};
+const eonet=(cat,color,rad=7)=>async()=>{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=${cat}`);const g=L.layerGroup();let n=0;
+ d.events.forEach(e=>{const gm=e.geometry[e.geometry.length-1];if(!gm||gm.type!=='Point')return;n++;
+ L.circleMarker([gm.coordinates[1],gm.coordinates[0]],{radius:rad,color:'#fff',weight:1.5,fillColor:color,fillOpacity:.95}).bindPopup(`<b>${esc(e.title)}</b><br>${gm.date.slice(0,10)}<br><a target=_blank href="${e.link}">details</a>`).addTo(g)});
+ if(!n)toast('NASA EONET has no open '+cat+' events right now, so there is nothing to draw.');return g};
+const quakeFeed=(url,color)=>async()=>{const d=await fetchJ(url);const g=L.layerGroup();
+ d.features.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
+  L.circleMarker([la,lo],{radius:Math.max(6,m*2.4),color:'#fff',weight:2,fillColor:color,fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
+const depthCol=d=>d<10?'#e53935':d<35?'#fb8c00':d<70?'#fdd835':d<150?'#7cb342':d<300?'#29b6f6':'#5e35b1';
+const quakesByDepth=async()=>{const d=awaitfetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);const g=L.layerGroup();
+ d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,m=f.properties.mag||0;
+  L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.2,fillColor:depthCol(dp),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>Depth: ${dp.toFixed(1)} km<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
+const FAULTS_EMBED=null;
+const FAULT_URLS=['https://static.geodataviewer.com/datasets/gem-active-faults.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults_harmonized.geojson'];
+const faults=async()=>{let j=FAULTS_EMBED;
+ for(const u of FAULT_URLS){if(j)break;try{const r=await fetch(u);if(r.ok)j=await r.json()}catch(e){}}
+ if(!j)throw new Error('GEM faults file not reachable');
+ return L.geoJSON(j,{style:{color:'#ff4d6d',weight:1.2,opacity:.9},onEachFeature:(f,l)=>{const p=f.properties||{};
+  l.bindPopup(`<b>${p.name||p.catalog_name||'Active fault'}</b>${p.slip_type?'<br>Slip type: '+p.slip_type:''}${p.net_slip_rate?'<br>Slip rate: '+p.net_slip_rate:''}<br><small>GEM Global Active Faults, CC BY-SA 4.0</small>`)}})};
+/* ---------- past events (NASA EONET archive, loaded year by year) ---------- */
+const EV_HIST={},EV_NAME={};
+const xstat=t=>{const e=$('#xStat');if(e)e.textContent=t};
+const eonetHist=(id,cat,color,label)=>async()=>{EV_NAME[id]=label;const y0=+$('#xFrom').value,y1=+$('#xTo').value;
+ if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
+ const years=[];for(let y=y0;y<=y1;y++)years.push(y);const rows=[];let done=0,bad=0;
+ const one=async y=>{try{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=all&category=${cat}&start=${y}-01-01&end=${y}-12-31&limit=3000`);
+   (d.events||[]).forEach(e=>{const g=e.geometry&&e.geometry[0];if(!g)return;let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];if(!isFinite(c[0])||!isFinite(c[1]))return;rows.push([e.id,Date.parse(g.date),c[1],c[0],e.title,e.link])})}catch(err){bad++}
+  done++;xstat('Loading '+label+': '+done+'/'+years.length+' years … '+rows.length+' events')};
+ for(let i=0;i<years.length;i+=5)await Promise.all(years.slice(i,i+5).map(one));
+ if(bad===years.length)throw new Error('NASA EONET not reachable');
+ EV_HIST[id]=rows;const g=L.layerGroup();
+ rows.forEach(r=>{L.circleMarker([r[2],r[3]],{renderer:CV,radius:6,color:'#fff',weight:.8,fillColor:color,fillOpacity:.85}).bindPopup(`<b>${esc(r[4])}</b><br>${isFinite(r[1])?new Date(r[1]).toISOString().slice(0,10):''}<br><a target=_blank href="${esc(r[5])}">details</a>`).addTo(g)});
+ const ys=rows.map(r=>new Date(r[1]).getUTCFullYear()).filter(isFinite);
+ xstat(label+': '+rows.length+' events'+(rows.length?' ('+Math.min(...ys)+'–'+Math.max(...ys)+')':'')+(bad?', '+bad+' year(s) failed to load':''));
+ if(!rows.length)toast('NASA EONET has no '+label+' events for '+y0+'–'+y1+'.');
+ return g};
+/* ---------- NASA global landslide catalog (embedded by Python when possible) ---------- */
+const CV=L.canvas({padding:.5});
+const GLC_EMBED=null;
+let GLC_ALL=[];const glcYears=()=>{const a=parseInt($('#lFrom').value),b=parseInt($('#lTo').value);return[isFinite(a)?a:-1e9,isFinite(b)?b:1e9]};
+const glcMarkers=rows=>{GLC_ALL=rows;const[y0,y1]=glcYears();const g=L.layerGroup();let n=0;rows.forEach(r=>{if(r[3]){const y=new Date(r[3]).getUTCFullYear();if(y<y0||y>y1)return}n++;const lo=r[0],la=r[1],fat=+r[6]||0;
+ L.circleMarker([la,lo],{renderer:CV,radius:fat>=100?14:fat>=10?10:7,color:'#fff',weight:1.5,fillColor:fat>=10?'#c2185b':COL.slide,fillOpacity:.95})
+  .bindPopup(`<b>${esc(r[2])||'Landslide'}</b><br>${r[3]?new Date(r[3]).toISOString().slice(0,10):''}<br>${esc(r[4])}${r[5]?' · trigger: '+esc(r[5]):''}<br>${esc(r[7])}${fat?'<br>Fatalities: '+fat:''}<br><small>NASA Global LandslideCatalog</small>`).addTo(g)});toast(n?n+' landslides shown.':'No landslides in that year range.');return g};
+const glc=async()=>{if(GLC_EMBED&&GLC_EMBED.length)return glcMarkers(GLC_EMBED);
+ const base='https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/COOLR_Reports_Points/FeatureServer/0/query?where=1%3D1&outFields=event_title,event_date,landslide_category,landslide_trigger,fatality_count,country_name&outSR=4326&orderByFields=objectid&resultRecordCount=2000&f=geojson';
+ const rows=[];
+ for(let off=0;off<40000;off+=2000){const d=await fetchJ(base+'&resultOffset='+off);if(d.error)throw new Error(d.error.message||'NASA service error');const fs=d.features||[];
+  fs.forEach(f=>{const c=f.geometry&&f.geometry.coordinates;if(!c)return;const p=f.properties||{};rows.push([c[0],c[1],p.event_title||'',p.event_date||0,p.landslide_category||'',p.landslide_trigger||'',p.fatality_count||0,p.country_name||''])});
+  if(fs.length<2000)break}
+ if(!rows.length)throw new Error('no landslide records returned');return glcMarkers(rows)};
+/* ---------- glacier and ice outlines (embedded by Python when possible) ---------- */
+const GLAC_EMBED=null;
+const glac=async()=>{let R=GLAC_EMBED;
+ if(!R)R=await Promise.all(['ne_10m_glaciated_areas','ne_10m_antarctic_ice_shelves_polys'].map(n=>fetchJ(`https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/${n}.geojson`).catch(()=>null)));
+ R=(R||[]).filter(Boolean);if(!R.length)throw new Error('glacier outlines not reachable');const g=L.layerGroup();
+ R.forEach(j=>L.geoJSON(j,{renderer:CV,style:{color:'#6ec6ff',weight:.6,fillColor:'#bfe9ff',fillOpacity:.75}}).addTo(g));return g};
+
+/* ---------- datasets, grouped by natural disaster ---------- */
+const MAIN=['Earthquakes','Landslides','Glaciers & ice','Wildfires','Floods'];
+const ICON={'Earthquakes':'🌍','Volcanoes':'🌋','Floods':'🌊','Wildfires':'🔥','Storms':'🌀','Landslides':'⛰️','Land subsidence':'🕳️','Glaciers & ice':'🧊','Drought':'☀️','Satellite imagery':'🛰️'};
+const DS=[
+ // Earthquakes
+ {id:'quakes',g:'Earthquakes',n:'Earthquakes, live (USGS)',kw:'earthquake earthquakes quake quakes seismic',leg:['#ff6b35','Earthquake (bigger = stronger)'],load:loadQuakes},
+ {id:'depth',g:'Earthquakes',n:'Earthquakes by depth',kw:'depth shallow deep earthquake',leg:['#e53935','Shallow (red) to deep (purple)'],load:quakesByDepth},
+ {id:'sig',g:'Earthquakes',n:'Significant earthquakes, 30 days',kw:'significant major strongest earthquake',leg:['#d50000','Significant earthquake'],load:quakeFeed('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson','#d50000')},
+ {id:'plates',g:'Earthquakes',n:'Tectonic plates',kw:'plate plates tectonic boundary',leg:['#ff9f1c','Plate boundary'],load:async()=>L.geoJSON(await fetchJ('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json'),{style:{color:'#ff9f1c',weight:1.5}})},
+ {id:'faults',g:'Earthquakes',n:'Active faults (GEM, global)',kw:'faults fault gem slip',leg:['#ff4d6d','Active fault'],load:faults},
+ {id:'hist',g:'Earthquakes',n:'Historical earthquakes (set years in Time)',kw:'historical history archive past',leg:['#ff9800','Historical earthquake (bigger = stronger)'],load:loadHist},
+ // Volcanoes
+ {id:'vol',g:'Volcanoes',n:'Active volcanoes (NASA EONET)',kw:'volcano volcanoes eruption',leg:[COL.vol,'Active volcano'],load:eonet('volcanoes',COL.vol)},
+ // Floods
+ {id:'eflood',g:'Floods',n:'Flood events (NASA EONET)',kw:'flood floods',leg:[COL.flood,'Flood event'],load:eonet('floods',COL.flood)},
+ {id:'modis',g:'Floods',dated:1,n:'Flood detection (MODIS)',kw:'flood floods water modis inundation',leg:['#2b6cb0','Water detected (clouds can hide it)'],load:gibs('MODIS_Combined_Flood_2-Day',12,'png',1)},
+ {id:'rain',g:'Floods',dated:1,n:'Rain rate (NASA IMERG)',kw:'rain rainfall precipitation imerg',leg:['#3b8fe8','Rainfall intensity'],load:gibs('IMERG_Precipitation_Rate',6,'png',1)},
+ // Wildfires
+ {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfirewildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
+ {id:'mfire',g:'Wildfires',dated:1,n:'Active fires (MODIS)',kw:'fire fires wildfire hotspot thermal',leg:['#ff3d00','Fire / thermal anomaly'],load:gibs('MODIS_Terra_Thermal_Anomalies_All',9,'png')},
+ {id:'smoke',g:'Wildfires',dated:1,n:'Smoke and aerosol (MODIS)',kw:'smoke aerosol haze',leg:['#a0522d','Aerosol optical depth'],load:gibs('MODIS_Terra_Aerosol',6,'png',1)},
+ // Storms
+ {id:'storm',g:'Storms',n:'Severe storms (NASA EONET)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Severe storm'],load:eonet('severeStorms',COL.storm)},
+ {id:'wv',g:'Storms',dated:1,n:'Water vapour (MODIS)',kw:'water vapour vapor moisture storm',leg:['#6a9fd8','Atmospheric moisture'],load:gibs('MODIS_Terra_Water_Vapor_5km_Day',6,'png',1)},
+ // Landslides
+ {id:'slide',g:'Landslides',n:'Landslide events (NASA EONET)',kw:'landslide landslides',leg:[COL.slide,'Landslide'],load:eonet('landslides',COL.slide,12)},
+ {id:'glc',g:'Landslides',n:'Global landslide catalog (NASA)',kw:'landslide landslides catalog inventory global',leg:[COL.slide,'Reported landslide (bigger, darker = 10+ deaths)'],load:glc},
+ // Land subsidence (SAR layers from layers.json join here)
+ {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context)',kw:'land temperature heat subsidence context',leg:['#f2994a','Hotter ground'],load:gibs('MODIS_Terra_Land_Surface_Temp_Day',7,'png',2)},
+ {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
+ // Glaciers & ice (SAR glacier layers from layers.json join here)
+ {id:'glac',g:'Glaciers & ice',n:'Glaciers and ice caps (global outlines)',kw:'glacier glaciers ice caps outlines shelf',leg:['#6ec6ff','Glacier, ice cap or ice shelf'],load:glac},
+ {id:'snow',g:'Glaciers & ice',dated:1,n:'Snow cover (MODIS, daily)',kw:'snow glacier glaciers ice cover',leg:['#9fe3f0','Snow cover'],load:gibs('MODIS_Terra_NDSI_Snow_Cover',8,'png',1)},
+ {id:'seaice',g:'Glaciers & ice',dated:1,n:'Sea ice concentration (AMSR2)',kw:'sea ice arctic antarctic polar',leg:['#7a8794','Sea ice (darker grey = more ice)'],view:[76,-40,3],hint:'Sea ice only exists near the poles. Showing the Arctic; pan south for the Antarctic.',load:gibs('AMSR2_Sea_Ice_Concentration_12km',6,'png',1,'seaice-grey')},
+ // More datasets
+ {id:'dry',g:'Drought',n:'Drought (NASA EONET)',kw:'drought dry',leg:[COL.dry,'Drought'],load:eonet('drought',COL.dry)},
+ {id:'true',g:'Satellite imagery',dated:1,n:'True colour (MODIS Terra)',kw:'true colour color imagery',load:gibs('MODIS_Terra_CorrectedReflectance_TrueColor',9,'jpeg')},
+ {id:'night',g:'Satellite imagery',dated:1,n:'Night lights',kw:'night lights',load:gibs('VIIRS_Night_Lights',8,'png')},
+ // Past events (NASA EONET archive, years set in the Time tab)
+ {id:'h_vol',g:'Volcanoes',n:'Past volcano events (years in Time)',kw:'volcano volcanoes eruption',leg:[COL.vol,'Past volcano event'],load:eonetHist('h_vol','volcanoes',COL.vol,'volcano')},
+ {id:'h_flood',g:'Floods',n:'Past flood events (years in Time)',kw:'flood floods',leg:[COL.flood,'Past flood event'],load:eonetHist('h_flood','floods',COL.flood,'flood')},
+ {id:'h_fire',g:'Wildfires',n:'Past wildfire events (years in Time)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Past wildfire'],load:eonetHist('h_fire','wildfires',COL.fire,'wildfire')},
+ {id:'h_storm',g:'Storms',n:'Past severe storms (years in Time)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Past severe storm'],load:eonetHist('h_storm','severeStorms',COL.storm,'storm')},
+ {id:'h_slide',g:'Landslides',n:'Past landslide events (years in Time)',kw:'landslide landslides',leg:[COL.slide,'Past landslide'],load:eonetHist('h_slide','landslides',COL.slide,'landslide')},
+ {id:'h_dry',g:'Drought',n:'Past drought events (years in Time)',kw:'drought dry',leg:[COL.dry,'Pastdrought'],load:eonetHist('h_dry','drought',COL.dry,'drought')},
+ {id:'h_ice',g:'Glaciers & ice',n:'Past sea and lake ice events (years in Time)',kw:'ice sea lake iceberg',leg:['#7fd3ff','Past ice event'],load:eonetHist('h_ice','seaLakeIce','#7fd3ff','ice')}
+];
+const state={},openG=new Set(['Earthquakes']);let showMore=false;let focusG='Earthquakes';
+function row(d){const l=document.createElement('label');l.className='r';l.innerHTML=`<input type="checkbox" id="c_${d.id}" ${state[d.id]&&state[d.id].on?'checked':''}><span>${d.n}</span>`;
+ l.querySelector('input').onchange=e=>setLayer(d.id,e.target.checked);return l}
+function groupEl(name,items,q){const det=document.createElement('details');det.open=!!q||openG.has(name);
+ const on=items.filter(d=>state[d.id]&&state[d.id].on).length;
+ det.innerHTML=`<summary><span>${ICON[name]||'📂'} ${name}</span><em>${on?on+' on · ':''}${items.length}</em></summary>`;
+ items.forEach(d=>det.appendChild(row(d)));
+ if(name==='Landslides'){
+   const actions=document.createElement('div');
+   actions.className='tp-landslide-tools';
+   actions.innerHTML='<div class="g">Analysis tools</div><button type="button" data-tp-open="forecast">NASA LHASA · Tomorrow forecast</button><button type="button" data-tp-open="scar">Detect post-event scars</button><button type="button" data-tp-open="exposure">Buildings &amp; human exposure</button><button type="button" data-tp-open="nisar">NISAR radar observations</button><small>Forecast · observed scars · mapped exposure are separate measurements.</small>';
+   det.appendChild(actions);
+ }
+ det.ontoggle=()=>{det.open?openG.add(name):openG.delete(name)};det.querySelector('summary').addEventListener('click',()=>{focusG=name;syncSide()});return det}
+function buildList(){const q=$('#dsq').value.toLowerCase().trim(),el=$('#ds');el.innerHTML='';
+ const match=d=>!q||(d.n+' '+d.kw+' '+d.g).toLowerCase().includes(q);
+ el.insertAdjacentHTML('beforeend','<div class="g">Main natural disasters</div>');
+ MAIN.forEach(n=>{const it=DS.filter(d=>d.g===n&&match(d));if(it.length)el.appendChild(groupEl(n,it,q))});
+ const extra=[...new Set(DS.map(d=>d.g))].filter(n=>!MAIN.includes(n)).map(n=>[n,DS.filter(d=>d.g===n&&match(d))]).filter(x=>x[1].length);
+ if(extra.length){const cnt=extra.reduce((s,x)=>s+x[1].length,0);
+  if(!q){const b=document.createElement('button');b.className='more';b.textContent=(showMore?'Hide':'Show')+' more datasets ('+cnt+')';b.onclick=()=>{showMore=!showMore;buildList()};el.appendChild(b)}
+  if(showMore||q){el.insertAdjacentHTML('beforeend','<div class="g">More hazards and datasets</div>');extra.forEach(([n,it])=>el.appendChild(groupEl(n,it,q)))}}
+ if(!el.querySelector('details'))el.insertAdjacentHTML('beforeend','<p style="color:var(--m)">No dataset found.</p>')}
+$('#dsq').oninput=buildList;
+async function setLayer(id,on){const d=DS.find(x=>x.id===id);if(!d)return;const s=state[id]=state[id]||{};s.on=on;if(on)focusG=d.g;const cb=$('#c_'+id);if(cb)cb.checked=on;
+ if(on){try{if(!s.layer){if(!s.pend){const g0=s.gen=(s.gen||0),p=d.load().then(l=>{if(s.gen===g0)s.layer=l;return l});s.pend=p;p.finally(()=>{if(s.pend===p)s.pend=null}).catch(()=>{})}await s.pend}if(s.on&&s.layer){s.layer.addTo(map);if(d.view){map.flyTo([d.view[0],d.view[1]],d.view[2]);if(d.hint)toast(d.hint)}}}catch(e){s.on=false;if(cb)cb.checked=false;toast('Could not load “'+d.n+'” ('+e.message+').')}}
+ else if(s.layer)map.removeLayer(s.layer);legend();buildList();syncSide()}
+function legend(){const r=DS.filter(d=>state[d.id]&&state[d.id].on&&d.leg).map(d=>`<div class="lgd"><span class="sw" style="background:${d.leg[0]}"></span>${d.leg[1]}</div>`);
+ $('#legend').innerHTML=r.join('')||'<span style="color:var(--m)">Turn on a dataset to see its legend.</span>'}
+function clearAll(){DS.forEach(d=>state[d.id]&&state[d.id].on&&setLayer(d.id,false))}
+/* ---------- earthquakes + time ---------- */
+const qc=m=>m>=7?'#d50000':m>=6?'#ff3d00':m>=5?'#ff6b35':m>=4?'#ff9800':'#ffc107';
+async function loadQuakes(){const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);
+ quakes=d.features;const g=L.layerGroup();
+ quakes.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
+  L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.5,fillColor:qc(m),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g}
+async function reloadQuakes(){for(const id of ['quakes','depth']){consts=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
+function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));reloadQuakes()}
+$('#seg').onclick=e=>{if(e.target.dataset.d)setPeriod(+e.target.dataset.d)};
+$('#mag').oninput=e=>$('#magV').textContent=e.target.value;$('#mag').onchange=e=>{minMag=+e.target.value;reloadQuakes()};
+function setMag(v){minMag=v;$('#mag').value=v;$('#magV').textContent=v;reloadQuakes()}
+$('#imgDate').onchange=e=>{imgDate=e.target.value||ymd(1);DS.filter(d=>d.dated).forEach(d=>{const s=state[d.id];if(s&&s.layer){map.removeLayer(s.layer);s.layer=null;if(s.on)setLayer(d.id,true)}})};
+$('#csv').onclick=()=>{if(!quakes.length)return alert('Turn on Earthquakes first.');
+ const r=['id,time_iso,latitude,longitude,depth_km,magnitude,place'].concat(quakes.map(f=>{const[lo,la,dp]=f.geometry.coordinates,p=f.properties;return [f.id,new Date(p.time).toISOString(),la,lo,dp,p.mag,'"'+(p.place||'').replace(/"/g,'""')+'"'].join(',')}));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.join('\n')],{type:'text/csv'}));a.download='earthquakes.csv';a.click()};
+/* ---------- historical earthquakes (USGS archive, loaded year by year) ---------- */
+let hist=[];
+const hstat=t=>{const e=$('#hStat');if(e)e.textContent=t};
+async function fetchHist(){const mag=+$('#hMag').value,y0=+$('#hFrom').value,y1=+$('#hTo').value,rows=[];
+ if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
+ for(let y=y0;y<=y1;y++){hstat('Loading '+y+' … ('+rows.length+' so far)');
+  const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`);
+  d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,p=f.properties;rows.push([f.id,p.time,la,lo,dp,p.mag,p.place||''])})}
+ hist=rows;hstat(rows.length+' earthquakes, '+y0+'–'+y1+', M≥'+mag);return rows}
+async function loadHist(){const rows=await fetchHist();const g=L.layerGroup();
+ rows.forEach(r=>{const m=r[5]||0;L.circleMarker([r[2],r[3]],{renderer:CV,radius:Math.max(2.5,m*1.3),color:'#fff',weight:.4,fillColor:qc(m),fillOpacity:.75})
+  .bindPopup(`<b>M ${m.toFixed(1)}</b> ${esc(r[6])}<br>${new Date(r[1]).toUTCString()}<br>Depth: ${(+r[4]).toFixed(1)} km`).addTo(g)});return g}
+async function reloadHist(){const s=state.hist;if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}await setLayer('hist',true)}
+async function downloadHist(){try{if(!hist.length)await fetchHist()}catch(e){return hstat('Failed: '+e.message)}
+ const r=['id,time_iso,latitude,longitude,depth_km,magnitude,place'].concat(hist.map(x=>[x[0],new Date(x[1]).toISOString(),x[2],x[3],x[4],x[5],'"'+String(x[6]).replace(/"/g,'""')+'"'].join(',')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.join('\n')],{type:'text/csv'}));
+ a.download='earthquakes_'+$('#hFrom').value+'-'+$('#hTo').value+'_M'+$('#hMag').value+'.csv';a.click()}
+$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-30;
+$('#hShow').onclick=()=>reloadHist();$('#hCsv').onclick=downloadHist;
+async function reloadGlc(){const s=state.glc;if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}await setLayer('glc',true)}
+$('#lApply').onclick=reloadGlc;
+async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}
+$('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-30;
+$('#xShow').onclick=async()=>{for(const id of Object.keys(state).filter(k=>k.startsWith('h_')&&state[k].on))await reloadLayer(id)};
+const saveCsv=(lines,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));a.download=name;a.click()};
+$('#xCsv').onclick=()=>{constids=Object.keys(EV_HIST);if(!ids.length)return xstat('Turn on a “Past … events” dataset first.');
+ const r=['id,hazard,time_iso,latitude,longitude,title,link'];
+ ids.forEach(id=>EV_HIST[id].forEach(x=>r.push([x[0],EV_NAME[id],isFinite(x[1])?new Date(x[1]).toISOString():'',x[2],x[3],'"'+String(x[4]).replace(/"/g,'""')+'"','"'+String(x[5]||'')+'"'].join(','))));
+ saveCsv(r,'past_events_'+$('#xFrom').value+'-'+$('#xTo').value+'.csv')};
+$('#lCsv').onclick=()=>{if(!GLC_ALL.length)return alert('Turn on the Global landslide catalog first.');const[y0,y1]=glcYears();
+ const rows=GLC_ALL.filter(r=>{if(!r[3])return true;const y=new Date(r[3]).getUTCFullYear();return y>=y0&&y<=y1});
+ saveCsv(['longitude,latitude,title,date,category,trigger,fatalities,country'].concat(rows.map(x=>[x[0],x[1],'"'+String(x[2]).replace(/"/g,'""')+'"',x[3]?new Date(x[3]).toISOString().slice(0,10):'','"'+x[4]+'"','"'+x[5]+'"',x[6],'"'+x[7]+'"'].join(','))),'landslides.csv')};
+/* ---------- Earth Engine layers.json (join the matching disaster group) ---------- */
+async function loadEE(){try{const j=await fetchJ('layers.json');
+ const arr=Array.isArray(j)?j:Object.entries(j).map(([n,v])=>typeof v==='string'?{name:n,url:v}:{name:n,...v});
+ arr.forEach((o,i)=>{const url=o.url||o.tiles||o.tile_url||o.urlFormat;if(!url)return;const name=o.name||o.label||('SAR layer '+(i+1));
+  const grp=/^flood/i.test(name)?'Floods':/^subs/i.test(name)?'Land subsidence':/^glac/i.test(name)?'Glaciers & ice':'Satellite imagery';
+  const kw=name.toLowerCase().replace(/:/g,' ')+' sar radar '+(/flood/i.test(name)?'flood floods':/subs/i.test(name)?'subsidence sinking':'glacier glacial ice motion');
+  DS.unshift({id:'ee'+i,g:grp,n:'SAR · '+name,kw,leg:[o.legend||'#b388ff',name],load:()=>L.tileLayer(url,{opacity:.8,maxZoom:14,attribution:'Google Earth Engine / Sentinel-1'})})});buildList()}catch(e){}}
+/* ---------- countries + hover ---------- */
+let countries=null;const cL={};
+function inRing(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
+function inC(f,x,y){const g=f.geometry,P=g.type==='Polygon'?[g.coordinates]:g.coordinates;return P.some(p=>inRing(x,y,p[0])&&!p.slice(1).some(h=>inRing(x,y,h)))}
+const IDLE='<b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div>';
+async function loadCountries(){try{countries=await fetchJ('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json');
+ L.geoJSON(countries,{style:{color:'#fff',weight:.5,fillOpacity:0,opacity:.35},onEachFeature:(f,l)=>{cL[f.properties.name.toLowerCase()]=l;
+  l.on('mouseover',()=>{l.setStyle({fillOpacity:.15,weight:2,opacity:.95});showInfo(f,l)});l.on('mouseout',()=>{l.setStyle({fillOpacity:0,weight:.5,opacity:.35});$('#info').innerHTML=IDLE})}}).addTo(map)}catch(e){}}
+function showInfo(f,l){const b=l.getBounds();let n=0,mx=0,top='';const on=state.quakes&&state.quakes.on;
+ if(on)quakes.forEach(q=>{const[x,y]=q.geometry.coordinates;if(b.contains([y,x])&&inC(f,x,y)){n++;if(q.properties.mag>mx){mx=q.properties.mag;top=q.properties.place}}});
+ $('#info').innerHTML=`<b>${f.properties.name}</b><div>${on?`${n} earthquake${n===1?'':'s'} ≥ M${minMag} in the last ${period===1?'24 hours':period+' days'}`+(n?`<br>Strongest: M${mx.toFixed(1)}<br><span style="color:var(--m)">${top}</span>`:''):'<span style="color:var(--m)">Turn on Earthquakes for stats</span>'}</div>`}
+/* ---------- navigation ---------- */
+function go(p){$$('.page').forEach(e=>e.classList.toggle('on',e.id==='p'+p));$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));if(p==='Map')setTimeout(()=>map.invalidateSize(),60)}
+function tab(n){$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===n));$$('.tc').forEach(c=>c.classList.toggle('on',c.id==='t'+n))}
+function openTab(n){go('Map');$('#side').classList.remove('hide');tab(n);setTimeout(()=>map.invalidateSize(),250)}
+$('#nav').onclick=e=>{if(e.target.dataset.p)go(e.target.dataset.p)};$('#tabs').onclick=e=>{if(e.target.dataset.t)tab(e.target.dataset.t)};
+$('#sbT').onclick=()=>{$('#side').classList.toggle('hide');setTimeout(()=>map.invalidateSize(),250)};
+$('#toAlarm').onclick=e=>{e.preventDefault();go('Alarm')};
+/* ---------- chatbot ---------- */
+function say(t,me){const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;$('#log').appendChild(d);$('#log').scrollTop=1e9}
+$('#chatBtn').onclick=()=>{$('#chatBox').classList.toggle('on');if(!$('#log').children.length)say('Hi! I can control the map for you. Try:<br><span class="chip">show earthquakes</span><span class="chip">show floods</span><span class="chip">show faults</span><span class="chip">zoom to Algeria</span><span class="chip">last 30 days</span><span class="chip">streets map</span><span class="chip">help</span>')};
+$('#log').onclick=e=>{if(e.target.classList.contains('chip'))(window.tpAsk||run)(e.target.textContent)};
+$('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ci').value.trim();if(v){(window.tpAsk||run)(v);$('#ci').value=''}};
+async function run(raw){say(raw.replace(/</g,'&lt;'),1);const t=' '+raw.toLowerCase()+' ',done=[];
+ if(/\b(help|what can you do)\b/.test(t))return say('Say things like “show earthquakes”, “show faults”, “hide volcanoes”, “zoom to Japan”, “magnitude 5”, “last 24 hours”, “satellite”, “streets map”, “open legend”, “open dataset”, “clear all”, “open sources”, “open alarm”.');
+ const pg=t.match(/\b(open|go to|take me to)\s+(the\s+)?(map|how|sources|alarm)\b/);if(pg){go(pg[3][0].toUpperCase()+pg[3].slice(1));return say('Opened '+pg[3]+'.')}
+ const pn=t.match(/\b(open|show|see)\s+(the\s+)?(legend|datasets?|time)\b/);if(pn){openTab(pn[3]==='legend'?'Legend':pn[3]==='time'?'Time':'Dataset');return say('Opened '+pn[3]+'.')}
+ if(/clear all|hide all|remove all|reset/.test(t)){clearAll();return say('All datasets hidden.')}
+ const bm=Object.keys(BM).find(k=>t.includes(k.toLowerCase().slice(0,5)))||(/\b(street|road)\b/.test(t)?'Streets':/\btopo/.test(t)?'Topographic':null);
+ if(bm&&setBase(bm))done.push('base map '+bm);
+ const m=t.match(/(?:magnitude|mag|\bm)\s*(\d(?:\.\d)?)/);if(m){setMag(Math.min(7,Math.max(2,+m[1])));done.push('minimum magnitude '+minMag)}
+ let p=null;const q=t.match(/(\d+)\s*(hour|day|week|month)/);if(q){const n=+q[1]*({hour:1/24,day:1,week:7,month:30}[q[2]]);p=n<=1?1:n<=7?7:30}else if(/today|24 h|yesterday/.test(t))p=1;else if(/this week|a week/.test(t))p=7;else if(/this month|a month/.test(t))p=30;
+ if(p){setPeriod(p);done.push('period '+(p===1?'24 hours':p+' days'))}
+ const off=/\b(hide|turn off|remove|stop)\b/.test(t),verb=/\b(show|display|turn on|add|see|where|enable|hide|remove|turn off)\b/.test(t);let hits=DS.filter(d=>d.kw&&d.kw.split(' ').some(k=>k&&new RegExp('\\b'+k+'\\b').test(t)));
+ if(/\b(histor\w*|past|archive)\b/.test(t)){const hh=hits.filter(d=>d.id.startsWith('h_')||d.id==='glc'),h2=hh.length?hh:hits.filter(d=>d.id==='hist');if(h2.length)hits=h2}
+ if(/\b(sar|radar)\b/.test(t)){const e=hits.filter(d=>d.id.startsWith('ee'));hits=e.length?e:DS.filter(d=>d.id.startsWith('ee'))}
+ if(hits.length&&(verb||(!m&&!p&&!bm)))for(const d of hits){await setLayer(d.id,!off);done.push((off?'hid ':'showed ')+d.n)}
+ let place=Object.keys(cL).filter(k=>new RegExp('\\b'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b').test(t)).sort((a,b)=>b.length-a.length)[0];
+ if(!place){const al={usa:'united states of america','united states':'united states of america',us:'united states of america',uk:'united kingdom',drc:'democratic republic of the congo'};for(const k in al)if(t.includes(' '+k+' ')&&cL[al[k]])place=al[k]}
+ if(place&&/zoom|go to|fly|show|where|in |on |at |map of/.test(t)){go('Map');map.fitBounds(cL[place].getBounds(),{maxZoom:7});done.push('zoomed to '+place.replace(/\b\w/g,c=>c.toUpperCase()))}
+ say(done.length?'Done: '+done.join('; ')+'.':'I did not understand that. Try “show earthquakes”, “zoom to Chile” or “help”.')}
+/* ----------alarm: the five main hazards, in this order ---------- */
+const ALARMS=[
+ {id:'eq',n:'Earthquakes',icon:'🌍',every:2,note:'Live earthquakes from USGS. WATCH = PAGER yellow, tsunami flag or high significance. WARNING = PAGER orange or red.'},
+ {id:'ls',n:'Landslides',icon:'⛰️',every:10,cat:'landslides',note:'Live landslide events from NASA EONET'},
+ {id:'gl',n:'Glaciers & ice',icon:'🧊',every:10,cat:'seaLakeIce',note:'Sea ice, lake ice and iceberg events from NASA EONET'},
+ {id:'fi',n:'Wildfires',icon:'🔥',every:10,cat:'wildfires',note:'Live wildfire events from NASA EONET'},
+ {id:'fl',n:'Floods',icon:'🌊',every:10,cat:'floods',note:'Live flood events from NASA EONET'}];
+const AL={};let alerts=[];
+function beep(){if(!$('#aSound')||!$('#aSound').checked)return;try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.15,c.currentTime);o.start();o.stop(c.currentTime+.35)}catch(e){}}
+function notify(a,it){if(it.level&&it.level!=='Info')beep();if(window.Notification&&Notification.permission==='granted')new Notification((it.level&&it.level!=='Info'?it.level.toUpperCase()+' · ':'')+a.icon+' '+a.n,{body:it.title+(it.sub?' ('+it.sub+')':'')})}
+async function eqItems(first){const mag=+($('#aMag')&&$('#aMag').value)||5;
+ const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmagnitude=${mag}&starttime=${new Date(Date.now()-36e5*(first?24:2)).toISOString()}`);
+ return d.features.map(f=>{const p=f.properties,al=p.alert||'';
+  const lv=(al==='red'||al==='orange')?'Warning':(p.tsunami==1||al==='yellow'||p.sig>=600)?'Watch':'Info';
+  const sub=[al?'PAGER '+al:'',p.tsunami==1?'tsunami flag':'',p.felt?'felt by '+p.felt:'',p.mmi?'shaking MMI '+(+p.mmi).toFixed(1):''].filter(Boolean).join(' · ');
+  return{id:f.id,title:'M '+(p.mag||0).toFixed(1)+' – '+p.place,sub,level:lv,when:p.time,lon:f.geometry.coordinates[0],lat:f.geometry.coordinates[1],url:p.url}})}
+async function eonetItems(cat){const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=3&category=${cat}`);
+ return d.events.map(e=>{const g=e.geometry[e.geometry.length-1];let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];return{id:e.id,title:e.title,when:Date.parse(g.date),lon:c[0],lat:c[1],url:e.link}})}
+async function check(a){const st=AL[a.id];if(!st||!st.on)return;
+ try{const items=a.id==='eq'?await eqItems(st.first):await eonetItems(a.cat);if(AL[a.id]!==st)return;
+  items.forEach(it=>{if(st.seen.has(it.id))return;st.seen.add(it.id);alerts.push({...it,kind:a.id,icon:a.icon,name:a.n});if(!st.first)notify(a,it)});
+  st.first=false;st.last=new Date();st.err=null}catch(e){if(AL[a.id]===st)st.err=e.message}
+ alerts.sort((x,y)=>y.when-x.when);alerts=alerts.slice(0,80);renderAlarm()}
+function setAlarm(id,on){const a=ALARMS.find(x=>x.id===id);const old=AL[id];if(old&&old.timer)clearInterval(old.timer);
+ if(!on){AL[id]={on:false};alerts=alerts.filter(x=>x.kind!==id);renderAlarm();return}
+ if(window.Notification&&Notification.permission==='default')Notification.requestPermission();
+ const st=AL[id]={on:true,seen:new Set(),first:true,last:null,err:null};st.timer=setInterval(()=>check(a),a.every*6e4);check(a)}
+const TT=d=>d.id==='quakes'||d.id==='depth'?'eq':d.id==='hist'?'hist':d.id==='glc'?'glc':d.id.startsWith('h_')?'ehist':d.dated?'dated':null;
+function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=new Set(on.map(TT).filter(Boolean));
+ $$('#tTime .ts').forEach(e=>e.classList.toggle('show',!on.length||types.has(e.dataset.t)));
+ const named=on.filter(TT).map(d=>d.n);
+ $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
+const AMAP={'Earthquakes':'eq','Landslides':'ls','Glaciers & ice':'gl','Wildfires':'fi','Floods':'fl'};
+function syncSide(){updateTime();renderAlarm()}
+function renderAlarm(){
+ ALARMS.forEach(a=>{const st=AL[a.id],el=$('#as_'+a.id);if(el)el.textContent=!st||!st.on?'Off':st.err?'On · could not reach the service':st.last?'On · checked '+st.last.toLocaleTimeString():'On · checking…'});
+ const item=(x,i)=>`<div class="alert" data-i="${i}" style="cursor:pointer"><b>${x.icon} ${esc(x.name)}</b> ${x.level&&x.level!=='Info'?'<span class="lv lv'+x.level+'">'+x.level.toUpperCase()+'</span> ':''}${esc(x.title)}${x.sub?'<br><small>'+esc(x.sub)+'</small>':''}<br><small>${new Date(x.when).toUTCString()}${x.url?' · <a target=_blank rel=noopener href="'+esc(x.url)+'">details</a>':''}</small></div>`;
+ const any=ALARMS.some(a=>AL[a.id]&&AL[a.id].on);
+ $('#aList').innerHTML=alerts.map(item).join('')||`<p style="color:var(--m)">${any?'No alerts yet. New events will appear here.':'Switch on a hazard above to start.'}</p>`;
+ ALARMS.forEach(a=>{const c=$('#ac_'+a.id);if(c)c.checked=!!(AL[a.id]&&AL[a.id].on)});
+ const fk=AMAP[focusG],fa=ALARMS.find(a=>a.id===fk),fst=fk&&AL[fk];
+ $('#miniHead').innerHTML=fa?fa.icon+' Alerts: '+fa.n:'Latest alerts';
+ $('#miniCtl').innerHTML=fa?`<label class="r" style="font-weight:700"><input type="checkbox" id="mc" ${fst&&fst.on?'checked':''}> Watch ${fa.n}</label><small style="color:var(--m)">${!fst||!fst.on?'Off':fst.err?'On · could not reach the service':fst.last?'On · checked '+fst.last.toLocaleTimeString():'On · checking…'}</small>`:'<small style="color:var(--m)">No live alarm for this dataset. Showing the latest alerts of the five main hazards.</small>';
+ if(fa)$('#mc').onchange=e=>{setAlarm(fk,e.target.checked)};
+ const list=fa?alerts.filter(x=>x.kind===fk):alerts;
+ $('#miniAlarm').innerHTML=list.slice(0,6).map(x=>item(x,alerts.indexOf(x))).join('')||(fa?(fst&&fst.on?'No alerts yet for '+fa.n+'. New events will appear here.':'Switch on “Watch” to start.'):'No alerts yet.')}
+function alarmInit(){
+ $('#aCards').innerHTML=ALARMS.map(a=>`<div class="acard"><label class="r" style="flex:1;font-weight:700"><input type="checkbox" id="ac_${a.id}"> ${a.icon} ${a.n}</label>${a.id==='eq'?'<span>Minimum magnitude <input type="number" id="aMag" value="5" min="2" max="9" step="0.5" style="width:80px;display:inline-block"></span>':''}<small id="as_${a.id}" style="color:var(--m)">Off</small><small style="flex-basis:100%;color:var(--m)">${a.note}</small></div>`).join('');
+ ALARMS.forEach(a=>$('#ac_'+a.id).onchange=e=>setAlarm(a.id,e.target.checked));
+ $('#aMag').onchange=()=>{if(AL.eq&&AL.eq.on)setAlarm('eq',true)};
+ const open=e=>{const el=e.target.closest('.alert');if(!el||e.target.tagName==='A')return;const x=alerts[+el.dataset.i];if(x&&isFinite(x.lat)){go('Map');map.flyTo([x.lat,x.lon],6,{duration:1})}};
+ $('#aList').onclick=open;$('#miniAlarm').onclick=open;
+ $('#ac_eq').checked=true;setAlarm('eq',true);renderAlarm()}
+/* ---------- start ---------- */
+buildList();legend();updateTime();setLayer('quakes',true);loadCountries();loadEE();alarmInit();go('Map');
+window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList};
+</script>
+<script type="module" src="/src/nisaster-extensions.js"></script>
+</body></html>

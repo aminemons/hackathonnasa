@@ -1,0 +1,3 @@
+# Optional full LangGraph runtime for self-hosted chat workflows
+# Vercel uses equivalent no-dependency deterministic fallback to preserve ONNX deployment size.
+langgraph>=1.2,<2
