@@ -74,7 +74,7 @@ export function normalizeEONET(data,hazard) {
 function readSession(key) {
   try {
     const entry=JSON.parse(sessionStorage.getItem('tp-public-feed-v1:'+key)||'null');
-    return entry&&Number.isFinite(entry.until)&&entry.until>Date.now()&&entry.data?.status==='ok' ? entry.data:null;
+    return entry&&Number.isFinite(entry.until)&&entry.until>Date.now()&&entry.data?.status==='ok' ? entry:null;
   }catch {return null;}
 }
 function putSession(key,data,ttl) {
@@ -155,7 +155,7 @@ export async function fetchHazardFeed({hazard,days=1,min_magnitude=5}={}) {
   const local=memory.get(key);
   if(local&&Date.now()<local.until)return local.data;
   const cached=readSession(key);
-  if(cached){memory.set(key,{data:cached,until:Date.now()+TTL[hazard]});return cached;}
+  if(cached){memory.set(key,{data:cached.data,until:cached.until});return cached.data;}
   if(inFlight.has(key))return inFlight.get(key);
   const task=(async()=>{
     const batch=await direct(hazard,days,mag);

@@ -40,6 +40,15 @@ def main():
         page.on("pageerror",lambda error:errors.append(str(error)))
         def interceptor(route):
             url=route.request.url
+            if "earthquake.usgs.gov/earthquakes/feed/" in url or "/fdsnws/event/1/query" in url:
+                body={"features":[{"id":"example","geometry":{"type":"Point","coordinates":[86.9,27.9,9.1]},
+                  "properties":{"mag":5.4,"time":NOW,"place":"Example",
+                    "url":"https://earthquake.usgs.gov/earthquakes/eventpage/example","alert":"yellow"}}]}
+                return route.fulfill(status=200,content_type="application/json",
+                    headers={"access-control-allow-origin":"*"},body=json.dumps(body))
+            if "eonet.gsfc.nasa.gov/api/v3/events" in url:
+                return route.fulfill(status=200,content_type="application/json",
+                    headers={"access-control-allow-origin":"*"},body=json.dumps({"events":[]}))
             if "/api/events" in url:
                 from urllib.parse import urlsplit,parse_qs
                 q=parse_qs(urlsplit(url).query)
