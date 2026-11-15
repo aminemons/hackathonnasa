@@ -78,6 +78,11 @@ def parse(state: State) -> dict:
     for phrase, text in QUESTIONS:
         if phrase in msg:
             return {"normalized": msg, "actions": [], "reply": text, "intent": "explain"}
+    if (re.search(r"\b(?:when will|what time will|exact time|exactly when|predict\w*)\b", msg)
+            and re.search(r"\b(?:earthquakes?|landslides?|slope failure|lake outburst|breach)\b", msg)):
+        return {"actions": [], "intent": "safety",
+                "reply": "TerraPulse shows dated observations, post-event analysis and research outlooks. "
+                         "It cannot predict the exact time of an earthquake, landslide or glacial-lake breach."}
     if re.search(r"\b(urgent|risk|dangerous|unsafe|casualties|death|evacuat\w*)\b", msg):
         if not re.search(r"\b(show|check|open|inspect)\b", msg):
             return {"normalized": msg, "actions": [],
@@ -171,6 +176,7 @@ def finalize(state: State) -> dict:
     return {
         "actions":[a for a in state.get("actions",[]) if a.get("type") in types][:3],
         "reply":state.get("reply","No matching map command found.")[:1000],
+        "intent":state.get("intent","explain"),
     }
 
 
@@ -194,6 +200,7 @@ def plan(message:str) -> dict:
     return {
         "reply":result["reply"],
         "actions":result["actions"],
+        "intent":result["intent"],
         "engine":"LangGraph deterministic tool router" if COMPILED else "deterministic tool router (LangGraph not installed)",
         "model_is_generative":False,
         "sources":{

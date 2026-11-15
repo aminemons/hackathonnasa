@@ -60,6 +60,11 @@ class ChatProviderTests(unittest.TestCase):
         result = chat_provider.generate("show faults")
         self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
 
+    @patch.object(chat_provider, "_model_reply", return_value={"reply": "Radar measures backscatter.", "actions": []})
+    def test_explanation_does_not_inherit_keyword_map_action(self, _model_reply):
+        result = chat_provider.generate("How does radar measure change?")
+        self.assertEqual(result["actions"], [])
+
     @patch.dict("os.environ", {"TERRAPULSE_CHAT_API_URL": "https://gpu.example/v1/chat/completions",
                                "TERRAPULSE_CHAT_MODEL": "local-model", "AI_GATEWAY_API_KEY": "gateway-only"}, clear=True)
     @patch.object(chat_provider, "urlopen")
@@ -95,10 +100,12 @@ class ChatProviderTests(unittest.TestCase):
 
     @patch.object(chat_provider, "_model_reply")
     def test_safety_response_bypasses_model(self, model_reply):
-        result = chat_provider.generate("Is it safe?")
+        self.assertIn("does not establish safety", chat_provider.generate("Is it safe?")["reply"])
+        result = chat_provider.generate("When will the next earthquake happen in Japan?")
         model_reply.assert_not_called()
         self.assertFalse(result["model_is_generative"])
-        self.assertIn("does not establish safety", result["reply"])
+        self.assertEqual(result["actions"], [])
+        self.assertIn("cannot predict the exact time", result["reply"])
 
 
 if __name__ == "__main__":

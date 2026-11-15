@@ -164,7 +164,7 @@ def generate(message, history=None, gateway_token: str | None = None) -> dict:
         # Established commands keep their known intent mapping. Generative
         # output can still answer naturally, but cannot silently change the
         # target of a supported map command.
-        if safe.get("actions"):
+        if safe.get("actions") and not re.match(r"^(?:what|why|how|which|when|who)\b", prompt, re.IGNORECASE):
             result["actions"] = safe["actions"]
         return result
     return plan(prompt)
