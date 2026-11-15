@@ -1,5 +1,24 @@
 # TerraPulse
 
+## Ishaq GLOF monitoring: dated real data, not breach forecasts
+
+The Dataset sidebar now includes Glaciers & ice → Monitor GLOFs.
+Five historical sites and 253 published radar epochs are served by
+the Python endpoint GET /api/glof and displayed in the blue/white
+NISASTER-style UI. Selected dated lake geometry is overlaid onto the
+same Leaflet atlas. Missing data remain missing, never zero water.
+
+- GET /api/glof : catalog
+- GET /api/glof?site=south_lhonak : site time series and quality
+- GET /api/glof?site=south_lhonak&view=geometry&date=2023-10-07 : dated polygons
+- GET /api/glof?site=south_lhonak&view=csv : downloadable observations
+- docs/glof-monitoring.md : measurements, sources, and limits
+- machine learning/glof/check_example.py : independent offline inference check
+- python -m api.local_server : local Python backend for all five API routes
+
+The API serves offline precomputed scientific outputs; it does not
+retrain the model during a website request. These observations are not
+lake water level, breach probability, or operational emergency warnings.
 ## Interface: Meryem's NISASTER reference
 
 The root `index.html` implements the supplied NISASTER/Leaflet interface,
