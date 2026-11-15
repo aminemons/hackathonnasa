@@ -30,7 +30,7 @@ export function initializeAlarmSystem(mapAPI) {
     <button type="button" class="btn tp-outline" id="aClear">Clear feed history</button>
   </div>
   <p id="aSafety">Research monitoring only: USGS/EONET catalogue reports may arrive <strong>after</strong> an event.
-  They are not earthquake early warnings, GLOF breach predictions, or evacuation alerts.</p>
+  This is NOT an emergency warning service: no earthquake prediction, GLOF breach forecast, or evacuation advice.</p>
   <p><button type="button" class="btn tp-outline" id="aNotify">Enable browser notifications</button>
   <span id="aNotifyStatus" aria-live="polite">Notifications off</span></p>`;
   $('#aCards').before(settings);
