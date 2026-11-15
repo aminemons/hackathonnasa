@@ -37,7 +37,7 @@
     "api/events.py": {
       "maxDuration": 20,
       "includeFiles": "public/data/landslides-eonet-archive.json",
-      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,server_data/landslide_*,server_data/osm/**,server_data/glof/model/**,public/brand/**,public/data/glof/**,public/data/glof-study/**,public/data/nisar-rasuwa/**,public/data/*.webp,public/data/*.geojson,public/data/*.f32,public/data/*.u8,public/data/world*.json}"
+      "excludeFiles": "{src/**,dist/**,node_modules/**,machine*/**,server_data/{landslide_*,osm/**,glof/model/**},public/{brand/**,data/{glof*/**,nisar*/**,*.{webp,geojson,f32,u8},world*.json}}}"
     },
     "api/forecast.py": {
       "maxDuration": 20,
