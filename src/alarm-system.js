@@ -222,7 +222,12 @@ export function initializeAlarmSystem(mapAPI) {
   window.addEventListener('online',tick);
   HAZARDS.filter(h=>states[h.id].on).forEach(h=>check(h,true));
   render();
-  const api={render,check,setWatching,states,dispose:()=>clearInterval(heartbeat)};
+  const api={render,check,setWatching,states,
+    notifyProximityReview:event=>{
+      const h=HAZARDS.find(h=>h.id==='ls');
+      showNotification(h,{...event,title:'Close to mapped human activity · '+event.title});
+      playSound();
+    },dispose:()=>clearInterval(heartbeat)};
   window.TerraPulseAlarm=api;
   return api;
 }

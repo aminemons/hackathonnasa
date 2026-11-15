@@ -259,10 +259,14 @@ function showExposure(coords=null, provenance='User-nominated location; not a ve
       Source OSM timestamp: ${escape(r.osm_timestamp||'unknown')}.</p>
       <p>${r.availability?.mode==='cached_fallback'?'Cached OSM snapshot · live providers unavailable':r.availability?.mode==='memory_cache'?'Cached OSM snapshot':'OSM provider response'} · ${escape(r.availability?.provider||'provider unknown')}. Retrieved ${escape(r.availability?.retrieved_at||'time unknown')}.</p>
       ${r.map_features_truncated?'<p>The map preview is limited to 300 assets; counts include all matching assets returned within the search area.</p>':''}
-      <button class="tp-btn" id="tp-show-assets" type="button">Show buildings and roads on map</button>
+      <div class="tp-controls"><button class="tp-btn" id="tp-show-assets" type="button">Show buildings and roads on map</button><button class="tp-btn secondary" id="tp-watch-site" type="button">Review this site in Alarm</button></div>
       <div class="tp-note">This is <strong>NOT a danger rating</strong>. No downslope debris runout, occupancy or building vulnerability has been measured. An incomplete OSM map never establishes safety.</div>
       <div class="tp-links"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors · ODbL</a></div>
     </div>`);
+    $('#tp-watch-site').onclick=()=>{
+      window.dispatchEvent(new CustomEvent('tp:proximity-site',{detail:{lon,lat,name:'Nominated landslide site'}}));
+      close();TP.go('Alarm');
+    };
     $('#tp-show-assets').onclick = () => {
       if (r.osm_geojson?.features) {
         const group=L.layerGroup();

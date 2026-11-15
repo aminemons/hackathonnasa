@@ -19,7 +19,7 @@ export function initializeProximityWatch(TP) {
       <button class="btn" id="proximity-check" type="submit">Check proximity</button>
     </form>
     <label class="r"><input type="checkbox" id="proximity-watch"> Watch new NASA EONET point reports within 5 km of this site</label>
-    <p class="field-note">Watch checks every 10 minutes while this page is open. Only reports dated within 48 hours qualify. Regional polygons and historical archives cannot trigger this watch. Site coordinates stay in this session; a check sends the query point to the OSM provider.</p>
+    <p class="field-note">New qualifying reports show an on-page review alert. Use the notification and sound controls below for optional browser feedback. Watch checks every 10 minutes while this page is open. Only reports dated within 48 hours qualify. Regional polygons and historical archives cannot trigger this watch. Site coordinates stay in this session; a check sends the query point to the OSM provider.</p>
     <div id="proximity-status" role="status" aria-live="polite">Choose a site to begin</div>
     <div id="proximity-result" aria-live="polite"></div>`;
   document.querySelector('#aGlobal').before(root);
@@ -77,12 +77,20 @@ export function initializeProximityWatch(TP) {
       for(const event of fresh.slice(0,3)) {
         const review=await inspect(event,'NASA EONET report: '+event.title+' · '+date(event.time));
         seen.add(event.id);
-        if(review?.alert)TP.toast('New landslide report close to mapped human activity · review the Alarm panel');
+        if(review?.alert){TP.toast('New landslide report close to mapped human activity · review the Alarm panel');window.TerraPulseAlarm?.notifyProximityReview?.(event)}
       }
     }catch(e){$('#proximity-status').textContent='Watch unavailable · '+e.message}
     finally{busy=false}
   }
   $('#proximity-watch').onchange=()=>{baseline=false;seen.clear();if($('#proximity-watch').checked)tick();else $('#proximity-status').textContent='Report watch off'};
   for(const id of ['#proximity-lat','#proximity-lon'])$(id).onchange=()=>{generation++;baseline=false;seen.clear();$('#proximity-watch').checked=false;$('#proximity-result').innerHTML='';$('#proximity-status').textContent='Site changed · run a new check'};
+  window.addEventListener('tp:proximity-site',event=>{
+    const site=event.detail;
+    if(![site?.lat,site?.lon].every(Number.isFinite)||Math.abs(site.lat)>80||Math.abs(site.lon)>180)return;
+    generation++;baseline=false;seen.clear();$('#proximity-watch').checked=false;
+    $('#proximity-lat').value=site.lat.toFixed(6);$('#proximity-lon').value=site.lon.toFixed(6);
+    $('#proximity-name').value=String(site.name||'Nominated landslide site').slice(0,80);
+    $('#proximity-result').innerHTML='';$('#proximity-status').textContent='Site copied from exposure screening · check proximity to create a review receipt';
+  });
   setInterval(tick,600000);document.addEventListener('visibilitychange',tick);
 }
