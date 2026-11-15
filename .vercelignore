@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.*
+node_modules
+dist
+docs
+machine learning
+deployment
+scripts
+api/tests
+api/local_server.py
+**/__pycache__
