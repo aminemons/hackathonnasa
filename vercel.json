@@ -13,25 +13,35 @@
   "functions": {
     "api/landslide.py": {
       "includeFiles": "server_data/landslide_*",
-      "maxDuration": 30
+      "maxDuration": 30,
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/glof/**,server_data/osm/**}"
     },
     "api/exposure.py": {
       "maxDuration": 25,
-      "includeFiles": "server_data/osm/**"
+      "includeFiles": "server_data/osm/**",
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/landslide_*,server_data/glof/**}"
     },
     "api/chat.py": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/**}"
     },
     "api/glof.py": {
       "includeFiles": "server_data/glof/**",
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/landslide_*,server_data/osm/**,server_data/glof/model/**}"
     },
     "api/catalog.py": {
-      "maxDuration": 20
+      "maxDuration": 20,
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/**}"
     },
     "api/events.py": {
       "maxDuration": 20,
-      "includeFiles": "public/data/landslides-eonet-archive.json"
+      "includeFiles": "public/data/landslides-eonet-archive.json",
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,server_data/landslide_*,server_data/osm/**,server_data/glof/model/**,public/brand/**,public/data/glof/**,public/data/glof-study/**,public/data/nisar-rasuwa/**,public/data/*.webp,public/data/*.geojson,public/data/*.f32,public/data/*.u8,public/data/world*.json}"
+    },
+    "api/forecast.py": {
+      "maxDuration": 20,
+      "excludeFiles": "{src/**,dist/**,docs/**,machine learning/**,deployment/**,scripts/**,.github/**,api/tests/**,node_modules/**,**/__pycache__/**,public/**,server_data/**}"
     }
   }
 }
