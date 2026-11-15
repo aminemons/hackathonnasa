@@ -1,6 +1,7 @@
 import './nisaster-extensions.css';
 import {initializeAlarmSystem} from './alarm-system.js';
 import {loadCountriesLocal,loadPlateBoundariesLocal} from './geo-sources.js';
+import {createMotionLayer} from './glacier-motion.js';
 
 const TP = window.TerraPulseMap;
 if (!TP?.map) throw new Error('NISASTER reference map did not initialize');
@@ -422,4 +423,5 @@ TP.loadCountries(loadCountriesLocal).catch(error=>
   TP.toast('Country hover boundaries unavailable: '+error.message));
 // Local plates come from a versioned packaged source, not GitHub live requests.
 window.TerraPulseGeo={loadPlateBoundariesLocal};
+window.TerraPulseGlacier={createMotionLayer};
 
