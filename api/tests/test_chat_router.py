@@ -33,6 +33,11 @@ class ChatRouterTests(unittest.TestCase):
         self.assertEqual(out["actions"],[])
         self.assertIn("safe",out["reply"])
 
+    def test_glof_observatory_is_not_a_warning(self):
+        out = self.action("Monitor GLOF at glacial lakes")
+        self.assertEqual(out["actions"][0], {"type":"open_tool","value":"glof"})
+        self.assertIn("not a breach forecast", out["reply"])
+
     def test_nisar_evidence(self):
         out=self.action("Show real NISAR data")
         self.assertEqual(out["actions"][0]["value"],"nisar")
