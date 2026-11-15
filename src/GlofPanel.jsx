@@ -56,6 +56,20 @@ export default function GlofPanel() {
   const chart = lakeSegments(series);
 
   useEffect(() => {
+    const onSite = event => {
+      const id=event?.detail?.site;
+      if(typeof id === 'string' && (catalog?.sites||[]).some(row=>row.site_id===id)) {
+        setSid(id);
+        const url=new URL(location.href);
+        url.searchParams.set('glof', id);
+        history.replaceState(null, '', url);
+      }
+    };
+    window.addEventListener('tp:glof-open', onSite);
+    return () => window.removeEventListener('tp:glof-open', onSite);
+  }, [catalog]);
+
+  useEffect(() => {
     const controller = new AbortController();
     get({}, controller.signal).then(data => {
       setCatalog(data);
