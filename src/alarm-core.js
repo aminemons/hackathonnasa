@@ -1,10 +1,9 @@
 /** Pure, tested catalogue-monitoring logic. No safety-critical predictions. */
 export const HAZARDS = Object.freeze([
-  {id:'eq',name:'Earthquakes',icon:'🌍',minutes:2,source:'USGS ComCat'},
-  {id:'ls',name:'Landslides',icon:'⛰️',minutes:10,source:'NASA EONET'},
-  {id:'gl',name:'Ice events',icon:'🧊',minutes:10,source:'NASA EONET'},
-  {id:'fi',name:'Wildfires',icon:'🔥',minutes:10,source:'NASA EONET'},
-  {id:'fl',name:'Floods',icon:'🌊',minutes:10,source:'NASA EONET'},
+  {id:'eq',name:'Earthquakes',icon:'🌍',minutes:2,source:'USGS ComCat',kind:'reported'},
+  {id:'ls',name:'Landslides',icon:'⛰️',minutes:10,source:'NASA EONET',kind:'reported'},
+  {id:'gl',name:'Glacial lakes',icon:'🧊',minutes:1440,
+    source:'Historical ESA Sentinel-1 / NASA ITS_LIVE study',kind:'historical'},
 ]);
 
 export function validateEvent(record) {

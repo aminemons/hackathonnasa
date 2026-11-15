@@ -6,10 +6,13 @@ const now=Date.now();
 const sample={id:'usgs:test123',title:'M 5.4 · Test observation',time:now-60_000,
   lon:10,lat:20,level:'notable',url:'https://earthquake.usgs.gov/'};
 
-test('all five hazard sources have explicit polling cadence',()=>{
-  assert.deepEqual(HAZARDS.map(x=>x.id),['eq','ls','gl','fi','fl']);
+test('three correctly named hazard sources have explicit polling cadence',()=>{
+  assert.deepEqual(HAZARDS.map(x=>x.id),['eq','ls','gl']);
   assert.equal(HAZARDS[0].minutes,2);
-  assert.ok(HAZARDS.slice(1).every(x=>x.minutes===10));
+  assert.equal(HAZARDS[1].minutes,10);
+  assert.equal(HAZARDS[2].minutes,1440);
+  assert.equal(HAZARDS[2].kind,'historical');
+  assert.match(HAZARDS[2].source,/ITS_LIVE/);
 });
 test('source-validating feed rejects error masquerading as an empty list',()=>{
   assert.deepEqual(validateFeed({hazard:'eq',status:'ok',records:[]},'eq'),[]);
@@ -31,7 +34,7 @@ test('history deduplicates per hazard and keeps source order by event time',()=>
   const rows=sortedAlertHistory([
     {...sample,hazard:'eq'},
     {...sample,hazard:'eq'},
-    {...sample,id:'eonet:fl:1',hazard:'fl',time:now-90_000},
+    {...sample,id:'eonet:ls:1',hazard:'ls',time:now-90_000},
   ]);
   assert.equal(rows.length,2);
   assert.equal(rows[0].hazard,'eq');

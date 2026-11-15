@@ -25,12 +25,13 @@ export function initializeAlarmSystem(mapAPI) {
   settings.id='aGlobal';
   settings.className='tp-alarm-global';
   settings.innerHTML=`<div class="tp-alarm-actions">
-    <button type="button" class="btn" id="aAll">Monitor all five</button>
+    <button type="button" class="btn" id="aAll">Monitor all three</button>
     <button type="button" class="btn tp-outline" id="aRefresh">Check now</button>
     <button type="button" class="btn tp-outline" id="aClear">Clear feed history</button>
   </div>
-  <p id="aSafety">Research monitoring only: USGS/EONET catalogue reports may arrive <strong>after</strong> an event.
-  This is NOT an emergency warning service: no earthquake prediction, GLOF breach forecast, or evacuation advice.</p>
+  <p id="aSafety">Research monitoring only. Earthquake and landslide reports can arrive <strong>after</strong> an event.
+  Glacial-lake observations are historical, not real-time alerts. No earthquake prediction,
+  GLOF breach forecast, or evacuation advice is provided.</p>
   <p><button type="button" class="btn tp-outline" id="aNotify">Enable browser notifications</button>
   <span id="aNotifyStatus" aria-live="polite">Notifications off</span></p>`;
   $('#aCards').before(settings);
@@ -39,7 +40,7 @@ export function initializeAlarmSystem(mapAPI) {
     <label class="r" style="flex:1;font-weight:700"><input type="checkbox" id="ac_${h.id}"> ${h.icon} ${h.name}</label>
     ${h.id==='eq'?'<label>Minimum magnitude <input type="number" id="aMag" value="5" min="2" max="9" step="0.5" style="width:74px;display:inline-block"></label>':''}
     <small id="as_${h.id}" class="tp-monitor-state">Off</small>
-    <small style="flex-basis:100%;color:var(--m)">${h.source} · every ${h.minutes} min · ${h.id==='eq'?'PAGER impact labels are NOT earthquake forecasts':'EONET reported open events, NOT a danger warning'}</small>
+    <small style="flex-basis:100%;color:var(--m)">${h.source} · every ${h.minutes} min · ${h.id==='eq'?'USGS catalogue, not earthquake prediction':h.id==='gl'?'Dated observations through 2024; NOT a live glacier breach alarm':'NASA EONET reports, not a safety warning'}</small>
   </div>`).join('');
 
   const audio = $('#aSound');
@@ -65,6 +66,7 @@ export function initializeAlarmSystem(mapAPI) {
   function showNotification(h,event) {
     // Browser notifications are explicitly opt-in and never request
     // permission just by checking a monitor toggle.
+    if(h.kind==='historical')return; // Never notify for archival glacier observations.
     if(!notificationEnabled || !window.Notification || Notification.permission!=='granted')return;
     if(Date.now()-event.time>2*60*60*1000)return; // not a "new" event if hours old
     try {
@@ -105,7 +107,7 @@ export function initializeAlarmSystem(mapAPI) {
       if(reconciled.fresh.length) {
         reconciled.fresh.slice(0,8).forEach(event=>{
           showNotification(h,event);
-          if(event.level!=='observation')playSound();
+          if(h.kind!=='historical' && event.level!=='observation')playSound();
         });
       }
       save();
@@ -161,7 +163,8 @@ export function initializeAlarmSystem(mapAPI) {
   function itemMarkup(event,index) {
     const h=HAZARDS.find(h=>h.id===event.hazard);
     const date=new Date(event.time);
-    const title=event.level==='impact_report'?'USGS high-impact estimate':
+    const title=event.hazard==='gl'?'Historical glacier/lake measurement':
+      event.level==='impact_report'?'USGS high-impact estimate':
       event.level==='notable'?'USGS notable event':'Reported event';
     const loc=isValidLocation(event);
     return `<article class="alert tp-alarm-item" data-event-index="${index}" ${loc?'tabindex="0" role="button"':''}>
@@ -183,7 +186,7 @@ export function initializeAlarmSystem(mapAPI) {
       if(status){status.textContent=feedStatus(state);
         status.classList.toggle('tp-source-error',!!state.error);}
     });
-    $('#aAll').textContent=HAZARDS.every(h=>states[h.id].on)?'Stop all monitoring':'Monitor all five';
+    $('#aAll').textContent=HAZARDS.every(h=>states[h.id].on)?'Stop all monitoring':'Monitor all three';
     const alerts=filterRecent();
     $('#aList').innerHTML=alerts.length?alerts.map((x,i)=>itemMarkup(x,i)).join(''):
       '<p class="tp-empty">No source observations retrieved yet. Enable a monitor to start. Existing events will appear without triggering notifications.</p>';

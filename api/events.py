@@ -6,20 +6,20 @@ natural events; its open/closed status is NOT a severity or flood/ice warning.
 """
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from math import isfinite
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, urlencode, urlsplit
+from urllib.parse import parse_qs, quote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 import json
 
 HAZARDS = {
     "eq": ("Earthquakes", "USGS ComCat"),
     "ls": ("Landslides", "NASA EONET"),
-    "gl": ("Ice events", "NASA EONET"),
-    "fi": ("Wildfires", "NASA EONET"),
-    "fl": ("Floods", "NASA EONET"),
+    "gl": ("Glacial lakes", "Published ESA Sentinel-1 / NASA ITS_LIVE study"),
 }
-CATEGORIES = {"ls": "landslides", "gl": "seaLakeIce", "fi": "wildfires", "fl": "floods"}
+CATEGORIES = {"ls": "landslides"}
+GLOF_DATA = Path(__file__).resolve().parents[1] / "server_data" / "glof"
 MAX_RESPONSE = 7_000_000
 
 
@@ -65,8 +65,10 @@ def _usgs(min_mag, now, days=1):
         "starttime": start.strftime("%Y-%m-%dT%H:%M:%S"),
     })
     data = _request("https://earthquake.usgs.gov/fdsnws/event/1/query?" + query)
+    if not isinstance(data.get("features"), list):
+        raise RuntimeError("USGS reported an invalid feature collection")
     events = []
-    for item in data.get("features", []):
+    for item in data["features"]:
         if not isinstance(item, dict):
             continue
         p, g = item.get("properties", {}), item.get("geometry", {})
@@ -106,8 +108,10 @@ def _eonet(hazard):
     category = CATEGORIES[hazard]
     data = _request("https://eonet.gsfc.nasa.gov/api/v3/events?" +
                     urlencode({"status": "open", "category": category, "limit": 200}))
+    if not isinstance(data.get("events"), list):
+        raise RuntimeError("EONET reported an invalid event collection")
     events = []
-    for item in data.get("events", []):
+    for item in data["events"]:
         if not isinstance(item, dict) or not item.get("id"):
             continue
         observations = item.get("geometry") or []
@@ -132,9 +136,64 @@ def _eonet(hazard):
     return events
 
 
+
+def _glacial_lake_observations():
+    """Published historical measurements; never a live glacier breach alarm.
+
+    A glacier velocity record, lake surface area, and GLOF rupture probability
+    are different physical quantities. No risk classification is inferred.
+    """
+    with (GLOF_DATA / "catalog.json").open(encoding="utf-8") as handle:
+        catalog = json.load(handle)
+    sites = catalog.get("sites")
+    if not isinstance(sites, list) or not sites:
+        raise RuntimeError("Published glacial lake study catalog is invalid")
+    records = []
+    for site in sites:
+        sid = site.get("site_id")
+        if not isinstance(sid, str) or not sid.replace("_", "").isalnum():
+            raise RuntimeError("Invalid published glacial lake site identifier")
+        with (GLOF_DATA / sid / "summary.json").open(encoding="utf-8") as handle:
+            study = json.load(handle)
+        lake_series = study.get("lake", {}).get("series", [])
+        if not isinstance(lake_series, list) or not lake_series:
+            raise RuntimeError("Published lake record is missing its dated observations")
+        last = max(lake_series, key=lambda row: row["date"])
+        date = last.get("date")
+        if not isinstance(date, str):
+            raise RuntimeError("Published lake observation date is missing")
+        when = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+        velocity = study.get("movement", {}).get("series", [])
+        observed_speed = [
+            row for row in velocity
+            if isinstance(row, dict) and isinstance(row.get("median_m_yr"), (int, float))
+            and isfinite(row["median_m_yr"]) and row["median_m_yr"] >= 0
+        ]
+        latest_speed = max(observed_speed, key=lambda row: row["year"]) if observed_speed else None
+        notes = [f"Sentinel-1 lake observation: {date}", "Historical study; not a GLOF warning"]
+        if latest_speed:
+            notes.append(
+                f"ITS_LIVE {latest_speed['year']} glacier speed: "
+                f"{latest_speed['median_m_yr']:.1f} m/year"
+            )
+        lat, lon = site.get("lat"), site.get("lon")
+        if not all(isinstance(x, (int, float)) and isfinite(x) for x in (lat, lon)):
+            lat = lon = None
+        records.append({
+            "id": f"glof:{sid}:{date}",
+            "title": f"{site.get('name', sid)} · historical lake observation",
+            "time": round(when.timestamp() * 1000),
+            "lat": lat, "lon": lon,
+            "level": "observation",
+            "notes": " · ".join(notes),
+            "url": "/api/glof?site=" + quote(sid, safe=""),
+        })
+    return records
+
+
 def collect(hazard, min_mag=5.0, days=1):
     if hazard not in HAZARDS:
-        raise ValueError("Unknown hazard; use eq, ls, gl, fi, or fl")
+        raise ValueError("Unknown hazard; use eq, ls, or gl")
     try:
         magnitude = float(min_mag)
     except (TypeError, ValueError) as exc:
@@ -144,16 +203,21 @@ def collect(hazard, min_mag=5.0, days=1):
     if days not in (1, 7, 30):
         raise ValueError('Earthquake period must be 1, 7, or 30 days')
     now = datetime.now(timezone.utc)
-    records = _usgs(magnitude, now, days) if hazard == "eq" else _eonet(hazard)
+    records = (_usgs(magnitude, now, days) if hazard == "eq" else
+               _eonet(hazard) if hazard == "ls" else _glacial_lake_observations())
     records.sort(key=lambda event: event["time"], reverse=True)
     return {
         "hazard": hazard, "label": HAZARDS[hazard][0], "source": HAZARDS[hazard][1],
         "fetched_at": now.isoformat(), "status": "ok",
         "records": records,
-        "monitor_kind": "catalogue observations, NOT real-time emergency warnings",
+        "monitor_kind": ("historical, non-operational glacial-lake evidence"
+                         if hazard == "gl" else "catalogue observations, NOT real-time emergency warnings"),
+        "operational_warning_ready": False,
         "disclaimer": (
-            "Updates may arrive after the event. NASA EONET open status is not "
-            "severity, and USGS PAGER is an impact estimate rather than an earthquake forecast."
+            "Glacial lake records are dated historical evidence, NOT a live GLOF alarm."
+            if hazard == "gl" else
+            "Updates may arrive after the event. EONET open status is not severity. "
+            "USGS PAGER describes possible earthquake impacts, not a prediction."
         ),
     }
 
@@ -179,7 +243,7 @@ class handler(BaseHTTPRequestHandler):
             payload = collect(hazard, q.get("min_magnitude", ["5"])[0], days=days)
         except ValueError as exc:
             return self.reply({"error": str(exc)}, 400)
-        except (HTTPError, URLError, TimeoutError, OSError, json.JSONDecodeError):
+        except (HTTPError, URLError, TimeoutError, OSError, RuntimeError, json.JSONDecodeError, KeyError, TypeError):
             return self.reply({"status": "unavailable", "error": "Source feed could not be verified; do not interpret as zero events"}, 503)
         self.reply(payload)
 

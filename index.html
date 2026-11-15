@@ -117,7 +117,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   </div>
  </section>
  <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>
-  <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: latest alerts for the five main hazards. <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
+  <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: catalogue reports for earthquakes and landslides, plus historical glacial-lake observations (not warnings). <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
   <p>Hover a country to see its earthquakes for the chosen period.</p>
   <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
   <p><b>SAR layers</b> (floods, land subsidence, glacial motion) come from Sentinel-1 via Google Earth Engine. Their links expire, so regenerate <code>layers.json</code> when they go blank.</p></div></section>
@@ -132,7 +132,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
   <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul></div></section>
  <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
-  <p>Switch on the hazards you want to watch. New events show up below, with a browser notification and an optional sound. Earthquakes are checked every 2 minutes and the others every 10 minutes, while this page is open.</p>
+  <p>Monitor reported earthquakes (USGS, 2 minutes) and landslides (NASA EONET, 10 minutes) while this page is open. Glacial-lake monitoring shows <strong>historical measurements through 2024</strong>, refreshed daily; it is not a live breach alarm. Browser notifications are opt-in, and no catalogue monitor replaces an official emergency-warning system.</p>
   <div id="aCards"></div>
   <p><label class="r"><input type="checkbox" id="aSound"> Sound for newly observed notable events</label></p>
   <h3>Latest alerts</h3><div id="aList"></div></div></section>
