@@ -80,7 +80,7 @@ def parse(state: State) -> dict:
             return {"normalized": msg, "actions": [], "reply": text, "intent": "explain"}
     if (re.search(r"\b(?:when will|what time will|exact time|exactly when|predict\w*)\b", msg)
             and re.search(r"\b(?:earthquakes?|landslides?|slope failure|lake outburst|breach)\b", msg)):
-        return {"actions": [], "intent": "safety",
+        return {"normalized": msg, "actions": [], "intent": "safety",
                 "reply": "TerraPulse shows dated observations, post-event analysis and research outlooks. "
                          "It cannot predict the exact time of an earthquake, landslide or glacial-lake breach."}
     if re.search(r"\b(urgent|risk|dangerous|unsafe|casualties|death|evacuat\w*)\b", msg):
@@ -92,6 +92,15 @@ def parse(state: State) -> dict:
         return {"normalized": msg, "actions": [],
                 "reply": "I can open NASA LHASA forecasts, compare post-event scar detections, inspect buildings/roads around a location, display NISAR observations, toggle map layers, select a basemap, open legend/time controls, or zoom to Nepal, Algeria, Japan, Chile and other supported places.",
                 "intent": "help"}
+
+    # General questions should explain available evidence, never turn a
+    # science keyword in the question into an unintended map action.
+    is_question = bool(re.match(r"^(what|why|how|when|where|explain|compare|tell me|is it|can you explain)\b", msg))
+    wants_action = bool(re.search(r"\b(show|open|zoom|fly|go to|switch|turn on|turn off|hide|clear|display|inspect|check)\b", msg))
+    if is_question and not wants_action:
+        return {"normalized": msg, "actions": [],
+                "reply": "I can explain the evidence and distinguish observation, susceptibility, forecast and safety limitations.",
+                "intent": "explain"}
 
     if re.search(r"\b(glof|glacial lake|outburst flood|lake outburst|monitor glacial lakes?)\b", msg):
         actions.append({"type":"open_tool", "value":"glof"})
@@ -200,9 +209,9 @@ def plan(message:str) -> dict:
     return {
         "reply":result["reply"],
         "actions":result["actions"],
-        "intent":result["intent"],
         "engine":"LangGraph deterministic tool router" if COMPILED else "deterministic tool router (LangGraph not installed)",
         "model_is_generative":False,
+        "intent":result.get("intent","explain"),
         "sources":{
             "landslide_forecast":"NASA LHASA",
             "scar_detection":"Landslide4Sense Sentinel-2 and ALOS terrain U-Net",

@@ -140,23 +140,22 @@ In the **Landslides** dataset category, open:
 - **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
   explicitly NOT the August landslide's detection model.
 
-The chatbot uses an optional server-side OpenAI-compatible generative model
-for conversation, then validates every proposed map action against a strict
-allowlist. With Vercel OIDC enabled, it uses Vercel AI Gateway and the
-\`nvidia/nemotron-3.5-lightning-free\` open-weight model. Its current model
-catalog entry lists zero input/output price; the listed provider may retain
-prompts and responses for model improvement. If Gateway credentials or model
-service are unavailable, the deterministic router still handles supported
-map commands and safety questions. The app does not store chat history; the
-browser sends up to eight recent messages with each request for follow-up context.
-For another OpenAI-compatible provider, configure server-side
-\`TERRAPULSE_CHAT_API_URL\` (complete \`/chat/completions\` URL),
-\`TERRAPULSE_CHAT_MODEL\`, and optional \`TERRAPULSE_CHAT_API_KEY\`. Never put a
-provider credential in browser code. The endpoint must accept the OpenAI chat
-completions request shape, JSON-object response format, and return within the
-seven-second timeout; a GPU server must be reachable from Vercel over HTTPS,
-authenticate with the configured server-side token if required, support that
-response format, and keep cold start plus inference inside that timeout.
+The chatbot uses an optional server-side conversational model and a
+deterministic router for map actions. With Vercel OIDC enabled, the default is
+Vercel AI Gateway's `nvidia/nemotron-3.5-lightning-free` open-weight model.
+The model catalog lists zero input/output price. The provider may retain
+prompts and responses for model improvement. Source-linked explanations and
+supported map commands remain available during model outages. The browser
+keeps a short, in-memory conversation history for follow-up questions. Voice
+input and opt-in read-aloud use the browser's speech features.
+
+To use another OpenAI-compatible provider, configure server-side
+`TERRAPULSE_CHAT_API_URL` (complete `/chat/completions` URL),
+`TERRAPULSE_CHAT_MODEL`, and optional `TERRAPULSE_CHAT_API_KEY`. The endpoint
+must be reachable from Vercel over HTTPS and return an OpenAI-compatible
+completion within the request timeout. `GROQ_API_KEY` enables the optional
+Groq fallback.
+
 This repository is open source under MIT (see LICENSE);
 external OSM, NASA and map-tile/data usage remains subject to
 their own attribution and licenses.
@@ -234,7 +233,7 @@ npm run dev
 npm run build
 ```
 
-Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python api/landslide.py` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the React/Vite frontend and Python function share a domain.
+Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python -m api.local_server` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the Vite frontend and Python API share a domain.
 
 Use **Landslide forecast** to request a 30-arcsecond tile from NASA LHASA’s rainfall-triggered **Hazard Tomorrow** feed. Enter coordinates or use the map center (60°S–60°N). The Python route `GET /api/forecast?lon=3.05&lat=36.70` returns a preview, source GeoTIFF link, and retrieval timestamp. The public GIS service exposes no forecast issuance or validity timestamps. NASA supplies the model and forecasts. TerraPulse retrieves and displays its output.
 
@@ -286,3 +285,16 @@ Recreate the imagery with `python scripts/prepare_radar_browse.py` after install
 ## Base map
 
 NASA GIBS Blue Marble Shaded Relief and Bathymetry is the default basemap. The bundled Web Mercator overview mosaics the sixteen level-2 tiles, so the world opens without waiting on the satellite tile service. At regional zooms, the map requests finer NASA tiles. The browser fallback renders the same overview and observation locations. The optional [PB2002](https://github.com/fraxen/tectonicplates) plate boundaries by Peter Bird and Hugo Ahlenius / Nordpil are redistributed under [ODC-BY 1.0](https://opendatacommons.org/licenses/by/1-0/), with rounded coordinates and line segments split at the antimeridian.
+
+### Map data availability
+
+- The same-origin EONET fallback covers the supported NASA categories. The map
+  labels archived reports as historical. Flood maps may show a dated GDACS bulletin
+  snapshot when current EONET records are empty.
+- GEM faults and Natural Earth glacier outlines are bundled locally.
+  The simplified GEM geometry is for map visualization.
+- NASA GIBS imagery can retry older observations after tile errors. Coverage
+  varies by product, date and map location.
+- The earthquake archive in **Time** loads historical USGS reports by year and
+  labels CSV exports when any requested year was unavailable.
+- The Sources page includes a user-run **Check data sources** table.

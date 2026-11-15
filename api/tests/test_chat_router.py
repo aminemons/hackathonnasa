@@ -33,6 +33,19 @@ class ChatRouterTests(unittest.TestCase):
         self.assertEqual(out["actions"],[])
         self.assertIn("safe",out["reply"])
 
+    def test_exact_time_prediction_is_rejected_before_generic_question(self):
+        out=self.action("When will the next earthquake happen in Japan?")
+        self.assertEqual(out["actions"],[])
+        self.assertIn("cannot predict the exact time",out["reply"])
+
+    def test_validated_benchmark_score_is_current(self):
+        out=self.action("How accurate is the landslide model?")
+        self.assertIn("72.3% F1",out["reply"])
+
+    def test_open_science_question_does_not_change_map_layer(self):
+        out=self.action("How does radar backscatter work?")
+        self.assertEqual(out["actions"],[])
+
     def test_glof_observatory_is_not_a_warning(self):
         out = self.action("Monitor GLOF at glacial lakes")
         self.assertEqual(out["actions"][0], {"type":"open_tool","value":"glof"})

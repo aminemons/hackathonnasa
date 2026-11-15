@@ -83,8 +83,10 @@ def main():
         expect(page.locator("#seg button[data-d='1'].on")).to_be_visible()
         assert page.locator("#mag").count()==1
         expect(page.get_by_text("30 calendar years",exact=True)).to_be_visible()
-        page.locator("#h30").click()
-        expect(page.locator("#hStat")).to_contain_text("1 earthquakes",timeout=10000)
+        assert page.locator("#h30").count()==1
+        assert page.locator("#seg button[data-history='30']").count()==1
+        page.locator("#seg button[data-history='30']").click()
+        expect(page.locator("#hStat")).to_contain_text("1 earthquake,",timeout=10000)
         year=datetime.now().year
         assert history_years==set(range(year-29,year+1))
         page.locator("#tabs button[data-t='Dataset']").click()
@@ -112,6 +114,16 @@ def main():
         assert page.locator("#ac_fl").count()==0
         expect(page.locator("#aList")).to_contain_text("M 5.4")
         assert "evacuation" in page.locator("#aSafety").inner_text().lower()
+        # Voice UI renders without requiring microphone permission or paid models.
+        page.locator("#nav button[data-p='Map']").click()
+        page.locator("#chatBtn").click()
+        expect(page.locator("#tp-speak")).to_be_visible()
+        expect(page.locator("#tp-voice-state")).to_be_visible()
+        assert page.locator("#tp-speak").get_attribute("aria-pressed")=="false"
+        page.locator("#nav button[data-p='Sources']").click()
+        page.locator("#tp-check-sources").click()
+        expect(page.locator("#tp-source-results")).to_contain_text("USGS earthquakes",timeout=20000)
+        expect(page.locator("#tp-source-results")).to_contain_text("Historical glacial lakes")
         # The page must have no uncaught execution errors.
         if errors:
             raise AssertionError("Browser JS exceptions: "+" | ".join(errors[:7]))

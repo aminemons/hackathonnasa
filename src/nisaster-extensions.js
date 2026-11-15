@@ -5,6 +5,7 @@ window.TerraPulseHazardFeeds = fetchHazardFeed;
 window.TerraPulseFeedsResolve?.(fetchHazardFeed);
 import {loadCountriesLocal,loadPlateBoundariesLocal} from './geo-sources.js';
 import {createMotionLayer} from './glacier-motion.js';
+import {classifyLHASA,LHASA_DISPLAY_BINS} from './priority-core.js';
 
 const TP = window.TerraPulseMap;
 if (!TP?.map) throw new Error('NISASTER reference map did not initialize');
@@ -124,17 +125,24 @@ function showForecast() {
     '<div class="tp-note">The public feed does not expose the precise issue/validity time. Retrieval time must not be mistaken for forecast issuance.</div>');
   attachCoords(async ({lon,lat}) => {
     const r = await getJSON('/api/forecast?' + new URLSearchParams({lon,lat}));
+    const classed=classifyLHASA(r.point_value);
     const image = String(r.preview_png ?? '');
     if (!image.startsWith('data:image/png;base64,')) throw new Error('NASA preview image was invalid');
     output(`<div class="tp-output">
       <div class="tp-stats"><div class="tp-stat"><b>${score(r.point_value)}</b><span>Cell model score</span></div>
+      <div class="tp-stat"><b>${escape(classed.label.replace('_',' '))}</b><span>Research hazard-score class</span></div>
       <div class="tp-stat"><b>${score(r.peak_value)}</b><span>Highest regional score</span></div>
       <div class="tp-stat"><b>${Number(r.valid_pixels||0).toLocaleString()}</b><span>Valid raster cells</span></div></div>
       <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:12px">
         <img alt="NASA LHASA hazard raster" width="144" height="144" style="image-rendering:pixelated;border:1px solid #dbe3f1" src="${image}">
         <div><p>Retrieved ${escape(r.retrieved_at)} UTC.<br>NASA issue and valid time are not provided here.</p>
-        <button type="button" id="tp-forecast-map" class="tp-btn">Show hazard raster on map</button></div>
-      </div></div>`);
+        <button type="button" id="tp-forecast-map" class="tp-btn">Show hazard raster on map</button>
+        <button type="button" id="tp-forecast-exposure" class="tp-btn secondary">Inspect nearby roads &amp; buildings</button></div>
+      <p class="tp-note">Configured display-only score bins: low below ${LHASA_DISPLAY_BINS.moderate},
+      moderate below ${LHASA_DISPLAY_BINS.elevated}, elevated above. NOT a calibrated local
+      landslide probability. Exposure and downstream impact are <strong>not assessed</strong>.</p></div>`);
+    $('#tp-forecast-exposure').onclick=()=>showExposure({lon,lat},'NASA LHASA model-score cell: '+classed.label+
+      '; this is NOT a verified landslide location');
     $('#tp-forecast-map').onclick = () => {
       if (!Array.isArray(r.bounds) || r.bounds.length !== 4) return;
       const b = r.bounds, bbox = [[b[1],b[0]],[b[3],b[2]]];
@@ -397,81 +405,140 @@ async function applyAction(action) {
   }
   if(kind==='period'&&[1,7,30].includes(action.days))TP.setPeriod(action.days);
 }
-function chatSay(message,user=false){
+let spokenReplies=false;
+let lastAssistantReply='';
+const chatHistory=[];
+function voiceStatus(msg) {
+  const el=$('#tp-voice-state');if(el)el.textContent=msg;
+}
+function speakReply(message){
+  if(!spokenReplies||!('speechSynthesis' in window))return;
+  try{
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(String(message||'').slice(0,1200));
+    utterance.lang='en-US';utterance.rate=1.02;utterance.pitch=1;
+    utterance.onerror=()=>voiceStatus('Speech output unavailable on this device.');
+    window.speechSynthesis.speak(utterance);
+  }catch{voiceStatus('Speech output unavailable on this device.');}
+}
+function chatSay(message,user=false,references=[]){
   const el=document.createElement('div');
   el.className='msg '+(user?'me':'bot');
   el.textContent=String(message??'');
+  if(!user){
+    for(const source of (Array.isArray(references)?references.slice(0,3):[])){
+      if(!source||typeof source.title!=='string'||typeof source.url!=='string')continue;
+      let parsed;try{parsed=new URL(source.url);}catch{continue;}
+      if(parsed.protocol!=='https:')continue;
+      const link=document.createElement('a');link.href=parsed.href;
+      link.target='_blank';link.rel='noopener noreferrer';
+      link.textContent='Source: '+source.title;link.className='tp-chat-source';
+      el.appendChild(link);
+    }
+  }
   $('#log').appendChild(el);
   $('#log').scrollTop=$('#log').scrollHeight;
-  if(!user&&speechEnabled&&window.speechSynthesis){
-    try{
-      window.speechSynthesis.cancel();
-      const utterance=new SpeechSynthesisUtterance(el.textContent);
-      utterance.lang=navigator.language||'en-US';
-      utterance.onerror=()=>{voiceStatus.textContent='Read-aloud could not play this reply.';};
-      window.speechSynthesis.speak(utterance);
-    }catch{voiceStatus.textContent='Read-aloud could not play this reply.';}
-  }
 }
-let chatInFlight=false, speechEnabled=false;
-const chatHistory=[];
+let chatInFlight=false;
 window.tpAsk=async raw=>{
   const prompt=String(raw||'').trim().slice(0,800);
   if(!prompt||chatInFlight)return;
   chatInFlight=true;
   chatSay(prompt,true);
-  const history=chatHistory.slice(-8);
+  const prior=chatHistory.slice(-6);
   chatHistory.push({role:'user',content:prompt});
+  voiceStatus('Thinking and checking the map tools…');
   try{
     const r=await getJSON('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:prompt,history})});
-    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[])) await applyAction(action);
-    const reply=r.reply||'I could not find a matching map tool.';
-    chatSay(reply);
+      body:JSON.stringify({message:prompt,history:prior})});
+    const failed=[];
+    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[])){
+      try {await applyAction(action);}catch(error){failed.push(String(error?.message||'Map tool failed'));}
+    }
+    const reply=String(r.reply||'I can explain the data or help you explore map layers.')+
+       (failed.length?' Map action failed: '+failed.join('; '):'');
+    chatSay(reply,false,r.references);
+    lastAssistantReply=reply;
     chatHistory.push({role:'assistant',content:reply});
-    if(chatHistory.length>8)chatHistory.splice(0,chatHistory.length-8);
+    if(chatHistory.length>14)chatHistory.splice(0,chatHistory.length-14);
+    voiceStatus(r.model_is_generative?'Answer from optional LLM; verify scientific sources.':
+      'Grounded scientific answer. No paid model required.');
+    speakReply(reply);
   }catch(e){
-    const reply='The assistant service is temporarily unavailable. The Dataset sidebar and map controls remain usable.';
-    chatSay(reply);
-    chatHistory.push({role:'assistant',content:reply});
+    const fallback='Conversation service unavailable: '+String(e?.message||'Unexpected error')+
+      '. Local map controls and dated datasets are still available.';
+    chatSay(fallback);voiceStatus('Unable to connect to assistant.');
   }finally{chatInFlight=false;}
 };
-const voiceStatus=$('#voiceStatus'), voiceButton=$('#voiceBtn'), speakButton=$('#speakBtn');
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SpeechRecognition){
-  voiceButton.addEventListener('click',()=>{
-    const recognition=new SpeechRecognition();
-    recognition.lang=navigator.language||'en-US';
-    recognition.continuous=false;
-    recognition.interimResults=false;
-    voiceButton.disabled=true;
-    voiceStatus.textContent='Listening…';
-    recognition.onresult=event=>{
-      const transcript=event.results?.[0]?.[0]?.transcript?.trim();
-      if(transcript)$('#ci').value=transcript.slice(0,800);
-      voiceStatus.textContent=transcript?'Review the transcript, then send.':'No speech detected.';
-      $('#ci').focus();
-    };
-    recognition.onerror=()=>{voiceStatus.textContent='Voice input could not start. Check microphone access and try again.';};
-    recognition.onend=()=>{voiceButton.disabled=false;if(voiceStatus.textContent==='Listening…')voiceStatus.textContent='';};
-    try{recognition.start();}catch{voiceButton.disabled=false;voiceStatus.textContent='Voice input is already active.';}
+
+// On-demand diagnostics. These requests reuse bounded source caches.
+const checkSources=$('#tp-check-sources');
+checkSources.onclick=async()=>{
+  checkSources.disabled=true;checkSources.textContent='Checking…';
+  const host=$('#tp-source-results');host.replaceChildren();
+  const feeds=[['eq','USGS earthquakes'],['ls','NASA landslides'],
+    ['fl','NASA/GDACS floods'],['fi','NASA wildfires'],['gl','Historical glacial lakes']];
+  const answers=await Promise.allSettled(feeds.map(async ([id,label])=>{
+    const f=await fetchHazardFeed({hazard:id,include_recent:id==='ls'||id==='fl'});
+    return {label,count:f.records.length,scope:f.search_scope||'catalogue reports',
+      source:f.source||label};
+  }));
+  const table=document.createElement('table');table.className='tp-source-table';
+  const head=document.createElement('tr');
+  for(const field of ['Source','Status','Observation scope']){
+    const th=document.createElement('th');th.textContent=field;head.appendChild(th);
+  }table.appendChild(head);
+  answers.forEach((answer,i)=>{
+    const x=answer.status==='fulfilled'?answer.value:
+      {label:feeds[i][1],count:null,scope:String(answer.reason?.message||'Unavailable').slice(0,100)};
+    const row=document.createElement('tr');
+    for(const v of [x.label,x.count===null?'Source unavailable':
+      x.count?'Loaded · '+x.count+' dated reports':'Loaded · no reports in source scope',x.scope]){
+      const cell=document.createElement('td');cell.textContent=v;row.appendChild(cell);
+    }table.appendChild(row);
   });
+  host.appendChild(table);
+  const info=document.createElement('p');
+  info.textContent='Live-source health is not proof of satellite image coverage, hazard severity, or emergency-warning accuracy.';
+  host.appendChild(info);checkSources.disabled=false;checkSources.textContent='Check again';
+};
+
+// Native speech is entirely optional; no separate speech server or GPU required.
+const voiceButton=$('#tp-speak');
+voiceButton.onclick=()=>{
+  if(!('speechSynthesis' in window)){
+    voiceStatus('This browser does not support speech output.');return;
+  }
+  spokenReplies=!spokenReplies;
+  voiceButton.setAttribute('aria-pressed',String(spokenReplies));
+  voiceButton.textContent=spokenReplies?'🔊':'🔇';
+  voiceButton.title=spokenReplies?'Disable spoken replies':'Enable spoken replies';
+  voiceStatus(spokenReplies?'Spoken replies enabled.':'Spoken replies disabled.');
+  if(!spokenReplies)window.speechSynthesis.cancel();
+  else if(lastAssistantReply)speakReply(lastAssistantReply);
+};
+const listenButton=$('#tp-listen');
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!Recognition){
+  listenButton.disabled=true;
+  listenButton.title='Speech recognition is not supported in this browser';
+  voiceStatus('Speech recognition unavailable here. Typing and spoken replies still work.');
 }else{
-  voiceButton.disabled=true;
-  voiceButton.title='Voice input is not supported in this browser';
-  voiceStatus.textContent='Voice input is not supported in this browser.';
-}
-if(window.speechSynthesis&&'SpeechSynthesisUtterance'in window){
-  speakButton.addEventListener('click',()=>{
-    speechEnabled=!speechEnabled;
-    speakButton.setAttribute('aria-pressed',String(speechEnabled));
-    speakButton.textContent='Read replies: '+(speechEnabled?'on':'off');
-    if(!speechEnabled)window.speechSynthesis.cancel();
-    voiceStatus.textContent=speechEnabled?'New replies will be read aloud.':'';
-  });
-}else{
-  speakButton.disabled=true;
-  speakButton.textContent='Speech output unavailable';
+  const recognizer=new Recognition();
+  recognizer.lang='en-US';recognizer.interimResults=false;recognizer.maxAlternatives=1;
+  recognizer.onstart=()=>{listenButton.setAttribute('aria-pressed','true');
+    voiceStatus('Listening…');};
+  recognizer.onend=()=>{listenButton.setAttribute('aria-pressed','false');};
+  recognizer.onerror=e=>voiceStatus('Microphone recognition: '+e.error+
+    '. You can still type your question.');
+  recognizer.onresult=event=>{
+    const words=event.results?.[0]?.[0]?.transcript?.trim();
+    if(words){$('#ci').value=words;window.tpAsk(words);}
+  };
+  listenButton.onclick=()=>{
+    try{recognizer.start();}
+    catch(e){voiceStatus('Could not start microphone: '+e.message);}
+  };
 }
 
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
