@@ -13,6 +13,9 @@
     "api/glof.py": {
       "includeFiles": "server_data/glof/**",
       "maxDuration": 10
+    },
+    "api/events.py": {
+      "maxDuration": 20
     }
   }
 }

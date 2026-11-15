@@ -29,7 +29,6 @@ MAP_IDS = {
     "wildfire": "fire", "wildfires": "fire", "fire": "fire", "fires": "fire",
     "volcano": "vol", "volcanoes": "vol",
     "tectonic plate": "plates", "tectonic plates": "plates",
-    "landslide catalog": "glc", "reported landslides": "glc",
     "earthquake depth": "depth",
 }
 COUNTRIES = {
@@ -110,8 +109,8 @@ def parse(state: State) -> dict:
         reply="Opening NISAR observations. Radar change is an observation, not a confirmed landslide or a forecast."
         intent="nisar"
     elif re.search(r"\b(landslide|landslides|slide events)\b",msg):
-        actions.append({"type":"layer", "value":"glc","enabled":not negative})
-        reply=("Showing" if not negative else "Hiding")+" the NASA reported-landslide catalog. These are past reports, not forecasts."
+        actions.append({"type":"layer", "value":"slide","enabled":not negative})
+        reply=("Showing" if not negative else "Hiding")+" currently open NASA EONET landslide reports, not the removed historical catalogue or a forecast."
         intent="layer"
     else:
         layer = None

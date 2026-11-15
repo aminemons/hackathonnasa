@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 import os
 
 try:
-    from . import chat, exposure, forecast, glof, landslide
+    from . import chat, exposure, forecast, glof, landslide, events, events
 except ImportError:
     import chat, exposure, forecast, glof, landslide
 
@@ -23,6 +23,7 @@ GET = {
     "/api/exposure": exposure.handler.do_GET,
     "/api/chat": chat.handler.do_GET,
     "/api/glof": glof.handler.do_GET,
+    "/api/events": events.handler.do_GET,
 }
 POST = {
     "/api/landslide": landslide.handler.do_POST,
@@ -35,6 +36,7 @@ class handler(BaseHTTPRequestHandler):
     # helpers are explicitly installed to avoid incompatible response code.
     send_json = landslide.handler.send_json
     respond = chat.handler.respond
+    reply = events.handler.reply
 
     def do_GET(self):
         endpoint = urlsplit(self.path).path.rstrip("/")
