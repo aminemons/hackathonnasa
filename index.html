@@ -82,7 +82,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
    <div class="tc" id="tTime">
     <div id="tFocus" style="font-weight:700;color:var(--blue);margin-bottom:8px"></div>
     <div class="ts" data-t="eq">
-     <h4>Earthquake period</h4><div class="seg" id="seg"><button data-d="1">24 h</button><button data-d="7" class="on">7 days</button><button data-d="30">30 days</button></div>
+     <h4>Earthquake period</h4><div class="seg" id="seg"><button data-d="1">24 h</button><button data-d="7" class="on">7 days</button><button type="button" data-history="30">30 years · archive</button></div>
      <div class="g">Minimum magnitude: <b id="magV">4.5</b></div><input type="range" id="mag" min="2" max="7" step="0.5" value="4.5">
      <div class="g">Data</div><button class="btn" id="csv">Download earthquakes (CSV)</button></div>
     <div class="ts" data-t="hist">
@@ -495,7 +495,15 @@ async function loadQuakes(){
 }
 async function reloadQuakes(){for(const id of ['quakes','depth']){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
 function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));reloadQuakes()}
-$('#seg').onclick=e=>{if(e.target.dataset.d)setPeriod(+e.target.dataset.d)};
+$('#seg').onclick=e=>{
+  if(e.target.dataset.history==='30'){
+    $('#hFrom').value=new Date().getFullYear()-29;
+    $('#hTo').value=new Date().getFullYear();
+    openTab('Time');reloadHist();
+    return;
+  }
+  if(e.target.dataset.d)setPeriod(+e.target.dataset.d);
+};
 $('#mag').oninput=e=>$('#magV').textContent=e.target.value;$('#mag').onchange=e=>{minMag=+e.target.value;reloadQuakes()};
 function setMag(v){minMag=v;$('#mag').value=v;$('#magV').textContent=v;reloadQuakes()}
 $('#imgDate').onchange=e=>{imgDate=e.target.value||ymd(1);DS.filter(d=>d.dated).forEach(d=>{const s=state[d.id];if(s&&s.layer){map.removeLayer(s.layer);s.layer=null;if(s.on)setLayer(d.id,true)}})};

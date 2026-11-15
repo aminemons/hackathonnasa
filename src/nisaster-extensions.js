@@ -5,6 +5,7 @@ window.TerraPulseHazardFeeds = fetchHazardFeed;
 window.TerraPulseFeedsResolve?.(fetchHazardFeed);
 import {loadCountriesLocal,loadPlateBoundariesLocal} from './geo-sources.js';
 import {createMotionLayer} from './glacier-motion.js';
+import {classifyLHASA,LHASA_DISPLAY_BINS} from './priority-core.js';
 
 const TP = window.TerraPulseMap;
 if (!TP?.map) throw new Error('NISASTER reference map did not initialize');
@@ -124,17 +125,24 @@ function showForecast() {
     '<div class="tp-note">The public feed does not expose the precise issue/validity time. Retrieval time must not be mistaken for forecast issuance.</div>');
   attachCoords(async ({lon,lat}) => {
     const r = await getJSON('/api/forecast?' + new URLSearchParams({lon,lat}));
+    const classed=classifyLHASA(r.point_value);
     const image = String(r.preview_png ?? '');
     if (!image.startsWith('data:image/png;base64,')) throw new Error('NASA preview image was invalid');
     output(`<div class="tp-output">
       <div class="tp-stats"><div class="tp-stat"><b>${score(r.point_value)}</b><span>Cell model score</span></div>
+      <div class="tp-stat"><b>${escape(classed.label.replace('_',' '))}</b><span>Research hazard-score class</span></div>
       <div class="tp-stat"><b>${score(r.peak_value)}</b><span>Highest regional score</span></div>
       <div class="tp-stat"><b>${Number(r.valid_pixels||0).toLocaleString()}</b><span>Valid raster cells</span></div></div>
       <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:12px">
         <img alt="NASA LHASA hazard raster" width="144" height="144" style="image-rendering:pixelated;border:1px solid #dbe3f1" src="${image}">
         <div><p>Retrieved ${escape(r.retrieved_at)} UTC.<br>NASA issue and valid time are not provided here.</p>
-        <button type="button" id="tp-forecast-map" class="tp-btn">Show hazard raster on map</button></div>
-      </div></div>`);
+        <button type="button" id="tp-forecast-map" class="tp-btn">Show hazard raster on map</button>
+        <button type="button" id="tp-forecast-exposure" class="tp-btn secondary">Inspect nearby roads &amp; buildings</button></div>
+      <p class="tp-note">Configured display-only score bins: low below ${LHASA_DISPLAY_BINS.moderate},
+      moderate below ${LHASA_DISPLAY_BINS.elevated}, elevated above. NOT a calibrated local
+      landslide probability. Exposure and downstream impact are <strong>not assessed</strong>.</p></div>`);
+    $('#tp-forecast-exposure').onclick=()=>showExposure({lon,lat},'NASA LHASA model-score cell: '+classed.label+
+      '; this is NOT a verified landslide location');
     $('#tp-forecast-map').onclick = () => {
       if (!Array.isArray(r.bounds) || r.bounds.length !== 4) return;
       const b = r.bounds, bbox = [[b[1],b[0]],[b[3],b[2]]];
