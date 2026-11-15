@@ -1,5 +1,105 @@
 # TerraPulse
 
+## Reliability, science and low-compute deployment (November 2026)
+
+TerraPulse's **primary NISAR research narrative** is earthquakes, landslides and glaciers.
+Wildfire and flood layers remain useful supporting datasets; they are not part of
+the three-hazard Alarm panel. Do not claim five operational predictions.
+
+### How data reaches the user
+
+```text
+Visitor browser (HTTPS)
+  |-- USGS direct public GeoJSON ----> normalized + timestamped earthquake reports
+  |-- NASA EONET public JSON --------> normalized + timestamped landslide / fire / flood reports
+  |-- NASA GIBS / ArcGIS tiles ------> third-party map tile CDN (provider latency varies)
+  |-- Vercel static /data/* ---------> GLOF historical catalog, data, study geometry, images
+  |-- browser session cache --------> feed TTL, shared pending requests, deduplicated reports
+  `-- /api/... (on demand only) -----> ONNX scar inference, LHASA raster, exposure, assistant
+```
+
+- **Normal map browsing and alarm monitoring no longer need `/api/events`**.
+  `src/hazard-feeds.js` calls public sources in the browser, with validation,
+  timeout, same-tab request sharing and limited session cache.
+  USGS is refreshed at most every 2 minutes, EONET at most every 10 minutes,
+  and dated glacial studies are cached for 24 hours. TTL is **our fetch
+  interval**, not a promise of provider freshness.
+- Browser cross-origin requests require provider **CORS** support. A blocked or
+  malformed feed is **unavailable**, never reported as zero events.
+  If the public-source adapter fails to initialize completely, the original
+  `/api/events` remains a rare compatibility fallback.
+- **No WebSockets** for these provider catalogues: they are polled upstream
+  and do not become more immediate from a persistent client connection.
+  WebSockets would require connection management or a separate backend and
+  could raise cost. A future server-sent stream is only justified if a real
+  provider publishes an event stream and operational infrastructure exists.
+- **Historical GLOF studies are static**, at `public/data/glof-study/`.
+  The normal viewer no longer invokes Python six times per glacier click.
+  Each study retains original dates, source IDs, units and limitations.
+  Map geometry loads only when requested; CSV exports locally in the browser.
+  Data are **not continuously updated**; new evidence requires a reviewed
+  export/commit/deploy. Assets are cached by the CDN and browsers.
+- **Model inference remains server-side**: `/api/landslide` loads a bundled
+  ONNX model; `/api/forecast` fetches an upstream NASA LHASA raster.
+  These are deliberately not run for every visitor automatically.
+  OSM exposure requests should be bounded to an examined site, never
+  whole-Earth queries. Do not embed FIRMS MAP_KEY, Earthdata credentials,
+  or private GPU SSH credentials in client JavaScript.
+- **Function/build quotas are separate**. Reducing invocations cannot lift
+  a Vercel daily deployment limit. Check Vercel Usage and actual HTTP error
+  before assuming which quota is exhausted. A hosted static page still uses
+  CDN requests and data-transfer bandwidth.
+
+### Method names and epistemic boundaries
+
+| Hazard | Measured / available | Review or forecast role | Not established |
+| --- | --- | --- | --- |
+| Earthquakes | USGS event catalogue; dated radar displacement research | Post-event geophysical change | Earthquake occurrence prediction; seconds-ahead public warning |
+| Landslides | EONET observations; LHASA hazard outlook; Landslide4Sense scars | Susceptibility + rain trigger + verified exposure | Operational event timing, local calibrated probability, evacuation alert |
+| Glacial lakes | ITS_LIVE historical annual velocity; Sentinel-1 area | Dated change evidence for five lakes | Current flow vector at every map point, water-level forecast, GLOF breach probability |
+| Fires | EONET catalogue; additional FIRMS source planned | Fuel/vegetation/dryness/wind research plan | Calibrated fire spread forecast |
+| Floods | EONET, GIBS, example radar/water benchmark | Sentinel-1 delineation; GloFAS integration plan | Operational discharge forecast in this UI |
+
+**Hazard layer × assessed exposure → research review priority** is a workflow,
+not literally multiplication of two unitless uncalibrated scores. Separately
+measured trigger evidence can raise review priority. `src/priority-core.js`
+contains the visible, adjustable research-triage thresholds. Missing exposure,
+coverage, hazard provenance or timestamp => **not assessed**, never 'safe'.
+Even 'urgent review' is not an emergency warning or a 'catastrophic' forecast.
+Never promote an unvalidated heuristic to an automatic browser notification.
+
+**Landlside catalogue removal:** the deprecated Global Landslide Catalog is
+not an interactive layer; historical cases may still support training with
+independently defined labels and event-level holdouts. Regional lithology and
+local precipitation intensity-duration threshold must be validated rather than
+assumed globally. InSAR acceleration requires repeat phase/coherence/geometry
+and dates; a single radar amplitude image is insufficient.
+
+**Actual quality evidence:** the current Landslide4Sense U-Net record reports
+test F1 about 0.662; the Sen1Floods11 water model reports event-split F1 about
+0.739. Those are benchmark values, not a live event risk precision. Glacier
+studies remain non-operational and largely dated to 2022–2024.
+Test controls with `npm run test:reliability`, `npm run build`, Python
+`python -m unittest discover -s api/tests -v`, and Chromium
+`python scripts/smoke_browser.py` after starting the built preview.
+
+### Next scientific work
+
+1. Validate acquisition manifests for NISAR/ESA data (orbit, swath, polarization,
+   UTC, incidence angle, masks, units, effective resolution).
+2. Train on spatially **held-out events and countries**, compare baselines,
+   calculate false positives, precision–recall and uncertainty; do not tune
+   repeatedly on an inspected test set.
+3. Review on the two-L40 GPU host using
+   `bash scripts/train_landslide_gpu_detached.sh`; evaluate model promotion
+   only after independent validation. The script never auto-replaces the model.
+4. Add geography-bounded verified OSM and population overlap with freshness,
+   missingness and downstream-flow assumptions explicitly recorded.
+5. Add FIRMS fire and GloFAS discharge sources only with valid credentials,
+   provider agreements, measurement units, source dates and benchmark tests;
+   do not display placeholders as live predictions.
+
+
 ## Ishaq GLOF monitoring: dated real data, not breach forecasts
 
 The Dataset sidebar now includes Glaciers & ice → Monitor GLOFs.
