@@ -2,7 +2,7 @@ import {proximityReview,distanceKm} from './proximity-core.js';
 import {fetchHazardFeed} from './hazard-feeds.js';
 
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const date=t=>t?new Date(t).toLocaleString():'Unknown';
+const date=t=>t?new Date(t).toLocaleString(undefined,{timeZoneName:'short'}):'Unknown';
 const meters=n=>Number.isFinite(n)?n.toFixed(0)+' m':'Not mapped';
 
 export function initializeProximityWatch(TP) {
