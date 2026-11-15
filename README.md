@@ -167,6 +167,10 @@ the Vercel Python serverless routes. Run
 
 ## Human exposure screening (OpenStreetMap)
 
+Public OSM requests use coverage-checked regional services for Europe/North
+America, bounded global fallback, recent-result caching and provider/source
+timestamps. See [OSM availability](docs/osm-availability.md) for coverage and limits.
+
 The **Human exposure** map control performs one user-triggered, bounded
 OpenStreetMap query near a nominated landslide location. It measures geometric
 distance to building footprints, roads and sensitive facilities and reports

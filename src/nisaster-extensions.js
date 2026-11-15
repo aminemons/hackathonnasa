@@ -253,6 +253,8 @@ function showExposure(coords=null, provenance='User-nominated location; not a ve
       </div>
       <p>Nearest mapped building: ${Number.isFinite(near.buildings)?near.buildings+' m':'unknown'}.
       Source OSM timestamp: ${escape(r.osm_timestamp||'unknown')}.</p>
+      <p>${r.availability?.mode==='cached_fallback'?'Cached OSM snapshot · live providers unavailable':r.availability?.mode==='memory_cache'?'Cached OSM snapshot':'OSM provider response'} · ${escape(r.availability?.provider||'provider unknown')}. Retrieved ${escape(r.availability?.retrieved_at||'time unknown')}.</p>
+      ${r.map_features_truncated?'<p>The map preview is limited to 300 assets; counts include all matching assets returned within the search area.</p>':''}
       <button class="tp-btn" id="tp-show-assets" type="button">Show buildings and roads on map</button>
       <div class="tp-note">This is <strong>NOT a danger rating</strong>. No downslope debris runout, occupancy or building vulnerability has been measured. An incomplete OSM map never establishes safety.</div>
       <div class="tp-links"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors · ODbL</a></div>

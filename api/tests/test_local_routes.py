@@ -73,7 +73,9 @@ class LocalRoutesTests(unittest.TestCase):
         school = {"type": "node", "id": 1, "lon": 85.53, "lat": 28.29,
                   "tags": {"amenity": "school"}}
         with patch.object(exposure, "load_osm",
-                          return_value=([school], "2026-11-15T00:00:00Z")):
+                          return_value={"elements": [school], "osm_timestamp": "2026-11-15T00:00:00Z",
+                                        "provider": "Test fixture", "mode": "upstream",
+                                        "retrieved_at": "2026-11-15T00:00:00Z"}):
             result = self.get("/api/exposure?lon=85.53&lat=28.29&radius_m=500")
         self.assertEqual(result["counts"]["sensitive_places_within_100m"], 1)
         self.assertEqual(result["osm_geojson"]["features"][0]["geometry"]["type"], "Point")
@@ -84,6 +86,7 @@ class LocalRoutesTests(unittest.TestCase):
             with self.assertRaises(HTTPError) as error:
                 urlopen(self.url + "/api/exposure?lon=85.53&lat=28.29", timeout=12)
         self.assertEqual(error.exception.code, 503)
+        self.assertEqual(error.exception.headers.get("Retry-After"), "60")
         body = json.load(error.exception)
         self.assertEqual(body["status"], "unavailable")
         self.assertNotIn("counts", body)
