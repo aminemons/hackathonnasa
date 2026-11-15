@@ -2,7 +2,7 @@ name: Landslide quality checks
 
 on:
   push:
-    branches: [landslide-scar-triage-gpu, landslide-gunw-backend]
+    branches: [main, dataset-alarm-glacier-reliability, landslide-gunw-backend]
   pull_request:
     branches: [landslide-gunw-backend, main]
 
@@ -47,4 +47,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:glof
+      - run: npm run test:reliability
       - run: npm run build
