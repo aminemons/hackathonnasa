@@ -1,5 +1,8 @@
 import './nisaster-extensions.css';
 import {initializeAlarmSystem} from './alarm-system.js';
+import {fetchHazardFeed} from './hazard-feeds.js';
+window.TerraPulseHazardFeeds = fetchHazardFeed;
+window.TerraPulseFeedsResolve?.(fetchHazardFeed);
 import {loadCountriesLocal,loadPlateBoundariesLocal} from './geo-sources.js';
 import {createMotionLayer} from './glacier-motion.js';
 

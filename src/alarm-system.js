@@ -1,4 +1,5 @@
 import {HAZARDS, validateFeed, reconcile, sortedAlertHistory, feedStatus, isValidLocation} from './alarm-core.js';
+import {fetchHazardFeed} from './hazard-feeds.js';
 
 const KEY = 'terrapulse-source-monitor-v2';
 const $ = selector => document.querySelector(selector);
@@ -86,15 +87,12 @@ export function initializeAlarmSystem(mapAPI) {
     const now=Date.now();
     if(!force && now<state.nextDue)return;
     state.busy=true;state.error='';render();
-    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),18000);
     try {
-      const params=new URLSearchParams({hazard:h.id});
-      if(h.id==='eq') params.set('min_magnitude',$('#aMag').value);
-      const response=await fetch('/api/events?'+params,{signal:controller.signal,cache:'no-store'});
-      if(!response.headers.get('Content-Type')?.includes('application/json'))
-        throw Error('API did not return JSON');
-      const feed=await response.json();
-      if(!response.ok)throw Error(feed.error||'HTTP '+response.status);
+      // Direct public-source fetch with browser/session caching; no Vercel function.
+      const feed=await fetchHazardFeed({
+        hazard:h.id,
+        min_magnitude:h.id==='eq'?Number($('#aMag').value):5
+      });
       const records=validateFeed(feed,h.id);
       const previouslySeen=states[h.id].seen;
       const reconciled=reconcile(previouslySeen,records,!state.initialized);
@@ -112,10 +110,10 @@ export function initializeAlarmSystem(mapAPI) {
       }
       save();
     } catch(e) {
-      state.error=e.name==='AbortError'?'Timeout':String(e.message||'Service unavailable').slice(0,95);
+      state.error=e.name==='AbortError'?'Timeout':String(e.message||'Public source unavailable').slice(0,95);
       // Don't mark as empty, don't clear old reports, don't fabricate alerts.
     }finally{
-      clearTimeout(timeout);state.busy=false;
+      state.busy=false;
       state.nextDue=Date.now()+h.minutes*60000;
       render();
     }

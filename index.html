@@ -161,6 +161,23 @@ const fetchJ=async (url,timeoutMs=18000)=>{const controller=new AbortController(
  return await response.json()}catch(error){throw Error(error.name==='AbortError'?'Source request timed out':error.message)}
  finally{clearTimeout(timer)}};
 const ymd=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+// Wait briefly for Vite's browser feed adapter; keep API fallback only if
+// the JavaScript module cannot initialize, never for normal map traffic.
+window.TerraPulseFeedsReady = new Promise(resolve => {
+  window.TerraPulseFeedsResolve = resolve;
+});
+async function sourceFeed(params) {
+  const adapter = window.TerraPulseHazardFeeds || await Promise.race([
+    window.TerraPulseFeedsReady,
+    new Promise(resolve=>setTimeout(()=>resolve(null),4500))
+  ]);
+  if(adapter) return adapter(params);
+  const query=new URLSearchParams({
+    hazard:params.hazard,days:String(params.days||1),
+    min_magnitude:String(params.min_magnitude||5)
+  });
+  return fetchJ('/api/events?'+query);
+}
 let quakes=[],period=7,minMag=4.5,imgDate=ymd(3);$('#imgDate').value=imgDate;$('#imgDate').max=ymd(0);
 /* ---------- dataset helpers ---------- */
 const COL={vol:'#e63946',fire:'#ff6b35',storm:'#c28be8',flood:'#3b8fe8',slide:'#ff2d95',dry:'#e8a23b'};
@@ -172,7 +189,7 @@ const eonet=(cat,color,rad=7)=>async()=>{
  const mapped={landslides:'ls',wildfires:'fi',floods:'fl'},hazard=mapped[cat];
  let records=[],source='NASA EONET';
  if(hazard){
-   const d=await fetchJ('/api/events?hazard='+hazard);
+   const d=await sourceFeed({hazard});
    if(d.status!=='ok'||d.hazard!==hazard||!Array.isArray(d.records))
      throw Error('NASA source status could not be verified');
    records=d.records;
@@ -211,8 +228,7 @@ async function getQuakeFeatures() {
  const key=period+':'+minMag;
  if(lastQuakeQuery && lastQuakeQuery.key===key && Date.now()-lastQuakeQuery.at<120000)
     return lastQuakeQuery.rows;
- const params=new URLSearchParams({hazard:'eq',days:String(period),min_magnitude:String(minMag)});
- const feed=await fetchJ('/api/events?'+params,20000);
+ const feed=await sourceFeed({hazard:'eq',days:period,min_magnitude:minMag});
  if(feed.status!=='ok'||feed.hazard!=='eq'||!Array.isArray(feed.records))
     throw Error('USGS event feed is unavailable');
  const rows=feed.records
