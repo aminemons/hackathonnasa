@@ -198,9 +198,9 @@ function displayScar(result) {
 function showScar() {
   open('Detect landslide scars', 'Sentinel-2 + terrain · post-event U-Net · experimental',
     '<p>A scar is the ground disturbed <strong>after</strong> material slides down a slope. Compare the model against a labelled image, or upload a prepared 14-channel Landslide4Sense JSON tile.</p>' +
-    '<div class="tp-stats"><div class="tp-stat"><b>66.2%</b><span>F1 · pooled 80-chip benchmark</span></div>' +
-    '<div class="tp-stat"><b>66.9%</b><span>Benchmark precision</span></div>' +
-    '<div class="tp-stat"><b>65.6%</b><span>Benchmark recall</span></div></div>' +
+    '<div class="tp-stats"><div class="tp-stat"><b>72.3%</b><span>F1 · repeated 80-chip benchmark</span></div>' +
+    '<div class="tp-stat"><b>70.4%</b><span>Benchmark precision</span></div>' +
+    '<div class="tp-stat"><b>74.2%</b><span>Benchmark recall</span></div></div>' +
     '<div class="tp-controls"><button type="button" class="tp-btn" id="tp-run-example">Compare held-out example</button>' +
     '<label>Prepared JSON tile<input id="tp-tile-file" type="file" accept=".json,application/json"></label></div>' +
     '<div id="tp-result" aria-live="polite"></div>' +

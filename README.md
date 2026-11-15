@@ -76,7 +76,7 @@ assumed globally. InSAR acceleration requires repeat phase/coherence/geometry
 and dates; a single radar amplitude image is insufficient.
 
 **Actual quality evidence:** the current Landslide4Sense U-Net record reports
-test F1 about 0.662; the Sen1Floods11 water model reports event-split F1 about
+test F1 about 0.723 on the repeated 80-chip benchmark. The Sen1Floods11 water model reports event-split F1 about
 0.739. Those are benchmark values, not a live event risk precision. Glacier
 studies remain non-operational and largely dated to 2022–2024.
 Test controls with `npm run test:reliability`, `npm run build`, Python
@@ -133,7 +133,7 @@ In the **Landslides** dataset category, open:
   raster through `/api/forecast`. Scores are not locally calibrated probabilities.
 - **Post-event scar detector**: existing Sentinel-2 + ALOS U-Net at
   `/api/landslide`, including held-out example, reference mask,
-  TP/FP/FN visual comparison and 66.2% fixed benchmark subset F1.
+  TP/FP/FN visual comparison and 72.3% F1 on the repeated 80-chip benchmark.
 - **Human exposure**: `/api/exposure` fetches nearby mapped OpenStreetMap
   building footprints, roads and sensitive facilities. Its review priority
   is not a physical danger/safety assessment.
@@ -246,7 +246,7 @@ Use **Detect scars → Run held-out example** to run a real Landslide4Sense test
 - `GET /api/landslide?example=1` scores the example and returns its RGB preview and reference labels.
 - `POST /api/landslide` accepts JSON with integer `width` and `height` (1–128) and `rows` in row-major order. Each pixel requires 14 values in Landslide4Sense order and units. Use null for missing bands. An entirely missing pixel returns a null score.
 
-Two residual U-Nets were trained on Linux on separate NVIDIA L40 GPUs. The ensemble and score threshold were selected on 48 validation chips before scoring 80 held-out chips. Average precision was 0.691 and F1 was 0.662. The Python backend runs the exported ONNX network on CPU. Tiles smaller than 128 × 128 are edge-padded for inference. The app requires prepared Sentinel-2 and terrain chips for custom inference. The worldwide map queries observations and existing inventories. The NISAR comparison shows backscatter change, with no field-validated hazard labels.
+The second spatial-detector release trained two residual U-Nets on 2,200 Landslide4Sense chips using two NVIDIA L40 GPUs. Candidate selection and threshold fitting used 48 validation chips. Validation average precision rose from 0.665 to 0.769. On the previously evaluated 80-chip test subset, average precision was 0.763 and F1 was 0.723. The bundled example chip reached F1 of 0.292. These are benchmark results from the same dataset. The Python API runs the ONNX model on CPU and edge-pads tiles smaller than 128 × 128. Custom inference uses prepared Sentinel-2 and terrain chips.
 
 Training uses [Landslide4Sense](https://github.com/iarai/Landslide4Sense-2022). The `machine learning/l4s_stage.py` script takes the baseline metrics, an output data directory, and the training chip count. Run `l4s_spatial.py train --help` for CUDA training and `l4s_spatial.py select --help` for validation selection, held-out evaluation, and ONNX export. The model artifact and split IDs are stored in `server_data/`. The separate `stage_gfs_window.py` script extracts timestamped NOAA GFS 24-hour precipitation from an archived, specified run for future forecast evaluation.
 

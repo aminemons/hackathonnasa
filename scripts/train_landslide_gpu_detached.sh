@@ -232,10 +232,8 @@ report = {
 print("[TerraPulse] Release evaluation:", json.dumps(report, indent=2), flush=True)
 PY
 
-# Never replace the currently deployed 66.2% F1 model automatically:
-# choosing/promoting models based on repeated test scores would leak test
-# information. The candidate is left ready for a deliberate validation
-# review and API deployment via the connected GitHub workflow.
+# Leave the candidate and its validation-based release gate for review.
+# Repeated test scores are benchmark reporting and do not drive selection.
 record success "GPU training and held-out benchmark completed; candidate exported for review, not auto-deployed"
 echo "[TerraPulse] SUCCESS: model and report:"
 ls -lh "$ROOT/release"

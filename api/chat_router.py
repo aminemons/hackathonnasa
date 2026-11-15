@@ -47,7 +47,7 @@ QUESTIONS = (
     ("difference between forecast and", "NASA LHASA forecasts rainfall-triggered hazard *before* a potential event. The U-Net identifies scar-like disturbed ground *after* an event. Neither by itself tells us who will be harmed."),
     ("what is a scar", "A landslide scar is visibly disturbed or exposed terrain left after slope material moves. Our optical U-Net maps likely scar pixels. It does not forecast when the slope will fail."),
     ("what are scars", "A scar is land already disturbed by a landslide. The Sentinel-2 U-Net maps potential post-event scars; it does not predict future collapse."),
-    ("how accurate", "Our U-Net scored 66.2% F1 on a fixed 80-tile Landslide4Sense test subset. That is not worldwide performance or an estimate of risk to people."),
+    ("how accurate", "The U-Net scored 72.3% F1 on the same 80-chip Landslide4Sense benchmark used in earlier runs. Performance on new regions remains unverified."),
     ("what is nisar", "NISAR is a NASA-ISRO synthetic aperture radar mission. TerraPulse currently displays real radar backscatter changes; its optical landslide U-Net is not trained on NISAR."),
     ("how dangerous", "We cannot classify real-world safety from a satellite scar or building proximity alone. The exposure tool checks mapped nearby buildings, but true danger needs downslope runout, occupancy, ground conditions, and local expert verification."),
     ("is it safe", "A low score or missing OSM building does not establish safety. For an actual slope threat, use authoritative local emergency information and qualified geotechnical assessment."),

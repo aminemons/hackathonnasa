@@ -107,8 +107,8 @@ export default function LandslideLab() {
       material slides down a slope. This U-Net maps possible scars in prepared satellite imagery.
       It does not predict when a slope will collapse.</p>
     <div className="scar-model-summary" aria-label="Published evaluation context">
-      <strong>66.2% F1</strong>
-      <span>Fixed held-out benchmark · 80 Landslide4Sense tiles</span>
+      <strong>72.3% F1</strong>
+      <span>Repeated benchmark · 80 Landslide4Sense chips</span>
       <span className="scar-model-note">Not tested on every country or event</span>
     </div>
     <div className="lab-actions">
@@ -168,7 +168,7 @@ export default function LandslideLab() {
         A normal JPEG, a lone NISAR radar image, or an arbitrary RGB photograph
         cannot be scored by this model.</p>
       <p>The previously published test subset contains 80 Landslide4Sense chips.
-        The existing release achieved 66.2% pooled pixel F1. Performance on new
+        This release achieved 72.3% pooled pixel F1. Performance on new
         countries and rock–ice avalanches such as Rasuwa is unvalidated.</p>
     </details>
   </dialog>;
