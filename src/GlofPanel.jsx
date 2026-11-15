@@ -2,18 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { feature } from 'topojson-client';
 import { equalEarth, worldPath, initialEpoch, lakeSegments } from './glofMath.js';
 import './glof.css';
+import {readStudy} from './study-transport.js';
 
 const studyPath = (site = '') => `${import.meta.env.BASE_URL}data/glof-study/${site ? encodeURIComponent(site) + '/' : ''}`;
 const api = query => query?.site
   ? studyPath(query.site) + 'summary.json'
   : studyPath() + (query?.view === 'validation' ? 'validation.json' : 'catalog.json');
 const number = (value, places = 2) => Number.isFinite(value) ? value.toLocaleString('en', {maximumFractionDigits: places, minimumFractionDigits: places}) : 'Unavailable';
-async function readStudy(url, signal) {
-  const response = await fetch(url, {signal, cache:'default'});
-  if (!response.ok || !response.headers.get('content-type')?.includes('application/json'))
-    throw new Error('Static historical study evidence is unavailable (' + response.status + ').');
-  return response.json();
-}
 async function get(query, signal) {
   if(query?.view !== 'geometry')
     return readStudy(api(query), signal);
