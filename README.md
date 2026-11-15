@@ -1,5 +1,43 @@
 # TerraPulse
 
+## Interface: Meryem's NISASTER reference
+
+The root `index.html` implements the supplied NISASTER/Leaflet interface,
+retaining the **blue gradient header**, **white Dataset/Time/Legend/Alarm
+sidebar**, **full map**, **base-map switcher**, and **floating chatbot**.
+The TerraPulse hazard modules are extensions of that interface—not a separate
+dark-themed UI.
+
+In the **Landslides** dataset category, open:
+
+- **NASA LHASA next-day forecast**: retrieves publicly available NASA hazard
+  raster through `/api/forecast`. Scores are not locally calibrated probabilities.
+- **Post-event scar detector**: existing Sentinel-2 + ALOS U-Net at
+  `/api/landslide`, including held-out example, reference mask,
+  TP/FP/FN visual comparison and 66.2% fixed benchmark subset F1.
+- **Human exposure**: `/api/exposure` fetches nearby mapped OpenStreetMap
+  building footprints, roads and sensitive facilities. Its review priority
+  is not a physical danger/safety assessment.
+- **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
+  explicitly NOT the August landslide's detection model.
+
+The chatbot defines an **open-source LangGraph StateGraph** for deterministic
+intent routing and a strict UI-tool allowlist. Vercel uses the equivalent
+lightweight deterministic fallback (without installing LangGraph) because the
+full dependency exceeded Vercel's Python serverless bundle limit. For an
+actual LangGraph runtime on a self-hosted server, install
+\`requirements-chat-langgraph.txt\`. It
+does **not** use a generative language model or paid API. Map-science
+answers are deliberately limited to verifiable descriptions and available
+tools. This repository is open source under MIT (see LICENSE);
+external OSM, NASA and map-tile/data usage remains subject to
+their own attribution and licenses.
+
+To develop locally: `npm ci && npm run dev`; the Vite proxy sends
+`/api` to local Python when separately configured. Production uses
+the Vercel Python serverless routes. Run
+`python -m unittest discover -s api/tests -v` and `npm run build`.
+
 ## Human exposure screening (OpenStreetMap)
 
 The **Human exposure** map control performs one user-triggered, bounded

@@ -6,6 +6,9 @@
     },
     "api/exposure.py": {
       "maxDuration": 25
+    },
+    "api/chat.py": {
+      "maxDuration": 10
     }
   }
 }
