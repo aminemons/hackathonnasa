@@ -34,8 +34,12 @@ for layer,level,ext in LAYERS:
     check=tiles in sets or any(tiles in (name or "") for name in sets)
     matches=any(("jpeg" if ext=="jpg" else ext) in (fmt or "") for fmt in formats)
     print(f"[GIBS] {layer}: level={level} supported={check} extension={ext} supported={matches}", flush=True)
-    if not check:fail.append(f"Unsupported matrix {tiles} for {layer}")
-    if not matches:fail.append(f"Unsupported format {ext} for {layer}")
+    if not check:
+        print("[GIBS] Supported matrices:",sorted(sets),flush=True)
+        fail.append(f"Unsupported matrix {tiles} for {layer}")
+    if not matches:
+        print("[GIBS] Supported formats:",formats,flush=True)
+        fail.append(f"Unsupported format {ext} for {layer}")
 if fail:
     raise SystemExit("NASA GIBS availability configuration needs fixes: "+"; ".join(fail))
 print("[GIBS] Product matrix/format configuration verified. Actual daily imagery can still be unavailable.",flush=True)
