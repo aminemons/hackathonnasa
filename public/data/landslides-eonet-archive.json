@@ -1,0 +1,913 @@
+{
+  "source": "NASA EONET",
+  "source_url": "https://eonet.gsfc.nasa.gov/api/v3/events?category=landslides&status=all&limit=300",
+  "retrieved_at": "2026-11-15T12:09:04+00:00",
+  "source_sha256": "045967337a3b4fe42caa55fbfcc4246014c44eaca646d29b7f8076a5e84df81f",
+  "scope": "historical_eonet_archive",
+  "date_range": [
+    "2015-03-23",
+    "2020-03-23"
+  ],
+  "description": "Dated NASA catalogue reports. Historical locations, not currently active incidents or a complete landslide inventory.",
+  "events": [
+    {
+      "id": "EONET_4622",
+      "title": "Soputan Volcano, Indonesia",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_4622",
+      "closed": "2020-04-09T00:00:00Z",
+      "categories": [
+        {
+          "id": "volcanoes",
+          "title": "Volcanoes"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "SIVolcano",
+          "url": "http://volcano.si.edu/volcano.cfm?vn=266030"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2020-03-23T08:56:34Z",
+          "type": "Point",
+          "coordinates": [
+            124.737,
+            1.112
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_4012",
+      "title": "Bakalasi, Uganda Landslides",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_4012",
+      "closed": "2018-10-23T00:00:00Z",
+      "categories": [
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "CEMS",
+          "url": "http://emergency.copernicus.eu/mapping/list-of-components/EMSR325"
+        },
+        {
+          "id": "IDC",
+          "url": "https://disasterscharter.org/web/guest/activations/-/article/landslide-in-uganda-activation-589-"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2018-10-11T00:00:00Z",
+          "type": "Point",
+          "coordinates": [
+            34.39390182495117,
+            1.0050258191961934
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_3916",
+      "title": "Karnataka, India Floods and Landslides",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_3916",
+      "closed": "2018-09-14T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "FloodList",
+          "url": "http://floodlist.com/asia/india-floods-landslides-karnataka-august-2018"
+        },
+        {
+          "id": "IDC",
+          "url": "https://disasterscharter.org/web/guest/activations/-/article/landslide-in-india-activation-584-"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2018-08-14T00:00:00Z",
+          "type": "Point",
+          "coordinates": [
+            75.498046875,
+            12.945675729694095
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_3153",
+      "title": "Freetown, Sierra Leone Landslides and Flooda",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_3153",
+      "closed": "2017-08-24T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "CEMS",
+          "url": "http://emergency.copernicus.eu/mapping/list-of-components/EMSR222"
+        },
+        {
+          "id": "GDACS",
+          "url": "http://www.gdacs.org/report.aspx?eventtype=FL&eventid=1000127"
+        },
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/flood-in-sierra-leone-call-624-"
+        },
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/ms-2017-000109-sle"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-08-14T00:00:00Z",
+          "type": "Point",
+          "coordinates": [
+            -13.234062194824219,
+            8.438922586573463
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_3046",
+      "title": "Myanmar (Burma) Floods and Landslides",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_3046",
+      "closed": "2017-07-25T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2017-000091-mmr"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-07-01T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                94.1162109375,
+                16.566901365779497
+              ],
+              [
+                94.1162109375,
+                22.86446488835066
+              ],
+              [
+                97.8125,
+                22.86446488835066
+              ],
+              [
+                97.8125,
+                16.566901365779497
+              ],
+              [
+                94.1162109375,
+                16.566901365779497
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2861",
+      "title": "Sichuan, China Landslides",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2861",
+      "closed": "2017-07-04T00:00:00Z",
+      "categories": [
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/landslide-in-china-call-617-"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-06-24T00:00:00Z",
+          "type": "Point",
+          "coordinates": [
+            103.65805,
+            32.0705
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2835",
+      "title": "Bangladesh Floods and Landslides",
+      "description": "Cyclone Mora struck the eastern coast of Bangladesh on 30 May. The Category 1 hurricane brought powerful winds and torrential rain that have triggered mudslides and flooding.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2835",
+      "closed": "2017-06-21T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "GDACS",
+          "url": "http://www.gdacs.org/report.aspx?eventtype=FL&eventid=1000095"
+        },
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/flood-in-bangladesh-call-613-"
+        },
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/ls-2017-000068-bgd"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-05-30T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                91.083984375,
+                20.523952051662295
+              ],
+              [
+                91.083984375,
+                23.99346097934524
+              ],
+              [
+                92.890625,
+                23.99346097934524
+              ],
+              [
+                92.890625,
+                20.523952051662295
+              ],
+              [
+                91.083984375,
+                20.523952051662295
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2799",
+      "title": "Sri Lanka Floods and Landslides",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2799",
+      "closed": "2017-06-06T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "CEMS",
+          "url": "http://emergency.copernicus.eu/mapping/list-of-components/EMSR205"
+        },
+        {
+          "id": "EO",
+          "url": "https://earthobservatory.nasa.gov/NaturalHazards/view.php?id=90322"
+        },
+        {
+          "id": "GDACS",
+          "url": "http://www.gdacs.org/report.aspx?eventtype=FL&eventid=1000086"
+        },
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/flood-in-sri-lanka-call-612-"
+        },
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2017-000057-lka"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-05-25T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79.76806640625,
+                5.8282626418024535
+              ],
+              [
+                79.76806640625,
+                6.694267456433927
+              ],
+              [
+                81.09130859375,
+                6.694267456433927
+              ],
+              [
+                81.09130859375,
+                5.8282626418024535
+              ],
+              [
+                79.76806640625,
+                5.8282626418024535
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2762",
+      "title": "Peru, Colombia and Ecuador Flooding",
+      "description": "Several weeks of intense rain have triggered severe floods and mudslides in Peru, Colombia and Ecuador.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2762",
+      "closed": "2017-04-18T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "severeStorms",
+          "title": "Severe Storms"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "CEMS",
+          "url": "http://emergency.copernicus.eu/mapping/list-of-components/EMSR199"
+        },
+        {
+          "id": "EO",
+          "url": "https://earthobservatory.nasa.gov/NaturalHazards/event.php?id=89932"
+        },
+        {
+          "id": "GDACS",
+          "url": "http://www.gdacs.org/report.aspx?eventid=1000075&episodeid=1&eventtype=FL"
+        },
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/flood-in-peru-call-602-"
+        },
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/ms-2017-000033-col"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-03-15T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -81.09375,
+                -17.838453966155924
+              ],
+              [
+                -81.09375,
+                5.558233456973886
+              ],
+              [
+                -71.46484375,
+                5.558233456973886
+              ],
+              [
+                -71.46484375,
+                -17.838453966155924
+              ],
+              [
+                -81.09375,
+                -17.838453966155924
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2720",
+      "title": "Afghanistan and Pakistan Snowfall, Avalanches and Flooding",
+      "description": "A large number of avalanche, snowfall and rain-related disasters were reported around Afghanistan between 4-7 February, beginning with heavy snowfall on 25 January.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2720",
+      "closed": "2017-02-27T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        },
+        {
+          "id": "snow",
+          "title": "Snow"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2017-000017-pak"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2017-01-25T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                65.419921875,
+                32.300307866059846
+              ],
+              [
+                65.419921875,
+                37.46368091213614
+              ],
+              [
+                75.83984375,
+                37.46368091213614
+              ],
+              [
+                75.83984375,
+                32.300307866059846
+              ],
+              [
+                65.419921875,
+                32.300307866059846
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_2464",
+      "title": "Nepal Floods and Landslides, July 2016",
+      "description": null,
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_2464",
+      "closed": "2016-08-06T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2016-000068-npl"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2016-07-04T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                81.1962890625,
+                26.445184077682576
+              ],
+              [
+                81.1962890625,
+                29.561208251674987
+              ],
+              [
+                87.880859375,
+                29.561208251674987
+              ],
+              [
+                87.880859375,
+                26.445184077682576
+              ],
+              [
+                81.1962890625,
+                26.445184077682576
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_450",
+      "title": "Russian Federation Floods and Landslides, June 2016",
+      "description": "In the period between 4 and 10 June 2016, heavy rains caused severe disasters in the Republic of Dagestan, the Republic of North Ossetia and the Chechen Republic of the Russian Federation in Northern Caucasus.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_450",
+      "closed": "2016-06-21T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2016-000061-rus"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2016-06-04T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                43.46923828125,
+                42.24005733049491
+              ],
+              [
+                43.46923828125,
+                45.00146177184141
+              ],
+              [
+                48.0224609375,
+                45.00146177184141
+              ],
+              [
+                48.0224609375,
+                42.24005733049491
+              ],
+              [
+                43.46923828125,
+                42.24005733049491
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_400",
+      "title": "Sri Lanka Floods, May 2016",
+      "description": "Days of heavy rain from Tropical Storm Roanu have caused widespread flooding in Sri Lanka, leaving 37 dead and forcing hundreds of thousands of people to evacuate.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_400",
+      "closed": "2016-06-04T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "IDC",
+          "url": "https://www.disasterscharter.org/web/guest/-/flood-in-sri-lan-1"
+        },
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/tc-2016-000052-mmr"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2016-05-16T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79.68017578125,
+                6.024959448383872
+              ],
+              [
+                79.68017578125,
+                9.261723317601199
+              ],
+              [
+                81.376953125,
+                9.261723317601199
+              ],
+              [
+                81.376953125,
+                6.024959448383872
+              ],
+              [
+                79.68017578125,
+                6.024959448383872
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_42",
+      "title": "Bangladesh: Floods and Landslides, Summer 2015",
+      "description": "Since June 24, torrential rains have set off flash floods and landslides in the low-lying areas in the south-eastern districts of Cox’ Bazar, Bandarban and Chittagong. Tropical Cyclone Komen hit on July 31, affecting more than 1.5 million people across these same coastal districts.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_42",
+      "closed": "2015-08-10T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2015-000068-bgd"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2015-06-24T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                91.2353515625,
+                20.782820620659265
+              ],
+              [
+                91.2353515625,
+                23.819522533901992
+              ],
+              [
+                92.87353515625,
+                23.819522533901992
+              ],
+              [
+                92.87353515625,
+                20.782820620659265
+              ],
+              [
+                91.2353515625,
+                20.782820620659265
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_8",
+      "title": "Tajikistan: Floods and Mudslides",
+      "description": "Prolonged torrential rains caused a number of floods and mudslides between 11 and 13 May 2015 in Khatlon province and Hoit administrative center of the Rasht valley of Tajikistan.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_8",
+      "closed": "2015-05-22T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2015-000055-tjk"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2015-05-11T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                67.63916015625,
+                36.89208686626949
+              ],
+              [
+                67.63916015625,
+                38.33060991012091
+              ],
+              [
+                70.3466796875,
+                38.33060991012091
+              ],
+              [
+                70.3466796875,
+                36.89208686626949
+              ],
+              [
+                67.63916015625,
+                36.89208686626949
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_7",
+      "title": "Rwanda: Floods and Landslides",
+      "description": "On 3 April 2015, heavy rainfall caused flooding and landslides in Nyamasheke and Rubavu districts in Rwanda's Western Province.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_7",
+      "closed": "2015-04-19T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2015-000042-rwa"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2015-04-03T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                29.0826416015625,
+                -2.373261352203938
+              ],
+              [
+                29.0826416015625,
+                -2.106503512855471
+              ],
+              [
+                29.334716796875,
+                -2.106503512855471
+              ],
+              [
+                29.334716796875,
+                -2.373261352203938
+              ],
+              [
+                29.0826416015625,
+                -2.373261352203938
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EONET_9",
+      "title": "Colombia: Floods and Landslides, Spring 2015",
+      "description": "Flooding, windstorms and landslides affected more than 20,000 people in Colombia in April 2015. The rainy season in the southern and western departments had a particularly strong impact in the Amazonas department near the Peruvian and Brazilian border.",
+      "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_9",
+      "closed": "2015-05-25T00:00:00Z",
+      "categories": [
+        {
+          "id": "floods",
+          "title": "Floods"
+        },
+        {
+          "id": "landslides",
+          "title": "Landslides"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ReliefWeb",
+          "url": "http://reliefweb.int/disaster/fl-2015-000056-col"
+        }
+      ],
+      "geometry": [
+        {
+          "magnitudeValue": null,
+          "magnitudeUnit": null,
+          "date": "2015-03-23T00:00:00Z",
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -80.21484374999994,
+                -1.2587267170218541
+              ],
+              [
+                -80.21484374999994,
+                10.603576135312025
+              ],
+              [
+                -71.2890625,
+                10.603576135312025
+              ],
+              [
+                -71.2890625,
+                -1.2587267170218541
+              ],
+              [
+                -80.21484374999994,
+                -1.2587267170218541
+              ]
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}
