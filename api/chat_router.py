@@ -89,7 +89,7 @@ def parse(state: State) -> dict:
                 "reply": "I can open NASA LHASA forecasts, compare post-event scar detections, inspect buildings/roads around a location, display NISAR observations, toggle map layers, select a basemap, open legend/time controls, or zoom to Nepal, Algeria, Japan, Chile and other supported places.",
                 "intent": "help"}
 
-    if re.search(r"\\b(glof|glacial lake|outburst flood|lake outburst|monitor glacial lakes?)\\b", msg):
+    if re.search(r"\b(glof|glacial lake|outburst flood|lake outburst|monitor glacial lakes?)\b", msg):
         actions.append({"type":"open_tool", "value":"glof"})
         reply="Opening published historical glacial-lake monitoring: five lakes, 253 dated radar observations. It is not a breach forecast or emergency warning."
         intent="glof"
