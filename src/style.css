@@ -62,7 +62,7 @@ input::placeholder { color: var(--muted); opacity: 1; }
 .observation-list [data-case] .row-mark { color: var(--blue); background: #223332; }
 #browse-pages { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
 .map-frame { position: relative; overflow: hidden; isolation: isolate; background: #10272d; min-height: 0; }
-.map, .map-fallback, .photo-compare, .single-photo { position: absolute; inset: 0; }
+#map, .map-fallback, .photo-compare, .single-photo { position: absolute; inset: 0; }
 .map-fallback { display: grid; place-items: center; overflow: hidden; }
 .map-fallback svg { width: 100%; height: 100%; }
 .map-fallback circle { cursor: pointer; }
@@ -146,3 +146,91 @@ dialog li { margin-bottom: 5px; }
 .chart-years { display: flex; justify-content: space-between; }
 .balance-chart details { margin-top: 5px; }
 .balance-chart ul { margin: 4px 0 0; padding-left: 16px; max-height: 95px; overflow: auto; }
+
+#discovery { width: min(38rem, calc(100% - 24px)); max-height: 85dvh; overflow: auto; }
+.discovery-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.discovery-heading h2 { margin: 0; }
+#discovery form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+#discovery label { display: grid; gap: 4px; min-width: 0; }
+#discovery input { box-sizing: border-box; width: 100%; min-width: 0; padding: 7px; border: 1px solid #476166; border-radius: 4px; color: inherit; background: #172122; color-scheme: dark; }
+#discovery ul { padding: 0; margin: 0; list-style: none; }
+#discovery li { padding: 12px 0; border-top: 1px solid #426066; }
+#discovery li p { margin: 4px 0 7px; }
+#discovery li button { margin-left: 10px; }
+#discovery .discovery-place { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.place-results { display: flex; flex-wrap: wrap; gap: 5px; margin-block: 7px 12px; font-size: 13px; }
+#discovery { box-sizing: border-box; }
+.landslide-inventory { margin: 10px 0 14px; padding: 9px 0; border-block: 1px solid #426066; }
+.landslide-inventory summary { cursor: pointer; font-size: 14px; font-weight: 650; }
+.landslide-inventory p { margin: 6px 0; }
+.landslide-inventory a { font-size: 12px; margin-left: 8px; }
+
+#app { display: contents; }
+#landslide-lab, #radar-example, #forecast { width: min(650px, calc(100vw - 24px)); max-height: calc(100svh - 24px); padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: inherit; }
+#landslide-lab::backdrop, #radar-example::backdrop, #forecast::backdrop { background: #081012ce; }
+#landslide-lab h2, #radar-example h2, #forecast h2 { font-size: 23px; letter-spacing: -.035em; }
+#landslide-lab p, #radar-example p, #forecast p { color: var(--muted); font-size: 13px; line-height: 1.5; margin-top: 8px; }
+#landslide-lab details { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 16px; font-size: 13px; }
+.lab-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
+.lab-actions a { font-size: 12px; color: var(--blue); padding: 3px; text-decoration: underline; }
+.lab-actions .lab-primary { color: #132622; background: var(--blue); border-color: var(--blue); font-weight: 680; }
+.lab-result { display: grid; grid-template-columns: minmax(125px, 205px) minmax(0, 1fr); gap: 14px; align-items: start; }
+.lab-result canvas { image-rendering: pixelated; display: block; width: 100%; background: #151e21; border-radius: 4px; }
+.lab-result h3 { font-size: 15px; }
+@media (max-width: 460px) { .lab-result { grid-template-columns: 1fr; } .lab-result canvas { width: min(62vw, 190px); } }
+
+.radar-scene { position: relative; width: max-content; max-width: 100%; }
+.radar-scene img { display: block; max-height: 53svh; max-width: 100%; object-fit: contain; }
+.radar-scene-overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lab-actions button[aria-pressed=true] { background: #213634; color: var(--blue); border-color: #557a74; }
+@media (max-width: 460px) { .map-tools { right: 10px; flex-wrap: wrap; } }
+.map-tools .forecast-entry { color: var(--blue); border-color: #638a7c; }
+.forecast-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 12px 0; }
+.forecast-form label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.forecast-form input { width: 105px; padding: 5px 7px; border-radius: 4px; border: 1px solid var(--line); background: #121c1d; }
+.forecast-form .lab-primary { color: #132622; background: var(--blue); font-weight: 680; }
+.forecast-output { display: grid; grid-template-columns: 144px minmax(0, 1fr); gap: 15px; margin: 16px 0; }
+.forecast-output img { display: block; image-rendering: pixelated; border: 1px solid var(--line); background: #121c1d; }
+.forecast-scale { display: flex; height: 7px; margin-top: 6px; }
+.forecast-scale span { flex: 1; }
+.forecast-scale-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+#forecast a { color: var(--blue); text-decoration: underline; }
+.hazard-gradient { min-width: 104px; height: 6px; margin-block: 6px; background: linear-gradient(90deg,#254871,#307da8,#66c8c0,#f4ca60,#ee803c,#c63d41); }
+
+
+/* Landslide scar model: simultaneous evidence rather than a toggle-only demo. */
+#landslide-lab { width: min(860px, calc(100vw - 24px)); }
+.scar-results { margin-top: 18px; }
+.scar-results > h3 { font-size: 15px; margin-bottom: 10px; }
+.scar-comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.scar-tile { margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: #172124; }
+.scar-tile figcaption { color: #dceae6; font-size: 12px; margin-bottom: 8px; min-height: 16px; }
+.scar-tile canvas { display: block; width: 100%; max-height: 270px; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; background: #101819; }
+.scar-evaluation, .scar-screening { margin-top: 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 5px; background: #192628; }
+.scar-screening strong { color: #e5eee9; }
+#landslide-lab .scar-evaluation p, #landslide-lab .scar-screening p { margin: 5px 0; line-height: 1.55; }
+#landslide-lab .scar-key { color: #cedfd7; }
+@media (max-width: 560px) {
+  .scar-comparison-grid { grid-template-columns: 1fr; }
+  .scar-tile canvas { max-height: 320px; }
+  #landslide-lab { padding: 14px; }
+}
+
+
+/* Small, evidence-first human-exposure panel; never imply a safety certification. */
+#exposure-panel { width: min(720px, calc(100vw - 24px)); max-height: calc(100svh - 24px); overflow-y: auto; background: var(--panel); color: inherit; }
+#exposure-panel h2 { font-size: 22px; letter-spacing: -.03em; }
+#exposure-panel p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+#exposure-panel a { color: var(--blue); text-decoration: underline; }
+.exposure-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 16px 0; }
+.exposure-form label { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+.exposure-form input, .exposure-form select { width: 120px; max-width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--line); background: #121c1d; color: inherit; }
+.exposure-form .lab-primary { color: #132622; background: var(--blue); font-weight: 680; }
+.exposure-results { padding: 15px 0 8px; border-top: 1px solid var(--line); }
+.exposure-results h3 { font-size: 17px; margin-bottom: 9px; }
+.exposure-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+.exposure-stat-grid div { border: 1px solid var(--line); background: #162326; border-radius: 6px; padding: 12px; display: grid; gap: 5px; }
+.exposure-stat-grid strong { color: #f0faf4; font-size: 23px; font-variant-numeric: tabular-nums; }
+.exposure-stat-grid span { color: var(--muted); font-size: 11px; }
+#exposure-panel details { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; font-size: 12px; }
+@media (max-width: 510px) { .exposure-stat-grid { grid-template-columns: 1fr 1fr; gap: 6px; } .exposure-form label { flex: 1; } .exposure-form input, .exposure-form select { width: 100%; } }

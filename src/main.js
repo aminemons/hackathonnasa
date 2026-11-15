@@ -5,6 +5,7 @@ import { observations } from './cases.js';
 import { worldExplorer, globalFloodDate } from './world.js';
 import { mountAssistant, normalize } from './assistant.js';
 import { mountCatalog } from './catalog.js';
+import { mountDiscovery } from './discovery.js';
 import { drawImagery, imagery } from './imagery.js';
 import { basemapStyle, addBasemap, setBasemap, addPlates, plateSource, projectWorld } from './basemap.js';
 
@@ -41,6 +42,13 @@ let quakePromise;
 const grids = new Map();
 let updateVersion = 0;
 let focusedCase;
+let choosingRadarPoint = false;
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || !choosingRadarPoint) return;
+  choosingRadarPoint = false;
+  map.getCanvas().style.cursor = "";
+  byId("map-note").textContent = "";
+});
 let fallbackSelection;
 
 const regions = {
@@ -310,6 +318,151 @@ byId('regions').addEventListener('click', event => {
   }
 });
 
+const openDiscovery = mountDiscovery({
+  selectMapPoint() {
+    if (!mapReady) return false;
+    choosingRadarPoint = true;
+    byId("map-note").textContent = "Click a location to search for NISAR observations.";
+    map.getCanvas().style.cursor = "crosshair";
+    return true;
+  },
+  showLandslides(coords, data) {
+    if (!mapReady) return false;
+    current = null;
+    mode = null;
+    focusedCase = "world";
+    imageryKey = null;
+    fallbackSelection = null;
+    setUrl(false);
+    map.jumpTo({center: coords, zoom: 9});
+    render();
+    const id = "coolr-outlines";
+    map.addSource(id, {type:"geojson", data, attribution:"NASA COOLR"});
+    map.addLayer({type:"line",id,source:id,paint:{"line-color":"#ffce78","line-width":2}});
+    byId("map-note").textContent = "Mapped landslide outlines · NASA COOLR";
+    return true;
+  },
+  showRadar(coords, date) {
+    if (!mapReady) return false;
+    current = null;
+    mode = null;
+    focusedCase = "world";
+    fallbackSelection = null;
+    imageryKey = "radar";
+    imageryDate = date;
+    setUrl(false);
+    map.jumpTo({center: coords, zoom: 9});
+    render();
+    return true;
+  },
+});
+byId("find-radar").onclick = () => {
+  const center = mapReady ? map.getCenter() : {lng:0,lat:14};
+  openDiscovery(center.lng, center.lat);
+};
+
+export function forecastMapCenter() {
+  return mapReady ? map.getCenter().wrap() : null;
+}
+
+const exposureLayers = [
+  'osm-human-buildings', 'osm-human-building-outline', 'osm-human-roads',
+  'osm-human-paths', 'osm-human-facilities', 'osm-human-center-layer',
+];
+const exposureSources = ['osm-human-assets', 'osm-human-center'];
+
+function clearExposureLayers() {
+  if (!mapReady || !map) return;
+  for (const id of exposureLayers) if (map.getLayer(id)) map.removeLayer(id);
+  for (const id of exposureSources) if (map.getSource(id)) map.removeSource(id);
+}
+
+export function showExposureOnMap(report) {
+  if (!mapReady || !report?.location || !report?.osm_geojson?.features) return false;
+  current = null;
+  mode = null;
+  focusedCase = 'world';
+  imageryKey = null;
+  fallbackSelection = null;
+  setUrl(false);
+  render();
+  clearExposureLayers();
+  map.addSource('osm-human-assets', {
+    type: 'geojson',
+    data: report.osm_geojson,
+    attribution: '© OpenStreetMap contributors · ODbL',
+  });
+  map.addLayer({
+    id: 'osm-human-buildings', type: 'fill', source: 'osm-human-assets',
+    filter: ['==', ['get', 'kind'], 'buildings'],
+    paint: {'fill-color': '#eeb563', 'fill-opacity': 0.5},
+  });
+  map.addLayer({
+    id: 'osm-human-building-outline', type: 'line', source: 'osm-human-assets',
+    filter: ['==', ['get', 'kind'], 'buildings'],
+    paint: {'line-color': '#ffdc99', 'line-width': 1.4},
+  });
+  map.addLayer({
+    id: 'osm-human-roads', type: 'line', source: 'osm-human-assets',
+    filter: ['==', ['get', 'kind'], 'roads'],
+    paint: {'line-color': '#e9e5da', 'line-width': 2.3},
+  });
+  map.addLayer({
+    id: 'osm-human-paths', type: 'line', source: 'osm-human-assets',
+    filter: ['==', ['get', 'kind'], 'paths'],
+    paint: {'line-color': '#91adb6', 'line-width': 1.3, 'line-dasharray': [3, 3]},
+  });
+  map.addLayer({
+    id: 'osm-human-facilities', type: 'circle', source: 'osm-human-assets',
+    filter: ['==', ['get', 'kind'], 'sensitive_places'],
+    paint: {'circle-color': '#db6b75', 'circle-radius': 5},
+  });
+  const {lon, lat, radius_m} = report.location;
+  map.addSource('osm-human-center', {
+    type: 'geojson',
+    data: {type: 'Feature', geometry: {type: 'Point', coordinates: [lon, lat]}, properties: {}},
+  });
+  map.addLayer({
+    id: 'osm-human-center-layer', type: 'circle', source: 'osm-human-center',
+    paint: {'circle-color': '#fc7373', 'circle-radius': 7, 'circle-stroke-width': 2,
+      'circle-stroke-color': '#ffffff'},
+  });
+  const dy = radius_m / 111195;
+  const dx = radius_m / (111320 * Math.cos(lat * Math.PI / 180));
+  map.fitBounds([[lon - dx, lat - dy], [lon + dx, lat + dy]],
+    {padding: 65, maxZoom: 15, duration: 0});
+  byId('map-note').textContent =
+    'OSM mapped assets near the nominated site · proximity is NOT debris-runout danger';
+  byId('legend').innerHTML =
+    '<strong>Human exposure context (OSM)</strong>' +
+    '<div class="legend-values"><span>Gold: buildings</span><span>White: roads</span>' +
+    '<span>Red: nominated point</span></div>' +
+    '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OSM contributors · ODbL</a>';
+  return true;
+}
+
+export function showForecastOnMap({ bounds, preview_png }) {
+  if (!mapReady) return false;
+  current = null;
+  mode = null;
+  focusedCase = "world";
+  imageryKey = null;
+  fallbackSelection = null;
+  setUrl(false);
+  render();
+  const [west, south, east, north] = bounds;
+  const id = "lhasa-forecast";
+  map.addSource(id, {
+    type: "image", url: preview_png,
+    coordinates: [[west, north], [east, north], [east, south], [west, south]],
+  });
+  map.addLayer({ id, type: "raster", source: id, paint: { "raster-resampling": "nearest", "raster-fade-duration": 0 } });
+  map.fitBounds([[west, south], [east, north]], { padding: 45, maxZoom: 10, duration: 0 });
+  byId("map-note").textContent = "Next-day rainfall-triggered landslide hazard · NASA LHASA";
+  byId("legend").innerHTML = '<strong>LHASA hazard score</strong><div class="hazard-gradient"></div><div class="legend-values"><span>Lower</span><span>Higher</span></div>';
+  return true;
+}
+
 async function startMap() {
   try {
     maplibregl = await import('maplibre-gl');
@@ -322,7 +475,13 @@ async function startMap() {
     map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-right');
     map.addControl(new maplibregl.ScaleControl({unit:'metric'}), 'bottom-right');
     map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
-    map.on('click', inspectPoint);
+    map.on('click', event => {
+      if (!choosingRadarPoint) return inspectPoint(event);
+      choosingRadarPoint = false;
+      map.getCanvas().style.cursor = '';
+      byId('map-note').textContent = '';
+      openDiscovery(event.lngLat.wrap().lng, event.lngLat.lat);
+    });
     await new Promise(resolve => map.once('load', resolve));
   } catch {
     mapUnavailable = true;
@@ -465,7 +624,8 @@ async function updateMap() {
   world.remove(map);
   markers.forEach(marker => marker.remove());
   markers = [];
-  for (const id of ['scene','contours','regional-context','satellite-context','tectonic-plates']) {
+  clearExposureLayers();
+  for (const id of ['scene','contours','regional-context','satellite-context','tectonic-plates','coolr-outlines','lhasa-forecast']) {
     if (map.getLayer(id)) map.removeLayer(id);
     if (map.getSource(id)) map.removeSource(id);
   }

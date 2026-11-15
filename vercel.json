@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/landslide.py": {
+      "includeFiles": "server_data/**",
+      "maxDuration": 30
+    },
+    "api/exposure.py": {
+      "maxDuration": 25
+    }
+  }
+}

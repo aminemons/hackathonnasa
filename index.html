@@ -4,56 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101819">
-<meta name="description" content="Explore satellite observations of floods, earthquakes and glacier change.">
+<meta name="description" content="Explore satellite observations and run a landslide candidate model.">
 <title>TerraPulse</title>
 </head>
 <body>
-  <header class="topbar">
-    <a class="identity" href="./">TerraPulse</a>
-    <nav class="tabs" id="cases" aria-label="Select hazard"></nav>
-    <a class="partner" href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/" target="_blank" rel="noopener"><img src="./data/space-apps.png" alt="NASA Space Apps Challenge"></a>
-  </header>
-  <main class="workspace" aria-label="TerraPulse observation map">
-    <aside id="browse-panel" class="observation-panel" aria-label="Observations">
-      <div class="panel-top">
-        <div id="record" class="record"></div>
-        <div class="search-wrap"><label for="browse-filter" class="sr-only">Find observations by place</label><input id="browse-filter" type="search" placeholder="Find a place" autocomplete="off"></div>
-        <div id="regions" class="regions" aria-label="Regions"></div>
-        <div id="map-controls" class="layers" aria-label="Map layers and filters"></div>
-        <div id="evidence" class="evidence"></div>
-      </div>
-      <p id="browse-count" class="drawer-note" aria-live="polite"></p>
-      <ul id="browse-results" class="observation-list"></ul>
-      <nav id="browse-pages" aria-label="Observation pages"></nav>
-    </aside>
-    <div id="map-frame" class="map-frame">
-      <div id="map" class="map" aria-label="Geographic observation map"></div>
-      <div id="map-fallback" class="map-fallback" hidden></div>
-      <div class="map-tools">
-        <label class="control" id="basemap-control"><span class="sr-only">Base map</span><select id="basemap"><option value="satellite">Satellite</option><option value="atlas">Atlas</option></select></label>
-        <button class="quiet" id="reset-map" type="button" aria-label="Reset map view" title="Reset map view">⌂</button>
-        <button class="quiet" id="ask-toggle" type="button" aria-expanded="false" aria-controls="ask-panel">Ask TerraPulse</button>
-      </div>
-      <div id="map-note" class="map-note" aria-live="polite"></div>
-      <div id="legend" class="legend"></div>
-      <span id="fallback-credit" class="map-credit" hidden>NASA Blue Marble</span>
-      <section id="ask-panel" class="map-drawer" aria-label="Ask TerraPulse" hidden>
-        <header><h2>Ask TerraPulse</h2><button class="quiet" type="button" data-dismiss aria-label="Close chat">×</button></header>
-        <div id="ask-log" class="ask-log" role="log" aria-label="Conversation" aria-live="polite"></div>
-        <div class="ask-prompts">
-          <button class="quiet" type="button">Compare Guelma</button>
-          <button class="quiet" type="button">Show M5+ earthquakes</button>
-          <button class="quiet" type="button">Open Pine Island</button>
-        </div>
-        <form id="ask-form">
-          <label class="sr-only" for="ask-query">Ask about the map</label>
-          <input id="ask-query" placeholder="Ask about a place or layer" autocomplete="off" maxlength="240" required>
-          <button class="quiet" type="submit">Send</button>
-        </form>
-      </section>
-    </div>
-  </main>
-  <dialog id="reference" aria-label="Observation sources"><div id="reference-content"></div><form method="dialog"><button class="quiet" type="submit">Close</button></form></dialog>
-  <script type="module" src="/src/main.js"></script>
+  <div id="app"></div>
+  <script type="module" src="/src/app.jsx"></script>
 </body>
 </html>
