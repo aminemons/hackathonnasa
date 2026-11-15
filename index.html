@@ -90,7 +90,8 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
      <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="hFrom" min="1900" max="2100"> to <input type="number" id="hTo" min="1900" max="2100"></div>
      <div class="g">Minimum magnitude</div>
      <select id="hMag" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px"><option>5</option><option selected>6</option><option>6.5</option><option>7</option></select>
-     <p style="color:var(--m);font-size:12px">Use up to ten years per request to avoid source timeouts. Load older periods in batches.</p>
+     <p style="color:var(--m);font-size:12px">Historical USGS catalogue, not live events. Choose up to <strong>30 calendar years</strong> and load on demand (older data may be incomplete).</p>
+     <button type="button" id="h30" class="btn" style="margin:8px 0">Last 30 years · Load history</button>
      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="hShow">Show on map</button><button class="btn" id="hCsv">Download CSV</button></div>
      <div id="hStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
     <div class="ts" data-t="ehist">
@@ -328,6 +329,21 @@ const DS=[
  {id:'wv',g:'Storms',dated:1,n:'Cloud fraction (MODIS; atmospheric context)',kw:'cloud clouds atmosphere storm fraction context',leg:['#6a9fd8','Cloud fraction (not rainfall)'],load:gibs('MODIS_Terra_Cloud_Fraction_Day',6,'png',2)},
  // Landslides
  {id:'slide',g:'Landslides',n:'Landslide reports (current / archived EONET)',kw:'landslide landslides',leg:[COL.slide,'Reported landslide location (dated, not a forecast)'],load:eonet('landslides',COL.slide,12)},
+ {id:'lhasa',g:'Landslides',n:'Landslide hazard outlook (NASA LHASA, map center)',kw:'landslide landslides susceptibility forecast hazard score classification',leg:['#ee803c','NASA model score bins; not a probability or official warning'],load:async()=>{
+   const center=map.getCenter(),p=new URLSearchParams({lon:String(center.lng),lat:String(center.lat)});
+   if(center.lat>60||center.lat< -60)throw Error('LHASA data cover latitudes 60°S to 60°N. Zoom to a supported region.');
+   const d=await fetchJ('/api/forecast?'+p,24000);
+   if(!Array.isArray(d.bounds)||d.bounds.length!==4||!d.preview_png?.startsWith('data:image/png;base64,'))
+     throw Error('NASA LHASA raster not available for this location');
+   const b=d.bounds;
+   const layer=L.imageOverlay(d.preview_png,[[b[1],b[0]],[b[3],b[2]]],{opacity:.75,
+      alt:'NASA LHASA Hazard Tomorrow model score, dated source'});
+   layer.terrapulse={status:d.valid_pixels>0?'ready':'empty',source:'NASA LHASA 2.1',
+      fetched_at:d.retrieved_at,issued_at:d.issued_at,valid_pixels:d.valid_pixels};
+   layer.on('add',()=>map.fitBounds([[b[1],b[0]],[b[3],b[2]]],{maxZoom:9}));
+   toast('NASA LHASA outlook: score <0.02 low, 0.02–0.10 moderate, ≥0.10 elevated (visual research bins only). Check source validity.');
+   return layer;
+ }},
  // Land subsidence (SAR layers from layers.json join here)
  {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context; MODIS)',kw:'land temperature heat surface context',leg:['#f2994a','Surface temperature; not subsidence displacement'],load:gibs('MODIS_Terra_L3_Land_Surface_Temp_Daily_Day_TES',7,'png',3)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
@@ -459,11 +475,26 @@ let hist=[];
 const hstat=t=>{const e=$('#hStat');if(e)e.textContent=t};
 async function fetchHist(){const mag=+$('#hMag').value,y0=+$('#hFrom').value,y1=+$('#hTo').value,rows=[];
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
- if(y1-y0>9)throw Error('Select at most 10 years per USGS request; download longer archives in batches.');
- for(let y=y0;y<=y1;y++){hstat('Loading '+y+' … ('+rows.length+' so far)');
-  const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`);
-  d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,p=f.properties;rows.push([f.id,p.time,la,lo,dp,p.mag,p.place||''])})}
- hist=rows;hstat(rows.length+' earthquakes, '+y0+'–'+y1+', M≥'+mag);return rows}
+ if(y1-y0>29)throw Error('Select at most 30 calendar years.');
+ let failed=[];
+ for(let i=y0;i<=y1;i+=3){
+  const years=Array.from({length:Math.min(3,y1-i+1)},(_,j)=>i+j);
+  const data=await Promise.allSettled(years.map(async y=>{
+   const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`,30000);
+   if(!Array.isArray(d.features))throw Error('Invalid USGS response for '+y);
+   return d.features.flatMap(f=>{
+      const p=f?.properties||{},coords=f?.geometry?.coordinates;
+      if(!Array.isArray(coords)||coords.length<2||
+         !Number.isFinite(coords[0])||!Number.isFinite(coords[1])||
+         !Number.isFinite(p.time)||!Number.isFinite(p.mag))return [];
+      return [[f.id,p.time,coords[1],coords[0],coords[2]??null,p.mag,p.place||'']];
+   });
+  }));
+  data.forEach((r,j)=>r.status==='fulfilled'?rows.push(...r.value):failed.push(years[j]));
+  hstat('USGS '+y0+'–'+y1+': processed '+Math.min(i+2,y1)+' / '+y1+' · '+rows.length+' events · '+failed.length+' failed year(s)');
+ }
+ if(failed.length){hstat('Some years unavailable: '+failed.join(', ')+'. Results are incomplete.');if(!rows.length)throw Error('USGS historical source unavailable');}
+ hist=rows;if(!failed.length)hstat(rows.length+' earthquakes, '+y0+'–'+y1+', M≥'+mag);return rows}
 async function loadHist(){const rows=await fetchHist();const g=L.layerGroup();
  rows.forEach(r=>{const m=r[5]||0;L.circleMarker([r[2],r[3]],{renderer:CV,radius:Math.max(2.5,m*1.3),color:'#fff',weight:.4,fillColor:qc(m),fillOpacity:.75})
   .bindPopup(`<b>M ${m.toFixed(1)}</b> ${esc(r[6])}<br>${new Date(r[1]).toUTCString()}<br>Depth: ${(+r[4]).toFixed(1)} km`).addTo(g)});return g}
@@ -472,7 +503,8 @@ async function downloadHist(){try{if(!hist.length)await fetchHist()}catch(e){ret
  const r=['id,time_iso,latitude,longitude,depth_km,magnitude,place'].concat(hist.map(x=>[x[0],new Date(x[1]).toISOString(),x[2],x[3],x[4],x[5],'"'+String(x[6]).replace(/"/g,'""')+'"'].join(',')));
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.join('\n')],{type:'text/csv'}));
  a.download='earthquakes_'+$('#hFrom').value+'-'+$('#hTo').value+'_M'+$('#hMag').value+'.csv';a.click()}
-$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-7;
+$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-29;
+ $('#h30').onclick=()=>{$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-29;reloadHist()};
 $('#hShow').onclick=()=>reloadHist();$('#hCsv').onclick=downloadHist;
 async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}
 $('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-4;
