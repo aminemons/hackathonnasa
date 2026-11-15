@@ -93,7 +93,7 @@ def parse(state: State) -> dict:
         actions.append({"type":"open_tool", "value":"glof"})
         reply="Opening published historical glacial-lake monitoring: five lakes, 253 dated radar observations. It is not a breach forecast or emergency warning."
         intent="glof"
-    elif if re.search(r"\b(scars?|segmentation|unet|u-net|after landslide|detect landslide)\b", msg):
+    elif re.search(r"\b(scars?|segmentation|unet|u-net|after landslide|detect landslide)\b", msg):
         actions.append({"type":"open_tool", "value":"scar"})
         reply="Opening post-event scar detection. It maps disturbed land after a landslide, not how dangerous the terrain is."
         intent="scar"
