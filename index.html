@@ -68,6 +68,15 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
 #voiceStatus{padding:0 10px 7px;color:var(--m);font-size:12px}
 .chip{display:inline-block;border:1px solid var(--blue);color:var(--blue);border-radius:14px;padding:1px 9px;margin:2px;cursor:pointer;font-size:12px}
 .doc{max-width:860px;margin:0 auto;padding:28px 22px;overflow:auto;height:100%}.doc h2{color:var(--blue)}.doc a{color:#1a5fd0}
+#pHow .how-guide{max-width:1120px;line-height:1.7;scroll-behavior:smooth;overflow-wrap:anywhere}
+.how-guide h2{font-size:30px;line-height:1.2;margin:8px 0 14px}.how-guide h3{font-size:23px;line-height:1.3;color:var(--navy);margin:0 0 12px}.how-guide h4{font-size:17px;margin:22px 0 8px}
+.how-kicker{color:var(--m);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.how-lead{font-size:17px;max-width:84ch}.how-section{border-top:1px solid var(--line);padding:28px 0;scroll-margin-top:18px}.how-section p{max-width:96ch}
+.how-summary,.how-note{background:#eaf2ff;border:1px solid #cbdcf5;border-radius:12px;padding:16px 20px;margin:20px 0}.how-note{background:#fff8ec;border-color:#ecd8b3}
+.how-contents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0 30px}.how-contents a{display:block;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;text-decoration:none;font-weight:600}.how-contents a:hover{background:#eaf2ff}.how-contents a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.how-table{overflow-x:auto;max-width:100%;margin:18px 0;border:1px solid var(--line);border-radius:10px}.how-table table{border-collapse:collapse;width:100%;min-width:620px;background:#fff;text-align:left;font-size:13px}.how-table th,.how-table td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}.how-table th{background:#eaf2ff;color:var(--navy)}.how-table tr:last-child td{border-bottom:0}
+.how-guide code{background:#e8eef8;padding:2px 5px;border-radius:4px;font-size:.92em}.how-guide pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#102c54;color:#eef5ff;border-radius:10px;padding:16px 20px;font:13px/1.7 ui-monospace,monospace}.how-guide pre code{background:none;padding:0}.how-guide li{margin:7px 0}.how-back{font-size:12px}
+@media(max-width:680px){#pHow .how-guide{padding:22px 16px}.how-contents{grid-template-columns:repeat(2,minmax(0,1fr))}.how-guide h2{font-size:25px}.how-guide h3{font-size:21px}.how-table table{min-width:560px}}
+@media(prefers-reduced-motion:reduce){#pHow .how-guide{scroll-behavior:auto}}
 .ts{display:none}.ts.show{display:block}
 .seaice-grey{filter:grayscale(1) brightness(.55) contrast(1.3)}
 .leaflet-control-attribution{font-size:10px}
@@ -125,11 +134,234 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
       </span></div><div id="tp-voice-state" role="status" aria-live="polite">Type or speak a question. Voice replies are optional.</div><div id="log" role="log" aria-label="TerraPulse assistant conversation"></div><form id="cf"><input type="text" id="ci" placeholder="Ask about Earth data or control the map…" autocomplete="off"><button class="btn">Send</button></form></div></div>
   </div>
  </section>
- <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>
-  <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: catalogue reports for earthquakes and landslides, plus historical glacial-lake observations (not warnings). <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
-  <p>Hover a country to see its earthquakes for the chosen period.</p>
-  <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
-  <p><b>Radar imagery:</b> “Find NISAR” searches NASA Earthdata for acquisition metadata; “Show daily radar” displays NASA GIBS browse imagery. The GIBS image is a visualization and may mosaic acquisitions; this view does not expose calibrated backscatter values. Guelma, Réghaïa and Pine Island comparisons use dated, bundled browse crops. The lake outlines are published Sentinel-1 model outputs with site-specific confidence and dates. This app does not publish Google Earth Engine tile layers; the Guelma Earth Engine script is a separate preparation workflow.</p></div></section>
+ <section class="page" id="pHow"><article class="doc how-guide" aria-labelledby="how-title">
+  <header id="how-top"><div class="how-kicker">Project methods · Published release: 15 November 2026</div>
+   <h2 id="how-title">How TerraPulse works</h2>
+   <p class="how-lead">From radar observations to an explainable Earth-change story. This guide covers what each tool reads, how we process it, which measurements and model results we publish, and how to interpret their uncertainty.</p>
+  </header>
+  <div class="how-summary"><strong>The project in one sentence:</strong> TerraPulse connects an interactive atlas, dated radar evidence, a post-event landslide segmentation model, NASA’s separate hazard outlook, nearby mapped infrastructure, and a five-lake GLOF observatory. Earthquakes, landslides and glaciers are the main research stories; floods and wildfires provide supporting event and satellite context.</div>
+  <div class="how-contents" aria-label="Technical guide contents">
+   <a href="#how-scope">01 · What is implemented</a><a href="#how-controls">02 · Map and time controls</a><a href="#how-sources">03 · Datasets and ownership</a>
+   <a href="#how-radar">04 · SAR and NISAR</a><a href="#how-earthquakes">05 · Earthquakes</a><a href="#how-landslides">06 · Landslide pipelines</a>
+   <a href="#how-exposure">07 · OSM exposure screening</a><a href="#how-glof">08 · GLOF processing</a><a href="#how-results">09 · Results and case study</a>
+   <a href="#how-confidence">10 · Units and confidence</a><a href="#how-context">11 · Supporting layers</a><a href="#how-assistant">12 · Monitoring and chat</a>
+   <a href="#how-architecture">13 · Architecture and API</a><a href="#how-validation">14 · Validation and next steps</a><a href="#how-walkthrough">15 · Presentation walkthrough</a>
+  </div>
+
+  <section class="how-section" id="how-scope"><h3>01 · What the application actually delivers</h3>
+   <p>The interface brings together four kinds of evidence: <strong>reported events</strong> from catalogues; <strong>observations and derived measurements</strong> from satellites; <strong>model outputs</strong> such as water or scar masks; and <strong>context</strong> such as terrain, historical outlines and mapped buildings. These have different meanings even when drawn on the same map.</p>
+   <div class="how-table"><table><thead><tr><th>Workflow</th><th>Available in this release</th><th>Interpretation</th></tr></thead><tbody>
+    <tr><td>Earthquakes</td><td>USGS locations, event time, magnitude, depth, recent and historical filters; plate and fault context.</td><td>Reports after rupture, not earthquake occurrence prediction.</td></tr>
+    <tr><td>Landslides</td><td>Dated EONET reports, LHASA outlook, Sentinel-2 + terrain scar inference, separate NISAR change imagery, OSM proximity screening.</td><td>Each answers a separate question; they are not one calibrated risk model.</td></tr>
+    <tr><td>Glacial lakes</td><td>253 Sentinel-1 epochs across five lakes, annual glacier speed where available, one partial repeat-terrain analysis, Normal and Expert views.</td><td>Historical change evidence, not a breach forecast.</td></tr>
+    <tr><td>Floods and wildfires</td><td>EONET reports, historical flood fallback, and dated satellite context.</td><td>Event and image exploration; no validated discharge or fire-spread forecast.</td></tr>
+   </tbody></table></div>
+   <p>Use the application to locate evidence, compare dates, communicate observed patterns and decide what needs scientific review. An empty catalogue, a low model score or a small mapped footprint cannot establish that a place is safe.</p>
+  </section>
+
+  <section class="how-section" id="how-controls"><h3>02 · Navigate the atlas and keep the clocks separate</h3>
+   <ol><li>Open <strong>Dataset</strong>, expand a hazard, and enable its layer. The search box matches dataset names and keywords. <strong>Show more datasets</strong> reveals the additional categories.</li>
+    <li>Open <strong>Time</strong> for the enabled dataset’s relevant controls. Recent earthquakes use 24 hours, 7 days or the last 30 days; the separate history control retrieves calendar years, including a 30-year window.</li>
+    <li>Use the earthquake magnitude filter to reduce the event set. Depth colouring describes hypocentral depth; symbol size is a visual magnitude encoding.</li>
+    <li>Choose a satellite image date for dated raster layers. A browse product may be a mosaic or composite, so check the product date and acquisition metadata rather than assuming every displayed pixel was observed that day.</li>
+    <li>Read <strong>Legend</strong> and click a feature for its source and date. Hovering a country summarizes the selected earthquake observations. Base-map choices are Satellite, Streets and Topographic; they change geographic context, not model results.</li>
+   </ol>
+   <p>The main atlas uses Leaflet’s web-map projection. The GLOF observatory includes an <strong>Equal Earth study locator</strong> to compare the five study locations. Scientific areas are calculated on projected analysis grids, not by measuring screen pixels in either map.</p>
+   <div class="how-note"><strong>There is no universal observation time.</strong> A selected SAR acquisition, an annual ITS_LIVE velocity, a two-date elevation change, an OSM source snapshot and a hazard-outlook issue time remain separate. Moving a timeline does not create a same-day glacier-speed or water-level observation.</div>
+  </section>
+
+  <section class="how-section" id="how-sources"><h3>03 · Dataset selection and agency provenance</h3>
+   <p>We chose repeat radar acquisitions for surface-change evidence, independently supplied labels for segmentation evaluation, optical and terrain data for cross-checks, and public catalogues and infrastructure maps for context. The application preserves source identity rather than calling all satellite data “NASA data”.</p>
+   <div class="how-table"><table><thead><tr><th>Provider / dataset</th><th>Role in the project</th><th>Boundary to remember</th></tr></thead><tbody>
+    <tr><td>Joint NASA–ISRO NISAR, accessed through NASA / ASF</td><td>L-band radar browse comparisons and a real calibrated GCOV change example.</td><td>Joint mission provenance; these are distinct from the Sentinel-1 lake classifier.</td></tr>
+    <tr><td>NASA MEaSUREs ITS_LIVE</td><td>Historical annual surface speed for glacier candidates near studied lakes.</td><td>Scalar speed and supporting pixels, not glacier volume or a current flow forecast.</td></tr>
+    <tr><td>NASA LHASA / NASA EONET / NASA GIBS</td><td>Respectively: hazard outlook, curated event metadata, and imagery delivery.</td><td>These products do not have interchangeable units, coverage or update times.</td></tr>
+    <tr><td>India / NRSC Resourcesat-2</td><td>South Lhonak’s dated 2016 lake inventory provides Indian historical context.</td><td>It is not same-date shoreline truth for a 2023 radar acquisition.</td></tr>
+    <tr><td>India / ISRO S-band via Bhoonidhi</td><td>Access path documented for future ingestion.</td><td>No ISRO S-band observations are ingested into the shipped lake model.</td></tr>
+    <tr><td>ESA / Copernicus Sentinel-1 and Sentinel-2; GLO-30 terrain</td><td>C-band VV/VH lake sequences; automatic optical references; terrain covariates.</td><td>ESA acquisitions remain ESA evidence even when accessed through another provider.</td></tr>
+    <tr><td>GLIMS / NSIDC contributors; EC JRC / Google; research / CNES-derived Pléiades</td><td>Historical glacier outlines, water context, and repeat terrain.</td><td>Outlines, water climatology and elevation surfaces retain their own dates and limitations.</td></tr>
+    <tr><td>USGS, GEM, Natural Earth, GDACS, OpenStreetMap and Esri</td><td>Earthquake reports, faults, map outlines, archived flood bulletins, infrastructure and basemaps.</td><td>Attribution and source-specific licences still apply; OSM coverage is incomplete.</td></tr>
+   </tbody></table></div>
+   <p>CSA RADARSAT/RCM and CONAE SAOCOM are useful partner resources, but their availability in the challenge resources does not mean they were ingested here. The <a href="/data/hazard-registry.json" target="_blank" rel="noopener">published data registry</a> and lake source tables identify implemented evidence. An Earthdata search result is acquisition metadata, not proof that its raster has been downloaded and analysed.</p>
+  </section>
+
+  <section class="how-section" id="how-radar"><h3>04 · Understand SAR, NISAR and image comparisons</h3>
+   <p>Synthetic aperture radar transmits microwave energy and measures the returning signal. Surface roughness, moisture, vegetation, snow/ice conditions, viewing geometry and acquisition configuration can all affect the return. VV and HH are co-polarized channels; VH and HV are cross-polarized. Similar-looking colour changes can therefore have different physical causes.</p>
+   <h4>Browse imagery and quantitative radar measurements</h4>
+   <p><strong>Find NISAR</strong> searches acquisition metadata. <strong>Show daily radar</strong> displays NASA GIBS browse imagery; the displayed colours do not expose calibrated backscatter measurements. Guelma, Réghaïa and Pine Island comparisons use dated bundled browse crops. The separate Guelma Earth Engine preparation script is not a live Earth Engine tile service in this application.</p>
+   <p>The <strong>NISAR radar observations</strong> tool provides a separate, real L-band GCOV comparison for the Himalayas, acquired <strong>30 October and 11 November 2026</strong>, with before, after, change and candidate views. Both acquisitions postdate the August Rasuwa event. They show later radar change and cannot retrospectively detect that August event from a pre-event / post-event pair.</p>
+   <pre>For positive linear radar power P: backscatter_dB = 10 × log10(P)
+Compare matched band, polarization, orbit, geometry and valid pixels.
+Change_dB = after_dB − before_dB; preserve the actual date pair.</pre>
+   <p>Apply that conversion only when the source is linear power; an already-dB raster must not be logged again. Brightening or darkening alone does not identify a landslide, flood or glacier melt. Terrain shadow, layover, seasonal changes, misregistration and sensor-domain differences require checks. Candidate imagery is an inspection aid, not a calibrated event probability.</p>
+   <p>Interferometric GUNW analysis and offset-based GOFF analysis answer different questions. A defensible line-of-sight displacement workflow needs phase, coherence, masks, wavelength, look geometry, reference and sign convention; offset-to-speed conversion also needs the acquisition interval. The atlas does not supply a global operational deformation or glacier-flow-vector service. The C-band VV/VH water classifier is not silently applied to NISAR L-band HH or ISRO S-band.</p>
+  </section>
+
+  <section class="how-section" id="how-earthquakes"><h3>05 · Earthquake catalogue pipeline</h3>
+   <pre>USGS public feed / ComCat query → schema and coordinate checks
+→ magnitude and time filtering → dated map symbols and country summaries
+→ optional depth colouring, historical comparison and CSV export</pre>
+   <p>Each event retains its USGS identifier, UTC event time, longitude, latitude, reported magnitude, depth in kilometres and source link. Magnitude is logarithmic and is distinct from shaking intensity, displacement and expected damage. PAGER information or a tsunami flag is reported source context, not a prediction made by TerraPulse.</p>
+   <p>The recent map uses the selected earthquake period. The separate historical workflow queries years with magnitude filtering and visible progress; its 30-year control is not a 30-day feed. Failed queries and provider limits affect completeness. GEM active faults and tectonic plate boundaries help explain geological setting but are not imminent-rupture forecasts.</p>
+   <p>Catalogue monitoring checks at most every two minutes while enabled. This is our polling interval, not guaranteed detection latency. Earthquake early warning would require a separate operational network detecting a rupture already underway; it is not implemented here.</p>
+  </section>
+
+  <section class="how-section" id="how-landslides"><h3>06 · Four separate landslide evidence pipelines</h3>
+   <h4>A. Dated reports: where was an event reported?</h4>
+   <p>The map reads NASA EONET catalogue metadata. On 15 November 2026, the open and last-365-day landslide scopes were empty, while the wider archive contained <strong>17 reports dated 2015–2020</strong>. Archive browsing therefore has a verified bundled fallback with source URL, retrieval time, original IDs and a response hash. Five reports supply points and twelve supply regions; those polygons are NASA-reported event regions, not measured scar boundaries. The visible date range and map extent make the historical scope explicit. Current Alarm monitoring does not substitute those archived events into its live feed.</p>
+   <h4>B. NASA LHASA: what does the separate hazard outlook show?</h4>
+   <p>Open <strong>NASA LHASA · Tomorrow forecast</strong> and nominate coordinates. The Python API reads NASA’s published Hazard Tomorrow raster for a bounded area and returns a preview and source metadata. The underlying request uses EPSG:4326 and a 30-arcsecond sampling step; physical pixel size varies with latitude. Coverage is limited to 60°S–60°N.</p>
+   <p>Display bands are <strong>low below 0.02</strong>, <strong>moderate from 0.02 to below 0.10</strong>, and <strong>elevated at or above 0.10</strong>. These are transparent research display bins, not locally calibrated event probabilities. A score of 0.10 must not be presented as “10% chance of a landslide here”. Retrieval time is not a substitute for a missing issue or valid time.</p>
+   <h4>C. Post-event scar detection: which image pixels resemble a scar?</h4>
+   <pre>12 Sentinel-2 channels + ALOS slope and elevation → 14-channel tile
+→ trained spatial U-Net ensemble → CPU ONNX inference
+→ per-pixel scores → thresholded mask → 8-connected components
+→ satellite / reference / prediction / correct-false-missed comparison</pre>
+   <p>The API accepts tiles up to <strong>128 × 128 pixels</strong> in the published channel order. A pixel missing any required channel remains unscored. The validation-selected threshold is <strong>0.943109</strong>; it is a classifier decision threshold, not a physical hazard threshold. The shipped model uses an ensemble of two selected spatial U-Nets and runs with ONNX Runtime on CPU. Training was offline; opening the website does not retrain the model.</p>
+   <p>The recorded repeated Landslide4Sense test contains <strong>80 chips</strong>: F1 <strong>0.7228</strong>, precision <strong>0.7041</strong>, recall <strong>0.7425</strong> and average precision <strong>0.7632</strong>. Validation used 48 chips. This is benchmark segmentation performance, not performance on every country, NISAR image or future disaster. One example chip can score much better or worse than the aggregate.</p>
+   <p>Candidate review uses 8-connected pixel groups: at least 6 pixels to list a reviewable component, 24–127 for the medium size tier, and at least 128 for the high size tier. These unvalidated size rules prioritize image inspection. They do not estimate slope stability, future failure or casualties. Geographic linkage is available only with explicit user-supplied WGS84 bounds and image-source provenance; an ungeoreferenced benchmark tile cannot automatically be placed on a real village.</p>
+   <h4>D. Independent NISAR context</h4>
+   <p>The calibrated radar comparison in section 04 is independent evidence. It is not an input channel to the Sentinel-2 scar U-Net, and the U-Net’s F1 cannot be assigned to that NISAR change image. Combining an observed scar, a hazard outlook and a nearby road still requires spatial and temporal validation before making a risk claim.</p>
+  </section>
+
+  <section class="how-section" id="how-exposure"><h3>07 · Human exposure: geometry, counts and availability</h3>
+   <p>Open <strong>Buildings &amp; human exposure</strong> and nominate a point and a <strong>100–600 m</strong> search radius. The tool asks a covering public Overpass service for OSM building ways, selected roads/paths and sensitive facilities such as schools, clinics, hospitals and fire stations. It measures proximity to this nominated point, not to a validated landslide runout polygon.</p>
+   <pre>Bounded OSM query → validate complete response and source timestamp
+→ local metre-coordinate approximation → point-to-segment / footprint distance
+→ counts and nearest distances → attributed map geometry and review priority</pre>
+   <p>Distances use the actual returned footprints and road lines rather than their centroids; a point inside a building footprint has zero footprint distance. The local tangent-plane approximation is deliberately restricted to small searches. Road counts refer to returned OSM ways, so a segmented road is not necessarily one physical road. A school can be counted in both building and sensitive-facility categories; those counts are not additive population estimates.</p>
+   <p>The proximity queue is urgent if buildings lie within 30 m or a sensitive facility within 100 m; high includes buildings within 150 m, sensitive facilities within 300 m or roads within 30 m. Other nearby assets produce lower review tiers. These are explicit inspection rules, not debris-impact probabilities. No occupancy, people count, building vulnerability, downslope route or damage model is supplied.</p>
+   <p>Europe and North America requests prefer regional providers only where the whole query footprint fits the documented extract. Other locations use bounded global public fallbacks. The response shows provider, OSM source date, retrieval time and cache mode. Warm-process successes may be reused for one hour; explicitly labelled fallback can use a prior result younger than 24 hours. This cache is not durable across server restarts.</p>
+   <p>The map preview is capped at 300 assets while counts cover the complete accepted in-radius response. Partial, oversized or unavailable upstream results are rejected; a timeout remains unavailable, not zero assets. Public-provider availability varies, including for Himalayan sites outside the regional services. <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors, ODbL</a>.</p>
+  </section>
+
+  <section class="how-section" id="how-glof"><h3>08 · GLOF observatory: the three-indicator pipeline</h3>
+   <p>Open <strong>Dataset → Glaciers &amp; ice → Monitor GLOFs</strong>. The scientific question is whether dated lake-area change, nearby glacier movement and available surface-elevation change provide evidence that deserves review. These indicators do not form a calibrated breach-prediction model.</p>
+   <h4>Indicator 1 — experimental lake area</h4>
+   <ol><li>Acquire real same-orbit Sentinel-1 RTC VV/VH scenes for 2022–2024. Retain granule IDs, dates, manifests and hashes.</li>
+    <li>Align both radar channels and terrain on a projected <strong>20 m grid</strong>. The terrain source is a 30 m DSM; resampling to 20 m does not create 20 m native terrain detail.</li>
+    <li>Compute <strong>21 features</strong>: VV/VH dB values, their sum and difference, local means and standard deviations, residuals, edge features, a dark-pixel fraction, terrain slope and local relative height. Relative height is a terrain proxy, not a validated hydrological HAND product.</li>
+    <li>Apply the shipped <strong>XGBoost water classifier</strong> and the <strong>0.35</strong> decision threshold. Select a connected component near the nominated lake location, with a minimum size of 12 pixels and a 1.2 km search vicinity.</li>
+    <li>Sum projected pixel area and polygonize the selected mask. Keep the epoch’s valid-data fraction; scenes with at least 70% valid coverage pass the recorded coverage check. Coverage acceptance alone does not certify the shoreline.</li>
+    <li>Repeat with decision thresholds shifted by ±0.10 to show sensitivity. If no lake component is resolved, preserve a null estimate and a gap rather than claiming the lake vanished.</li></ol>
+   <pre>Lake area (km²) = selected valid lake pixels × projected pixel area (m²) / 1,000,000
+On a 20 m square grid: one pixel = 400 m² = 0.0004 km².
+Relative area change (%) = 100 × (A_after − A_before) / A_before.</pre>
+   <p>An adjacent-observation drop below 70% of the preceding area, where that preceding area exceeds 0.05 km², is an <strong>area-drop review candidate</strong>. Seasonal ice, radar geometry and classification errors can produce apparent changes. The rule detects a change between acquisitions; it does not predict a future outburst.</p>
+   <h4>Indicator 2 — annual glacier surface speed</h4>
+   <p>NASA ITS_LIVE supplies annual velocity products. We aggregate valid pixels inside historical glacier-outline candidates near the lakes and preserve year, support pixels, coverage and source quality. Annual speed is in <strong>m/year</strong>. The spatial glacier association is provisional; a nearby outline is not automatically a verified feeding glacier. Marker-size animation switches historical annual values without moving the geographic coordinates or inventing a flow direction.</p>
+   <h4>Indicator 3 — partial surface-elevation change</h4>
+   <p>For South Lhonak only, matched repeat terrain is compared over common valid glacier-candidate pixels, with stable-ground bias and scatter diagnostics. For each valid pixel, Δh = elevation_after − elevation_before, in metres. Integrating Δh × pixel area yields a <strong>partial surface-volume change</strong> in m³ over the sampled footprint. It is not ice thickness, whole-glacier volume, meltwater production or lake storage.</p>
+   <p><strong>Water level and lake volume remain unmeasured.</strong> A surface-area increase does not uniquely determine a level rise. Water level needs a gauge, suitable altimetry or independently validated shoreline–elevation inference; lake volume needs bathymetry or an appropriate area–elevation–volume relationship. Glacier speed cannot supply either quantity by itself.</p>
+   <h4>Normal and Expert modes</h4>
+   <p><strong>Normal</strong> presents the three indicator cards, available dates, time series, study location and a plain-language interpretation. <strong>Expert</strong> adds per-indicator grades, optical-reference comparisons, coverage, source lineage, sensitivity ranges, context geometry and available exports. The modes change explanation depth; they use the same scientific results.</p>
+   <p>Selecting a radar epoch updates that epoch’s lake-area card and its outline on the main atlas. Annual velocity and repeat terrain retain their own dates. Historical inventories, glacier outlines and radar-derived water use separate layer identities; the map popup preserves each source date.</p>
+  </section>
+
+  <section class="how-section" id="how-results"><h3>09 · Published results and the South Lhonak story</h3>
+   <div class="how-table"><table><thead><tr><th>Lake</th><th>SAR epochs</th><th>2024 glacier speed</th><th>Water-map grade</th><th>Repeat terrain</th></tr></thead><tbody>
+    <tr><td>South Lhonak · India</td><td>51</td><td>14.71 m/year</td><td>Limited</td><td>Partial, 2022–2023</td></tr>
+    <tr><td>Imja Tsho · Nepal</td><td>50</td><td>3.37 m/year</td><td>Low</td><td>Unavailable</td></tr>
+    <tr><td>Tsho Rolpa · Nepal</td><td>50</td><td>2.21 m/year</td><td>Moderate</td><td>Unavailable</td></tr>
+    <tr><td>Laguna Palcacocha · Peru</td><td>50</td><td>Unavailable</td><td>Unassessed</td><td>Unavailable</td></tr>
+    <tr><td>Suicide Basin · Alaska</td><td>52</td><td>20.04 m/year</td><td>Low</td><td>Unavailable</td></tr>
+   </tbody></table></div>
+   <p>The 253 epochs are dated through 2024; they are not 253 successful shorelines or continuously updated observations. In particular, <strong>47 Suicide Basin epochs are unresolved</strong>. Missing Palcacocha velocity and missing repeat terrain at four sites remain unavailable.</p>
+   <h4>South Lhonak: historical replay around the October 2023 outburst</h4>
+   <p>The documented outburst occurred on <strong>4 October 2023</strong>. The observatory initially selects <strong>7 October 2023</strong>, a post-event radar acquisition. Modelled area changes from <strong>0.8228 km² on 25 September</strong> to <strong>0.5724 km² on 7 October</strong>: a decrease of 0.2504 km², approximately <strong>30.4%</strong>. These dates bracket the documented event; they do not establish the exact time of drainage or prove a causal mechanism from radar alone.</p>
+   <p>The partial terrain comparison spans <strong>18 October 2022 to 29 October 2023</strong>. Mean Δh is about <strong>−7.19 m</strong>, and integrated partial surface-volume change is about <strong>−3.801 million m³</strong> across <strong>0.529 km²</strong>, only <strong>5.2%</strong> of the selected historical glacier outline. Stable-ground NMAD is about <strong>0.59 m</strong>. Do not extrapolate that small sampled footprint to the whole glacier or interpret it as lake water discharged.</p>
+   <p>The independent optical checks of the final connected lake masks have IoU <strong>0.4923</strong> for 25 September and <strong>0.6438</strong> for 7 October. References are automatic optical products on nearby dates, not surveyed shorelines. October monthly water products can mix pre-event and post-event observations. The story is therefore a dated, uncertainty-aware reconstruction, not an advance warning demonstration.</p>
+  </section>
+
+  <section class="how-section" id="how-confidence"><h3>10 · Units, validation metrics and confidence</h3>
+   <div class="how-table"><table><thead><tr><th>Quantity</th><th>Unit / meaning</th><th>Do not substitute</th></tr></thead><tbody>
+    <tr><td>Longitude / latitude; dates</td><td>Degrees in WGS84; observation dates / UTC event times.</td><td>A retrieval timestamp does not replace acquisition time.</td></tr>
+    <tr><td>Radar backscatter / change</td><td>dB where explicitly converted from calibrated power.</td><td>Browse image RGB values are not a backscatter measurement.</td></tr>
+    <tr><td>Lake area / glacier speed</td><td>km² / m/year.</td><td>Neither is measured water level, stored water volume or breach probability.</td></tr>
+    <tr><td>Elevation change / partial integrated change</td><td>m / m³ over the observed footprint.</td><td>No automatic density conversion to mass or full-glacier extrapolation.</td></tr>
+    <tr><td>Scar and water classifier scores / LHASA score</td><td>Unitless model outputs with task-specific thresholds.</td><td>No local event-risk percentage is established.</td></tr>
+    <tr><td>OSM distance / counts</td><td>m / returned mapped objects.</td><td>Not population, casualties, damage or a debris arrival time.</td></tr>
+    <tr><td>Earthquake magnitude / depth</td><td>Reported logarithmic magnitude / km.</td><td>Not shaking intensity or radar displacement.</td></tr>
+   </tbody></table></div>
+   <pre>Precision = TP / (TP + FP)          Recall = TP / (TP + FN)
+IoU = TP / (TP + FP + FN)          F1 = 2TP / (2TP + FP + FN)</pre>
+   <p>TP, FP and FN are correctly detected, falsely detected and missed positive pixels against a specified reference. Scores depend on the task, reference quality, evaluation region and missing-data mask. They do not measure disaster-prediction accuracy.</p>
+   <p>The water benchmark uses <strong>446 Sen1Floods11 chips across 11 held-out event-region folds</strong>, with a separate validation region inside each fold. Pooled water IoU is <strong>0.5863</strong>, F1 <strong>0.7392</strong>, precision <strong>0.7446</strong> and recall <strong>0.7339</strong>. The tuned terrain-aware baseline has IoU <strong>0.4561</strong>. The event-cluster bootstrap interval for model IoU is approximately <strong>0.4963–0.6744</strong>; eleven event clusters provide limited generalization evidence. Earlier work inspected the official test, so a separate score on that split is not a fresh blind certification.</p>
+   <p>That benchmark concerns surface-water segmentation, including lowland floods. It does not validate transfer to every alpine lake, NISAR band or GLOF event. Local optical shoreline checks provide different, imperfect evidence. Manual shoreline validation remains pending.</p>
+   <p><strong>Qualitative grades</strong> such as limited, low, moderate, unassessed and insufficient describe evidence support. Per-lake water grades use available automatic optical comparisons; combined GLOF evidence grades also consider other indicators. A combined “limited” grade cannot upgrade a low or unassessed water map. Threshold sensitivity ranges are not 95% confidence intervals, and stable-ground NMAD is not a calibrated volume error bar.</p>
+   <p>The water-map grading rule uses comparisons with at least 100 annotated water pixels: <strong>moderate</strong> requires at least two usable checks with median classifier IoU at least 0.70; <strong>limited</strong> uses a median of at least 0.40; a lower available median is <strong>low</strong>; no usable comparison is <strong>unassessed</strong>. These are project evidence conventions. The Expert view separately reports final connected-lake-mask checks, so their IoU must not be confused with raw classifier pixel diagnostics.</p>
+  </section>
+
+  <section class="how-section" id="how-context"><h3>11 · Flood, wildfire and other contextual layers</h3>
+   <p><strong>Floods:</strong> EONET provides reported events. When current and recent flood scopes are empty or unavailable, a separately labelled GDACS historical snapshot can provide context. The MODIS three-day mapped-flood product is a dated satellite composite with cloud and coverage gaps. The water classifier benchmark above does not create a live global flood map. GloFAS discharge forecasting, breach routing and validated downstream depths or arrival times are not integrated here.</p>
+   <p><strong>Wildfires:</strong> EONET event locations and MODIS smoke/aerosol context help tell a dated story. Aerosol optical depth is not a fire boundary or a local air-quality health assessment. FIRMS thermal detections and a wind/fuel-driven spread model require separate ingestion and validation; no validated fire-spread forecast is shipped.</p>
+   <p><strong>Other datasets:</strong> volcanoes, storms and drought use catalogue context; terrain hillshade supplies relief. The cloud-fraction layer is not rainfall. Polar ice surface temperature is not sea-ice concentration or glacier velocity. A land-surface-temperature layer shown under land-subsidence context does not measure subsidence displacement. Natural Earth glacier outlines are geographic context, not measured motion.</p>
+   <p>Satellite tile failures can reflect geographic, date or projection limits. Some image layers try earlier dates when tiles are absent; the actual selected date is reported. An empty or unavailable tile is not evidence that the physical process stopped.</p>
+  </section>
+
+  <section class="how-section" id="how-assistant"><h3>12 · Alarm monitoring and the map assistant</h3>
+   <p>The <strong>Alarm</strong> page contains three opt-in catalogue watches: USGS earthquakes checked every 2 minutes, EONET landslides every 10 minutes, and the historical five-lake study checked daily. The last watch rereads published historical evidence; it does not acquire new radar scenes every day. The first successful retrieval establishes a baseline without a burst of “new” notifications. Event IDs are deduplicated, and the interface separates checked-empty, loading and unavailable states.</p>
+   <p>Notifications and sound are optional browser features while the page is open. A historical GLOF observation or a catalogue’s “open” flag is not an emergency warning. Neither notification availability nor a successful refresh certifies source completeness.</p>
+   <p>The chatbot maps supported language to deterministic actions such as <code>show earthquakes</code>, <code>zoom to Japan</code>, <code>open legend</code>, <code>open GLOF monitoring</code>, <code>satellite</code> or <code>clear all</code>. An optional server-side language model can expand explanations; the action router remains separate. When a model is unconfigured or unavailable, supported commands and source-linked explanations still work. Provider credentials stay server-side.</p>
+   <p>Microphone input and optional spoken replies use browser speech features and require browser support and permission. A chatbot answer is not a new scientific measurement, and the assistant cannot turn missing lake level, missing exposure or an unvalidated heuristic into a probability.</p>
+  </section>
+
+  <section class="how-section" id="how-architecture"><h3>13 · Architecture, API contracts and reproducibility</h3>
+   <pre>OFFLINE SCIENCE
+Acquisition manifests → calibration / alignment / masks → training or inference
+→ validation and indicator aggregation → versioned compact JSON / GeoJSON / imagery
+
+IN THE BROWSER
+Vite-built Leaflet atlas + lazy React GLOF panel + source adapters
+→ public USGS / EONET / GIBS, or same-origin fallback on connection failure
+→ static historical evidence, time controls, maps and local CSV exports
+
+ON DEMAND IN PYTHON
+Published GLOF evidence / CPU ONNX scar inference / NASA LHASA retrieval
+OSM geometry screening / catalogue proxy / deterministic chat actions</pre>
+   <p>The scientific water model, terrain processing and full satellite downloads do not run for each visitor. New GLOF acquisitions require an offline processing, review, export and deployment cycle. The release keeps model weights, source granules, hashes, reference checks and dated geometry; it is a compact publication rather than the entire raw radar archive.</p>
+   <p>The portable deployment serves the built frontend and Python routes on one origin using Gunicorn and Flask; the repository also supports Vercel’s Python functions. Same-origin routing avoids separate frontend/backend URL setup. Public-source outages remain external dependencies on either host. Browser/session caching and bounded queries reduce repeated requests; they do not guarantee data freshness or unlimited capacity.</p>
+   <div class="how-table"><table><thead><tr><th>Route</th><th>Contract</th></tr></thead><tbody>
+    <tr><td><a href="/api/glof" target="_blank" rel="noopener"><code>GET /api/glof</code></a></td><td>Five-site catalogue; add <code>site=south_lhonak</code> for indicator summaries, <code>view=geometry&amp;date=2023-10-07</code> for dated geometry, or <code>view=csv</code> for observations.</td></tr>
+    <tr><td><a href="/api/landslide" target="_blank" rel="noopener"><code>GET /api/landslide</code></a></td><td>Scar model card; <code>example=1</code> runs the real bundled inference example. POST accepts width, height and one ordered 14-value row per pixel; incomplete pixels remain unscored.</td></tr>
+    <tr><td><code>GET /api/forecast</code></td><td>Longitude and latitude select a bounded NASA LHASA raster request; response includes preview, sampling and source metadata.</td></tr>
+    <tr><td><code>GET /api/exposure</code></td><td><code>lon</code>, <code>lat</code>, <code>radius_m</code> select a bounded mapped-asset proximity screen with provider/cache provenance.</td></tr>
+    <tr><td><code>GET /api/events</code>; <code>GET /api/catalog</code></td><td>Normalized hazard records and bounded EONET queries. Historical landslide fallback requires explicit opt-in; default monitoring retains current scope.</td></tr>
+    <tr><td><code>GET /api/chat</code>; <code>POST /api/chat</code></td><td>Capabilities, source-grounded explanations and supported map actions; optional generative replies depend on server configuration.</td></tr>
+   </tbody></table></div>
+   <p>Unknown GLOF sites or dates return 404, unsupported views return 400, and missing or corrupt scientific evidence returns unavailable rather than fabricated output. CSV keeps unresolved measurements blank. JSON preserves nulls, units, confidence meanings and independent observation dates.</p>
+   <h4>Reproduce the real lake example from the repository</h4>
+   <pre><code>python -m pip install -r "machine learning/glof/requirements.txt"
+python "machine learning/glof/check_example.py"
+# Fresh CPU inference should reproduce South Lhonak: 0.5724 km², 7 October 2023.
+# After a complete reviewed scientific run:
+python scripts/export_glof.py --artifacts /path/to/real/artifacts</code></pre>
+   <p>See the <a href="https://github.com/aminemons/hackathonnasa/blob/main/machine%20learning/glof/README.md" target="_blank" rel="noopener">scientific processing instructions</a>, <a href="/data/glof-study/validation.json" target="_blank" rel="noopener">water benchmark record</a> and <a href="/data/glof-study/south_lhonak/summary.json" target="_blank" rel="noopener">complete South Lhonak evidence</a>. Reproducing a numeric result establishes software consistency, not independent scientific accuracy.</p>
+  </section>
+
+  <section class="how-section" id="how-validation"><h3>14 · What has been tested, and what is still needed</h3>
+   <p>Software checks cover API contracts, actual CPU inference, scientific export/source hashes, missing values, dated geometry, model thresholds, elapsed-time plots, projection boundaries, source failures and browser interactions. The deployed public endpoint has also been exercised with real catalogue and OSM requests. Fixture-based UI tests verify controls and failure handling; they do not prove that a public provider is always online or that a scientific model generalizes worldwide.</p>
+   <div class="how-table"><table><thead><tr><th>Question</th><th>Current evidence</th><th>Required next work</th></tr></thead><tbody>
+    <tr><td>Can we show historical surface change?</td><td>Yes: dated imagery, lake masks, catalogue reports and annual glacier context, with gaps retained.</td><td>More independently reviewed shorelines and site-specific quality checks.</td></tr>
+    <tr><td>Can we flag a change for expert review?</td><td>Experimental rules for area drops, scar components and asset proximity.</td><td>Seasonal controls, independent event holdouts, measured false alarms and coverage.</td></tr>
+    <tr><td>Can we rank GLOF susceptibility or predict breach?</td><td>No calibrated event-prediction model is published.</td><td>Verified dams, lake bathymetry/storage, triggers, stable control lake-years, independent validation and ground observations.</td></tr>
+    <tr><td>Can we calculate downstream flood depth or arrival time?</td><td>No validated downstream result is served.</td><td>Breach scenarios, suitable terrain, boundary conditions, hydraulic modelling and observed inundation validation.</td></tr>
+    <tr><td>Can we issue official warnings?</td><td>No operational warning chain is established.</td><td>Monitoring infrastructure, calibrated decision thresholds, accountable institutions and emergency protocols.</td></tr>
+   </tbody></table></div>
+   <p>Future model evaluation should hold out entire events, catchments or glaciers, compare transparent baselines, report coverage and false positives, and keep issue time ahead of any forecast target. Sensor transfer to NISAR requires appropriate bands, calibration and new labels. Access to a new dataset alone does not validate the resulting model.</p>
+  </section>
+
+  <section class="how-section" id="how-walkthrough"><h3>15 · A technical presentation walkthrough</h3>
+   <ol><li><strong>Start with the atlas.</strong> Show USGS events, a magnitude/time filter, depth colouring, faults and the historical-year control. State that these are reported earthquakes.</li>
+    <li><strong>Show actual NISAR evidence.</strong> Compare the dated browse examples or open the calibrated Himalayan GCOV views. Explain polarization, acquisition dates and competing causes of backscatter change.</li>
+    <li><strong>Separate the landslide tools.</strong> Show historical NASA reports, then the real scar inference example, then the independent LHASA outlook. Give the scar model’s benchmark F1 with its 80-chip scope.</li>
+    <li><strong>Add mapped context.</strong> Nominate a site for OSM proximity screening and read the provider/source timestamp. A source failure remains unavailable; buildings nearby do not prove debris impact.</li>
+    <li><strong>Open South Lhonak.</strong> Select 25 September and 7 October 2023; explain the 30.4% modelled area decrease around the documented event. Keep annual speed and repeat-terrain dates distinct.</li>
+    <li><strong>Switch to Expert.</strong> Show optical checks, source groups, qualitative grades, missing measurements and exports. Contrast a supported result with Palcacocha’s missing velocity and Suicide Basin’s unresolved epochs.</li>
+    <li><strong>Finish with reproducibility.</strong> Open the source-linked JSON or CSV and describe the offline publication pipeline. Explain which additional measurements would be needed before any warning or downstream-risk claim.</li></ol>
+   <p class="how-back"><a href="#how-top">Back to guide contents ↑</a></p>
+  </section>
+ </article></section>
  <section class="page" id="pSources"><div class="doc"><h2>Sources</h2><ul>
   <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
   <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>

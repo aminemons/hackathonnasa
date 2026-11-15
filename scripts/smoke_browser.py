@@ -132,6 +132,17 @@ def main():
         expect(page.locator("#tp-speak")).to_be_visible()
         expect(page.locator("#tp-voice-state")).to_be_visible()
         assert page.locator("#tp-speak").get_attribute("aria-pressed")=="false"
+        # The long technical guide must remain navigable on desktop and mobile.
+        page.locator("#nav button[data-p='How']").click()
+        expect(page.locator("#how-title")).to_have_text("How TerraPulse works")
+        assert page.locator("#pHow .how-contents a").count()==15
+        assert page.evaluate("[...document.querySelectorAll('#pHow .how-contents a')].every(a=>document.getElementById(a.hash.slice(1)))")
+        page.locator("#pHow .how-contents a[href='#how-glof']").click()
+        page.wait_for_function("document.querySelector('#pHow .how-guide').scrollTop > 0")
+        expect(page.locator("#how-glof h3")).to_contain_text("GLOF observatory")
+        page.set_viewport_size({"width":390,"height":844})
+        assert page.evaluate("(()=>{const g=document.querySelector('#pHow .how-guide');return g.scrollWidth<=g.clientWidth+1})()")
+        page.set_viewport_size({"width":1440,"height":900})
         page.locator("#nav button[data-p='Sources']").click()
         page.locator("#tp-check-sources").click()
         expect(page.locator("#tp-source-results")).to_contain_text("USGS earthquakes",timeout=20000)
