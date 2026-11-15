@@ -26,6 +26,7 @@ class ChatProviderTests(unittest.TestCase):
     def test_action_validation_drops_unknown_and_out_of_range_actions(self):
         actions = chat_provider.validate_actions([
             {"type": "open_tool", "value": "forecast", "url": "javascript:alert(1)"},
+            {"type": "open_tool", "value": ["forecast"]},
             {"type": "zoom", "lon": 0, "lat": 90, "zoom": 6},
             {"type": "layer", "value": "quakes", "enabled": "yes"},
             {"type": "layer", "value": "quakes", "enabled": True},
@@ -85,6 +86,12 @@ class ChatProviderTests(unittest.TestCase):
         result = chat_provider.generate("show faults")
         self.assertFalse(result["model_is_generative"])
         self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
+
+    @patch.dict("os.environ", {"AI_GATEWAY_API_KEY": "gateway-key"}, clear=True)
+    @patch.object(chat_provider, "urlopen")
+    def test_non_object_model_output_uses_fallback(self, urlopen):
+        urlopen.return_value = Response({"choices": [{"message": {"content": "[]"}}]})
+        self.assertFalse(chat_provider.generate("hello")["model_is_generative"])
 
     @patch.object(chat_provider, "_model_reply")
     def test_safety_response_bypasses_model(self, model_reply):

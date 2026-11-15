@@ -54,22 +54,24 @@ def validate_actions(value) -> list[dict]:
         if not isinstance(action, dict):
             continue
         kind = action.get("type")
-        if kind == "open_tool" and action.get("value") in ALLOWED_TOOLS:
-            valid.append({"type": kind, "value": action["value"]})
-        elif kind == "layer" and action.get("value") in layers and type(action.get("enabled")) is bool:
-            valid.append({"type": kind, "value": action["value"], "enabled": action["enabled"]})
-        elif kind == "basemap" and action.get("value") in ALLOWED_BASEMAPS:
-            valid.append({"type": kind, "value": action["value"]})
+        target = action.get("value")
+        target = target if isinstance(target, str) else None
+        if kind == "open_tool" and target in ALLOWED_TOOLS:
+            valid.append({"type": kind, "value": target})
+        elif kind == "layer" and target in layers and type(action.get("enabled")) is bool:
+            valid.append({"type": kind, "value": target, "enabled": action["enabled"]})
+        elif kind == "basemap" and target in ALLOWED_BASEMAPS:
+            valid.append({"type": kind, "value": target})
         elif kind == "zoom":
             lon, lat, zoom = (action.get("lon"), action.get("lat"), action.get("zoom"))
             if all(type(number) in (int, float) for number in (lon, lat, zoom)) and -180 <= lon <= 180 and -85 <= lat <= 85 and 2 <= zoom <= 10:
                 valid.append({"type": kind, "lon": lon, "lat": lat, "zoom": zoom})
         elif kind == "period" and type(action.get("days")) is int and action["days"] in (1, 7, 30):
             valid.append({"type": kind, "days": action["days"]})
-        elif kind == "tab" and action.get("value") in ALLOWED_TABS:
-            valid.append({"type": kind, "value": action["value"]})
-        elif kind == "page" and action.get("value") in ALLOWED_PAGES:
-            valid.append({"type": kind, "value": action["value"]})
+        elif kind == "tab" and target in ALLOWED_TABS:
+            valid.append({"type": kind, "value": target})
+        elif kind == "page" and target in ALLOWED_PAGES:
+            valid.append({"type": kind, "value": target})
         elif kind == "clear":
             valid.append({"type": "clear"})
     return valid
@@ -128,12 +130,14 @@ def _model_reply(message: str, history, gateway_token: str | None = None) -> dic
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
     if auth_token:
         headers["Authorization"] = "Bearer " + auth_token
-    request = Request(endpoint, data=body, headers=headers, method="POST")
     try:
+        request = Request(endpoint, data=body, headers=headers, method="POST")
         with urlopen(request, timeout=7) as response:
             payload = json.loads(response.read(64 * 1024))
         content = payload["choices"][0]["message"]["content"]
         parsed = json.loads(content)
+        if not isinstance(parsed, dict):
+            return None
         reply = parsed.get("reply")
         if not isinstance(reply, str) or not reply.strip():
             return None
