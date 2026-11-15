@@ -132,3 +132,13 @@
  .tp-alarm-global #aNotifyStatus {display:block;margin:8px 0 0;}
  .tp-alarm-item {padding:10px;}
 }
+
+/* Small, unobtrusive accessible voice controls in the assistant */
+#chatHead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tp-voice-buttons{display:inline-flex;gap:6px}
+.tp-voice-buttons button{border:1px solid #ffffff70;color:white;border-radius:6px;
+  background:#ffffff19;cursor:pointer;min-width:32px;min-height:30px;padding:3px 6px;font-size:15px}
+.tp-voice-buttons button[aria-pressed=true]{background:#fff;color:#073b8b}
+.tp-voice-buttons button:disabled{opacity:.45;cursor:not-allowed}
+#tp-voice-state{font-size:11px;color:#536680;background:#f4f7fc;padding:6px 12px}
+.tp-chat-source{display:block;font-size:11px;color:#004aad;margin-top:6px;text-decoration:underline}

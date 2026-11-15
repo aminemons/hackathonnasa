@@ -114,7 +114,12 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
    <div class="card" id="bm"><button id="bmBtn">Base map ▾</button><div id="bmList"></div></div>
    <div class="card" id="info"><b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div></div>
    <div class="card" id="chat"><button id="chatBtn">Chat with chatbot <span class="logo lslot"></span></button>
-    <div id="chatBox"><div id="chatHead">TerraPulse assistant</div><div id="log"></div><form id="cf"><input type="text" id="ci" placeholder="e.g. show floods in Algeria" autocomplete="off"><button class="btn">Send</button></form></div></div>
+    <div id="chatBox"><div id="chatHead">
+      <span>TerraPulse assistant</span>
+      <span class="tp-voice-buttons">
+        <button type="button" id="tp-listen" title="Speak to assistant" aria-label="Speak to assistant">🎙</button>
+        <button type="button" id="tp-speak" aria-pressed="false" title="Enable spoken replies" aria-label="Enable spoken replies">🔇</button>
+      </span></div><div id="tp-voice-state" role="status" aria-live="polite">Type or speak a question. Voice replies are optional.</div><div id="log" role="log" aria-label="TerraPulse assistant conversation"></div><form id="cf"><input type="text" id="ci" placeholder="Ask about Earth data or control the map…" autocomplete="off"><button class="btn">Send</button></form></div></div>
   </div>
  </section>
  <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>

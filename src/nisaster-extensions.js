@@ -397,10 +397,35 @@ async function applyAction(action) {
   }
   if(kind==='period'&&[1,7,30].includes(action.days))TP.setPeriod(action.days);
 }
-function chatSay(message,user=false){
+let spokenReplies=false;
+let lastAssistantReply='';
+const chatHistory=[];
+function voiceStatus(msg) {
+  const el=$('#tp-voice-state');if(el)el.textContent=msg;
+}
+function speakReply(message){
+  if(!spokenReplies||!('speechSynthesis' in window))return;
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(String(message||'').slice(0,1200));
+  utterance.lang='en-US';utterance.rate=1.02;utterance.pitch=1;
+  utterance.onerror=()=>voiceStatus('Speech output unavailable on this device.');
+  window.speechSynthesis.speak(utterance);
+}
+function chatSay(message,user=false,references=[]){
   const el=document.createElement('div');
   el.className='msg '+(user?'me':'bot');
   el.textContent=String(message??'');
+  if(!user){
+    for(const source of (Array.isArray(references)?references.slice(0,3):[])){
+      if(!source||typeof source.title!=='string'||typeof source.url!=='string')continue;
+      let parsed;try{parsed=new URL(source.url);}catch{continue;}
+      if(parsed.protocol!=='https:')continue;
+      const link=document.createElement('a');link.href=parsed.href;
+      link.target='_blank';link.rel='noopener noreferrer';
+      link.textContent='Source: '+source.title;link.className='tp-chat-source';
+      el.appendChild(link);
+    }
+  }
   $('#log').appendChild(el);
   $('#log').scrollTop=$('#log').scrollHeight;
 }
@@ -410,15 +435,69 @@ window.tpAsk=async raw=>{
   if(!prompt||chatInFlight)return;
   chatInFlight=true;
   chatSay(prompt,true);
+  const prior=chatHistory.slice(-6);
+  chatHistory.push({role:'user',content:prompt});
+  voiceStatus('Thinking and checking the map tools…');
   try{
     const r=await getJSON('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:prompt})});
-    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[])) await applyAction(action);
-    chatSay(r.reply||'I could not find a matching map tool.');
+      body:JSON.stringify({message:prompt,history:prior})});
+    const failed=[];
+    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[]){
+      try {await applyAction(action);}catch(error){failed.push(String(error?.message||'Map tool failed'));}
+    }
+    const reply=String(r.reply||'I can explain the data or help you explore map layers.')+
+       (failed.length?' Map action failed: '+failed.join('; '):'');
+    chatSay(reply,false,r.references);
+    lastAssistantReply=reply;
+    chatHistory.push({role:'assistant',content:reply});
+    if(chatHistory.length>14)chatHistory.splice(0,chatHistory.length-14);
+    voiceStatus(r.model_is_generative?'Answer from optional LLM; verify scientific sources.':
+      'Grounded scientific answer. No paid model required.');
+    speakReply(reply);
   }catch(e){
-    chatSay('The assistant service is temporarily unavailable. The Dataset sidebar and map controls remain usable. ('+e.message+')');
+    const fallback='Conversation service unavailable: '+String(e?.message||'Unexpected error')+
+      '. Local map controls and dated datasets are still available.';
+    chatSay(fallback);voiceStatus('Unable to connect to assistant.');
   }finally{chatInFlight=false;}
 };
+
+// Native speech is entirely optional; no separate speech server or GPU required.
+const voiceButton=$('#tp-speak');
+voiceButton.onclick=()=>{
+  if(!('speechSynthesis' in window)){
+    voiceStatus('This browser does not support speech output.');return;
+  }
+  spokenReplies=!spokenReplies;
+  voiceButton.setAttribute('aria-pressed',String(spokenReplies));
+  voiceButton.textContent=spokenReplies?'🔊':'🔇';
+  voiceButton.title=spokenReplies?'Disable spoken replies':'Enable spoken replies';
+  voiceStatus(spokenReplies?'Spoken replies enabled.':'Spoken replies disabled.');
+  if(!spokenReplies)window.speechSynthesis.cancel();
+  else if(lastAssistantReply)speakReply(lastAssistantReply);
+};
+const listenButton=$('#tp-listen');
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!Recognition){
+  listenButton.disabled=true;
+  listenButton.title='Speech recognition is not supported in this browser';
+  voiceStatus('Speech recognition unavailable here. Typing and spoken replies still work.');
+}else{
+  const recognizer=new Recognition();
+  recognizer.lang='en-US';recognizer.interimResults=false;recognizer.maxAlternatives=1;
+  recognizer.onstart=()=>{listenButton.setAttribute('aria-pressed','true');
+    voiceStatus('Listening…');};
+  recognizer.onend=()=>{listenButton.setAttribute('aria-pressed','false');};
+  recognizer.onerror=e=>voiceStatus('Microphone recognition: '+e.error+
+    '. You can still type your question.');
+  recognizer.onresult=event=>{
+    const words=event.results?.[0]?.[0]?.transcript?.trim();
+    if(words){$('#ci').value=words;window.tpAsk(words);}
+  };
+  listenButton.onclick=()=>{
+    try{recognizer.start();}
+    catch(e){voiceStatus('Could not start microphone: '+e.message);}
+  };
+}
 
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
 // notifications or permission requests are performed on page load.

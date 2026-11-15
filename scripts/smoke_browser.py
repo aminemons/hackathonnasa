@@ -106,6 +106,11 @@ def main():
         assert page.locator("#ac_fl").count()==0
         expect(page.locator("#aList")).to_contain_text("M 5.4")
         assert "evacuation" in page.locator("#aSafety").inner_text().lower()
+        # Voice UI renders without requiring microphone permission or paid models.
+        page.locator("#chatBtn").click()
+        expect(page.locator("#tp-speak")).to_be_visible()
+        expect(page.locator("#tp-voice-state")).to_be_visible()
+        assert page.locator("#tp-speak").get_attribute("aria-pressed")=="false"
         # The page must have no uncaught execution errors.
         if errors:
             raise AssertionError("Browser JS exceptions: "+" | ".join(errors[:7]))
