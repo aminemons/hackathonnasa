@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from http.client import HTTPException
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -23,6 +24,8 @@ GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions"
 GATEWAY_MODEL = "nvidia/nemotron-3.5-lightning-free"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.1-8b-instant"
+GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models/"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 MAX_HISTORY = 6
 MAX_HISTORY_ITEM = 500
 MAX_REPLY = 1300
@@ -42,6 +45,12 @@ def clean_history(history) -> list[dict]:
 
 
 def _provider(gateway_token: str | None = None):
+    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if gemini_key:
+        model = os.environ.get("GEMINI_MODEL", GEMINI_MODEL).strip() or GEMINI_MODEL
+        if not re.fullmatch(r"[A-Za-z0-9._-]+", model):
+            return None
+        return GEMINI_BASE + model + ":generateContent", model, gemini_key, "Google Gemini · " + model
     custom_url = os.environ.get("TERRAPULSE_CHAT_API_URL", "").strip()
     custom_model = os.environ.get("TERRAPULSE_CHAT_MODEL", "").strip()
     if custom_url:
@@ -82,18 +91,38 @@ def _model_reply(message: str, history, evidence: str, planned: str,
                  "\nDeterministic interface result: " + planned[:1000]}]
     messages.extend(clean_history(history))
     messages.append({"role": "user", "content": message[:800]})
-    body = json.dumps({"model": model, "messages": messages,
-                       "temperature": 0.25, "max_tokens": 300}).encode("utf-8")
+    gemini = endpoint.startswith(GEMINI_BASE)
+    if gemini:
+        outgoing = {
+            "systemInstruction": {"parts": [{"text": messages[0]["content"]}]},
+            "contents": [{"role": "model" if m["role"] == "assistant" else "user",
+                          "parts": [{"text": m["content"]}]} for m in messages[1:]],
+            "generationConfig": {"temperature": 0.25, "maxOutputTokens": 512},
+        }
+    else:
+        outgoing = {"model": model, "messages": messages, "temperature": 0.25, "max_tokens": 300}
+    body = json.dumps(outgoing).encode("utf-8")
     headers = {"Content-Type": "application/json", "Accept": "application/json",
                "User-Agent": "TerraPulse-Research-Assistant/2.0"}
     if token:
-        headers["Authorization"] = "Bearer " + token
+        headers["x-goog-api-key" if gemini else "Authorization"] = token if gemini else "Bearer " + token
     try:
         request = Request(endpoint, method="POST", data=body, headers=headers)
         with urlopen(request, timeout=7) as response:
             payload = json.loads(response.read(96_000))
         if not isinstance(payload, dict):
             return None
+        if gemini:
+            candidates = payload.get("candidates")
+            if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict):
+                return None
+            content = candidates[0].get("content")
+            parts = content.get("parts") if isinstance(content, dict) else None
+            if not isinstance(parts, list):
+                return None
+            text = "".join(p["text"] for p in parts if isinstance(p, dict)
+                           and isinstance(p.get("text"), str) and not p.get("thought"))
+            return (text.strip()[:MAX_REPLY], provider_name) if len(text.strip()) > 10 else None
         choices = payload.get("choices")
         if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
             return None
