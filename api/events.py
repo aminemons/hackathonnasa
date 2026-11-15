@@ -57,10 +57,10 @@ def _valid_url(value, origin):
     return value if isinstance(value, str) and value.startswith(origin) else origin
 
 
-def _usgs(min_mag, now):
-    start = now - timedelta(hours=30)
+def _usgs(min_mag, now, days=1):
+    start = now - timedelta(hours=30 if days == 1 else days * 24)
     query = urlencode({
-        "format": "geojson", "orderby": "time", "limit": "300",
+        "format": "geojson", "orderby": "time", "limit": "3000",
         "minmagnitude": str(min_mag),
         "starttime": start.strftime("%Y-%m-%dT%H:%M:%S"),
     })
@@ -92,6 +92,9 @@ def _usgs(min_mag, now):
         events.append({
             "id": "usgs:" + str(item.get("id") or p.get("code") or tm),
             "title": f"M {mag:.1f} · {str(p.get('place') or 'Earthquake')[:180]}",
+            "place": str(p.get("place") or "Unknown location")[:180],
+            "magnitude": mag,
+            "depth_km": (float(g.get("coordinates", [None,None,None])[2]) if isinstance(g, dict) and len(g.get("coordinates") or []) >= 3 and isinstance(g.get("coordinates")[2], (int,float)) and isfinite(float(g.get("coordinates")[2])) else None),
             "time": tm, "lon": lon, "lat": lat,
             "level": level, "notes": " · ".join(notes),
             "url": _valid_url(p.get("url"), "https://earthquake.usgs.gov/"),
@@ -129,7 +132,7 @@ def _eonet(hazard):
     return events
 
 
-def collect(hazard, min_mag=5.0):
+def collect(hazard, min_mag=5.0, days=1):
     if hazard not in HAZARDS:
         raise ValueError("Unknown hazard; use eq, ls, gl, fi, or fl")
     try:
@@ -138,8 +141,10 @@ def collect(hazard, min_mag=5.0):
         raise ValueError("Minimum magnitude must be numeric") from exc
     if not (isfinite(magnitude) and 2 <= magnitude <= 9):
         raise ValueError("Minimum magnitude must be in 2..9")
+    if days not in (1, 7, 30):
+        raise ValueError('Earthquake period must be 1, 7, or 30 days')
     now = datetime.now(timezone.utc)
-    records = _usgs(magnitude, now) if hazard == "eq" else _eonet(hazard)
+    records = _usgs(magnitude, now, days) if hazard == "eq" else _eonet(hazard)
     records.sort(key=lambda event: event["time"], reverse=True)
     return {
         "hazard": hazard, "label": HAZARDS[hazard][0], "source": HAZARDS[hazard][1],
@@ -170,7 +175,8 @@ class handler(BaseHTTPRequestHandler):
         q = parse_qs(urlsplit(self.path).query)
         try:
             hazard = q.get("hazard", [""])[0]
-            payload = collect(hazard, q.get("min_magnitude", ["5"])[0])
+            days = int(q.get("days", ["1"])[0])
+            payload = collect(hazard, q.get("min_magnitude", ["5"])[0], days=days)
         except ValueError as exc:
             return self.reply({"error": str(exc)}, 400)
         except (HTTPError, URLError, TimeoutError, OSError, json.JSONDecodeError):
