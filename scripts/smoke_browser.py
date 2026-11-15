@@ -88,7 +88,7 @@ def main():
         expect(page.locator("#seg button[data-history='30']")).to_have_text("30 years")
         assert page.locator("#seg button[data-d='30']").count()==0
         page.locator("#seg button[data-history='30']").click()
-        expect(page.locator("#seg button[data-history='30']")).to_have_class(re.compile(r"\\bon\\b"))
+        expect(page.locator("#seg button[data-history='30']")).to_have_class(re.compile(r"\bon\b"))
         expect(page.locator("#hStat")).to_contain_text("1 earthquake,",timeout=10000)
         year=datetime.now().year
         assert history_years==set(range(year-29,year+1))
