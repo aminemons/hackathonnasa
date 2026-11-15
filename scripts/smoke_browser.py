@@ -79,7 +79,7 @@ def main():
         expect(page.locator("#seg button[data-d='1'].on")).to_be_visible()
         assert page.locator("#mag").count()==1
         assert page.locator("#h30").count()==1
-        assert "30 calendar years" in page.locator("#tTime").inner_text()
+        assert "30 calendar years" in page.locator("#tTime").text_content()
         assert page.locator("#c_lhasa").count()>=0
         page.locator("#tabs button[data-t='Dataset']").click()
         # Glacier historical annual speed: visible even if outline source is offline.

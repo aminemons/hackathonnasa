@@ -76,8 +76,8 @@ def parse(state: State) -> dict:
     negative = bool(re.search(r"\b(hide|disable|remove|turn off|clear)\b", msg))
     # Questions must not accidentally toggle or open map layers.
     # The grounded science answer engine handles free-form questions.
-    is_question=bool(re.match(r"^(what|why|how|when|where|explain|compare|tell me|is it|can you explain)\\b", msg))
-    wants_action=bool(re.search(r"\\b(show|open|zoom|fly|go to|switch|turn on|turn off|hide|clear|display|inspect|check)\\b",msg))
+    is_question=bool(re.match(r"^(what|why|how|when|where|explain|compare|tell me|is it|can you explain)\b", msg))
+    wants_action=bool(re.search(r"\b(show|open|zoom|fly|go to|switch|turn on|turn off|hide|clear|display|inspect|check)\b",msg))
     if is_question and not wants_action:
         return {"normalized":msg,"actions":[],
                 "reply":"I can explain the evidence and distinguish observation, susceptibility, forecast and safety limitations.",
