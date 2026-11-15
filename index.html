@@ -8,23 +8,23 @@
 :root{--blue:#004aad;--navy:#00296b;--accent:#ff6b35;--ink:#0f2347;--line:#dbe3f1;--m:#5f6f8c;--bg:#f4f7fc}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{font:14px/1.45 "Source Sans 3","Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);display:flex;flex-direction:column;background:var(--bg)}
-header{height:62px;flex:none;background:linear-gradient(90deg,var(--navy),var(--blue));color:#fff;display:flex;align-items:center;gap:16px;padding:0 18px;box-shadow:0 2px 10px #0004;z-index:900}
+body>header{height:62px;flex:none;background:linear-gradient(90deg,var(--navy),var(--blue));color:#fff;display:flex;align-items:center;gap:16px;padding:0 18px;box-shadow:0 2px 10px #0004;z-index:900}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:44px;height:44px;flex:none}.logo img,.logo svg{width:100%;height:100%;object-fit:contain}
 .name{font-size:26px;font-weight:800;letter-spacing:2px;line-height:1}
 .slogan{font-size:12.5px;font-style:italic;opacity:.9;margin-top:3px}
 nav{margin-left:auto;display:flex;gap:4px}
-nav button{background:none;border:0;color:#fff;font:700 14px inherit;font-family:inherit;text-transform:uppercase;letter-spacing:.6px;padding:9px 16px;border-radius:20px;cursor:pointer;opacity:.85}
+nav button{background:none;border:0;color:#fff;font:700 14px/1.3 "Source Sans 3","Segoe UI",Arial,sans-serif;text-transform:uppercase;letter-spacing:.6px;padding:9px 16px;border-radius:20px;cursor:pointer;opacity:.85}
 nav button:hover{background:#ffffff22;opacity:1}nav button.on{background:#fff;color:var(--blue);opacity:1}
 .stage{flex:1;min-height:0;position:relative}
 .page{display:none;height:100%}.page.on{display:block}
 #pMap.on{display:flex}
-#side{width:340px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;transition:margin .2s;z-index:850}
+#side{width:340px;flex:none;min-height:0;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;transition:margin .2s;z-index:850}
 #side.hide{margin-left:-340px}
-.tabs{display:flex;border-bottom:1px solid var(--line)}
-.tabs button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:11px 2px 9px;font:700 12px inherit;font-family:inherit;text-transform:uppercase;letter-spacing:.5px;color:var(--m);cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-height:45px;border-bottom:1px solid var(--line);flex:none}
+.tabs button{min-width:0;display:flex;align-items:center;justify-content:center;background:none;border:0;border-bottom:3px solid transparent;padding:11px 3px 9px;font:700 11px/1.25 "Source Sans 3","Segoe UI",Arial,sans-serif;text-transform:uppercase;letter-spacing:.1px;color:var(--m);cursor:pointer;white-space:nowrap}
 .tabs button.on{color:var(--blue);border-bottom-color:var(--blue)}
-.tc{display:none;padding:14px 16px;overflow:auto;flex:1}.tc.on{display:block}
+.tc{display:none;padding:14px 16px;min-height:0;overflow:auto;flex:1}.tc.on{display:block}
 .tc h4{margin:0 0 10px;font-size:15px}
 .g{margin:14px 0 4px;color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:1px}
 input[type=text],input[type=number],input[type=date]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;color:var(--ink)}
@@ -36,25 +36,25 @@ summary{cursor:pointer;padding:9px 0;font-weight:700;display:flex;justify-conten
 summary::-webkit-details-marker{display:none}
 summary em{color:var(--m);font-weight:400;font-style:normal;font-size:12px;white-space:nowrap}
 details label.r{padding:4px 0}details label.r:last-child{padding-bottom:10px}
-button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blue);background:#fff;color:var(--blue);border-radius:10px;font:700 13pxinherit;font-family:inherit;cursor:pointer}
+button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blue);background:#fff;color:var(--blue);border-radius:10px;font:700 13px/1.3 "Source Sans 3","Segoe UI",Arial,sans-serif;cursor:pointer}
 .seg{display:flex;gap:6px}.seg button{flex:1;padding:8px 2px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
 .seg button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
 .lgd{display:flex;align-items:center;gap:9px;margin:6px 0}.sw{width:14px;height:14px;border-radius:50%;flex:none}
 .lv{font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;color:#fff;margin-right:4px}.lvWatch{background:#f59e0b}.lvWarning{background:#d62828}
 .acard{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .alert{background:var(--bg);border-left:4px solid var(--accent);padding:7px 10px;margin:7px 0;border-radius:8px}
-.btn{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 15px;font:700 14px inherit;font-family:inherit;cursor:pointer}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 15px;font:700 14px/1.3 "Source Sans 3","Segoe UI",Arial,sans-serif;cursor:pointer}
 .mw{flex:1;min-width:0;position:relative}
 #map{height:100%;background:#a8c7e0}
 .card{position:absolute;z-index:800;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 22px #0003}
 #sbT{top:10px;left:10px;width:38px;height:38px;cursor:pointer;font-size:18px;color:var(--blue);display:grid;place-items:center}
 #bm{top:10px;right:10px;border:0;background:none;box-shadow:none;text-align:right}
-#bmBtn{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 14px inherit;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px #0004}
+#bmBtn{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:700 14px/1.3 "Source Sans 3","Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 4px 14px #0004}
 #bmList{display:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px #0003;margin-top:6px;overflow:hidden;text-align:left}
 #bmList.on{display:block}#bmList div{padding:9px 18px;cursor:pointer}#bmList div:hover{background:var(--bg)}#bmList div.on{background:#e3ecff;font-weight:700;color:var(--blue)}
-#info{left:56px;bottom:24px;padding:9px 13px;min-width:210px;pointer-events:none}
+#info{left:62px;bottom:24px;padding:9px 13px;min-width:0;max-width:min(275px,calc(100vw - 110px));pointer-events:none}
 #chat{right:12px;bottom:12px;width:340px;max-width:calc(100% - 24px);background:none;border:0;box-shadow:none}
-#chatBtn{float:right;display:flex;align-items:center;gap:12px;background:var(--navy);color:#fff;border:0;border-radius:30px;padding:9px 16px 9px 20px;font:700 15px inherit;font-family:inherit;cursor:pointer;box-shadow:0 5px 18px #0006}
+#chatBtn{float:right;display:flex;align-items:center;gap:12px;background:var(--navy);color:#fff;border:0;border-radius:30px;padding:9px 16px 9px 20px;font:700 15px/1.3 "Source Sans 3","Segoe UI",Arial,sans-serif;cursor:pointer;box-shadow:0 5px 18px #0006}
 #chatBtn .logo{width:34px;height:34px}
 #chatBox{display:none;clear:both;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 8px 28px #0004}
 #chatBox.on{display:block}
@@ -77,7 +77,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
 <div class="stage">
  <section class="page on" id="pMap">
   <aside id="side">
-   <div class="tabs" id="tabs"><button data-t="Dataset" class="on">Dataset</button><buttondata-t="Time">Time</button><button data-t="Legend">Legend</button><button data-t="Alarm">Alarm</button></div>
+   <div class="tabs" id="tabs"><button data-t="Dataset" class="on">Dataset</button><button data-t="Time">Time</button><button data-t="Legend">Legend</button><button data-t="Alarm">Alarm</button></div>
    <div class="tc on" id="tDataset"><input type="text" id="dsq" placeholder="🔍 Search datasets (flood, faults, SAR…)"><div id="ds"></div></div>
    <div class="tc" id="tTime">
     <div id="tFocus" style="font-weight:700;color:var(--blue);margin-bottom:8px"></div>
@@ -177,7 +177,7 @@ const quakeFeed=(url,color)=>async()=>{const d=await fetchJ(url);const g=L.layer
  d.features.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
   L.circleMarker([la,lo],{radius:Math.max(6,m*2.4),color:'#fff',weight:2,fillColor:color,fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
 const depthCol=d=>d<10?'#e53935':d<35?'#fb8c00':d<70?'#fdd835':d<150?'#7cb342':d<300?'#29b6f6':'#5e35b1';
-const quakesByDepth=async()=>{const d=awaitfetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);const g=L.layerGroup();
+const quakesByDepth=async()=>{const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);const g=L.layerGroup();
  d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,m=f.properties.mag||0;
   L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.2,fillColor:depthCol(dp),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>Depth: ${dp.toFixed(1)} km<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
 const FAULTS_EMBED=null;
@@ -243,7 +243,7 @@ const DS=[
  {id:'modis',g:'Floods',dated:1,n:'Flood detection (MODIS)',kw:'flood floods water modis inundation',leg:['#2b6cb0','Water detected (clouds can hide it)'],load:gibs('MODIS_Combined_Flood_2-Day',12,'png',1)},
  {id:'rain',g:'Floods',dated:1,n:'Rain rate (NASA IMERG)',kw:'rain rainfall precipitation imerg',leg:['#3b8fe8','Rainfall intensity'],load:gibs('IMERG_Precipitation_Rate',6,'png',1)},
  // Wildfires
- {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfirewildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
+ {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
  {id:'mfire',g:'Wildfires',dated:1,n:'Active fires (MODIS)',kw:'fire fires wildfire hotspot thermal',leg:['#ff3d00','Fire / thermal anomaly'],load:gibs('MODIS_Terra_Thermal_Anomalies_All',9,'png')},
  {id:'smoke',g:'Wildfires',dated:1,n:'Smoke and aerosol (MODIS)',kw:'smoke aerosol haze',leg:['#a0522d','Aerosol optical depth'],load:gibs('MODIS_Terra_Aerosol',6,'png',1)},
  // Storms
@@ -269,7 +269,7 @@ const DS=[
  {id:'h_fire',g:'Wildfires',n:'Past wildfire events (years in Time)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Past wildfire'],load:eonetHist('h_fire','wildfires',COL.fire,'wildfire')},
  {id:'h_storm',g:'Storms',n:'Past severe storms (years in Time)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Past severe storm'],load:eonetHist('h_storm','severeStorms',COL.storm,'storm')},
  {id:'h_slide',g:'Landslides',n:'Past landslide events (years in Time)',kw:'landslide landslides',leg:[COL.slide,'Past landslide'],load:eonetHist('h_slide','landslides',COL.slide,'landslide')},
- {id:'h_dry',g:'Drought',n:'Past drought events (years in Time)',kw:'drought dry',leg:[COL.dry,'Pastdrought'],load:eonetHist('h_dry','drought',COL.dry,'drought')},
+ {id:'h_dry',g:'Drought',n:'Past drought events (years in Time)',kw:'drought dry',leg:[COL.dry,'Past drought'],load:eonetHist('h_dry','drought',COL.dry,'drought')},
  {id:'h_ice',g:'Glaciers & ice',n:'Past sea and lake ice events (years in Time)',kw:'ice sea lake iceberg',leg:['#7fd3ff','Past ice event'],load:eonetHist('h_ice','seaLakeIce','#7fd3ff','ice')}
 ];
 const state={},openG=new Set(['Earthquakes']);let showMore=false;let focusG='Earthquakes';
@@ -279,10 +279,12 @@ function groupEl(name,items,q){const det=document.createElement('details');det.o
  const on=items.filter(d=>state[d.id]&&state[d.id].on).length;
  det.innerHTML=`<summary><span>${ICON[name]||'📂'} ${name}</span><em>${on?on+' on · ':''}${items.length}</em></summary>`;
  items.forEach(d=>det.appendChild(row(d)));
- if(name==='Landslides'){
+ if(name==='Landslides'||name==='Glaciers & ice'){
    const actions=document.createElement('div');
    actions.className='tp-landslide-tools';
-   actions.innerHTML='<div class="g">Analysis tools</div><button type="button" data-tp-open="forecast">NASA LHASA · Tomorrow forecast</button><button type="button" data-tp-open="scar">Detect post-event scars</button><button type="button" data-tp-open="exposure">Buildings &amp; human exposure</button><button type="button" data-tp-open="nisar">NISAR radar observations</button><small>Forecast · observed scars · mapped exposure are separate measurements.</small>';
+   actions.innerHTML=name==='Landslides'
+    ? '<div class="g">Landslide analysis tools</div><button type="button" data-tp-open="forecast">NASA LHASA · Tomorrow forecast</button><button type="button" data-tp-open="scar">Detect post-event scars</button><button type="button" data-tp-open="exposure">Buildings &amp; human exposure</button><button type="button" data-tp-open="nisar">NISAR radar observations</button><small>Forecast, scar, and exposure evidence are different scientific quantities.</small>'
+    : '<div class="g">Glacial lake observatory</div><button type="button" data-tp-open="glof">Monitor GLOFs · Five real lakes</button><small>253 dated radar observations, glacier movement, missing-data and source evidence. Not a breach forecast.</small>';
    det.appendChild(actions);
  }
  det.ontoggle=()=>{det.open?openG.add(name):openG.delete(name)};det.querySelector('summary').addEventListener('click',()=>{focusG=name;syncSide()});return det}
@@ -308,7 +310,7 @@ async function loadQuakes(){const d=await fetchJ(`https://earthquake.usgs.gov/fd
  quakes=d.features;const g=L.layerGroup();
  quakes.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
   L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.5,fillColor:qc(m),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g}
-async function reloadQuakes(){for(const id of ['quakes','depth']){consts=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
+async function reloadQuakes(){for(const id of ['quakes','depth']){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
 function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));reloadQuakes()}
 $('#seg').onclick=e=>{if(e.target.dataset.d)setPeriod(+e.target.dataset.d)};
 $('#mag').oninput=e=>$('#magV').textContent=e.target.value;$('#mag').onchange=e=>{minMag=+e.target.value;reloadQuakes()};
@@ -342,7 +344,7 @@ async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s
 $('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-30;
 $('#xShow').onclick=async()=>{for(const id of Object.keys(state).filter(k=>k.startsWith('h_')&&state[k].on))await reloadLayer(id)};
 const saveCsv=(lines,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));a.download=name;a.click()};
-$('#xCsv').onclick=()=>{constids=Object.keys(EV_HIST);if(!ids.length)return xstat('Turn on a “Past … events” dataset first.');
+$('#xCsv').onclick=()=>{const ids=Object.keys(EV_HIST);if(!ids.length)return xstat('Turn on a “Past … events” dataset first.');
  const r=['id,hazard,time_iso,latitude,longitude,title,link'];
  ids.forEach(id=>EV_HIST[id].forEach(x=>r.push([x[0],EV_NAME[id],isFinite(x[1])?new Date(x[1]).toISOString():'',x[2],x[3],'"'+String(x[4]).replace(/"/g,'""')+'"','"'+String(x[5]||'')+'"'].join(','))));
  saveCsv(r,'past_events_'+$('#xFrom').value+'-'+$('#xTo').value+'.csv')};

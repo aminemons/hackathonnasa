@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "sites": [
+    {
+      "site_id": "south_lhonak",
+      "name": "South Lhonak Lake",
+      "country": "India (Sikkim)",
+      "lon": 88.195,
+      "lat": 27.91,
+      "epochs": 51,
+      "confidence": "limited",
+      "water_map_confidence": "limited",
+      "date_range": [
+        "2022-01-09",
+        "2024-12-24"
+      ]
+    },
+    {
+      "site_id": "imja_tsho",
+      "name": "Imja Tsho",
+      "country": "Nepal (Khumbu)",
+      "lon": 86.925,
+      "lat": 27.898,
+      "epochs": 50,
+      "confidence": "limited",
+      "water_map_confidence": "low",
+      "date_range": [
+        "2022-01-05",
+        "2024-12-20"
+      ]
+    },
+    {
+      "site_id": "tsho_rolpa",
+      "name": "Tsho Rolpa",
+      "country": "Nepal (Rolwaling)",
+      "lon": 86.475,
+      "lat": 27.862,
+      "epochs": 50,
+      "confidence": "limited",
+      "water_map_confidence": "moderate",
+      "date_range": [
+        "2022-01-05",
+        "2024-12-20"
+      ]
+    },
+    {
+      "site_id": "palcacocha",
+      "name": "Laguna Palcacocha",
+      "country": "Peru (Cordillera Blanca)",
+      "lon": -77.379,
+      "lat": -9.397,
+      "epochs": 50,
+      "confidence": "insufficient",
+      "water_map_confidence": "unassessed",
+      "date_range": [
+        "2022-02-26",
+        "2024-12-24"
+      ]
+    },
+    {
+      "site_id": "suicide_basin",
+      "name": "Suicide Basin (Mendenhall Glacier)",
+      "country": "USA (Alaska)",
+      "lon": -134.488,
+      "lat": 58.456,
+      "epochs": 52,
+      "confidence": "limited",
+      "water_map_confidence": "low",
+      "date_range": [
+        "2022-01-02",
+        "2024-12-17"
+      ]
+    }
+  ],
+  "execution_mode": "published_historical_model_outputs",
+  "operational_warning_ready": false
+}

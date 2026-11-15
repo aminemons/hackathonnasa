@@ -1,0 +1,87 @@
+{
+  "site": {
+    "site_id": "south_lhonak",
+    "name": "South Lhonak Lake",
+    "country": "India (Sikkim)",
+    "lake_lon": 88.195,
+    "lake_lat": 27.91,
+    "lake_bbox": [
+      88.12,
+      27.86,
+      88.26,
+      27.96
+    ],
+    "flood_bbox": [
+      88.1,
+      27.55,
+      88.7,
+      28.0
+    ],
+    "downstream_towns": [
+      [
+        "Chungthang",
+        88.646,
+        27.604
+      ],
+      [
+        "Lachen",
+        88.556,
+        27.717
+      ]
+    ],
+    "known_glof_dates": [
+      "2023-10-04"
+    ],
+    "notes": "Moraine-dammed lake; Oct 2023 outburst destroyed the Teesta-III dam at Chungthang."
+  },
+  "observed": true,
+  "sar_provider": "ESA / Copernicus Sentinel-1 RTC via Planetary Computer",
+  "processing_resolution_m": 20,
+  "epochs": [
+    {
+      "date": "2023-10-07",
+      "file": "s1_2023-10-07.tif",
+      "sha256": "d5015355e4f6d1f3bed3d37bbb1016e520e6b1ccb09734918e3768f20467d27c",
+      "granules": [
+        {
+          "id": "S1A_IW_GRDH_1SDV_20231007T121409_20231007T121434_050659_061A83_rtc",
+          "datetime": "2023-10-07T12:14:22.074460Z",
+          "collection": "sentinel-1-rtc",
+          "assets": {
+            "vv": "https://sentinel1euwestrtc.blob.core.windows.net/sentinel1-grd-rtc/GRD/2023/10/7/IW/DV/S1A_IW_GRDH_1SDV_20231007T121409_20231007T121434_050659_061A83_C58B/measurement/iw-vv.rtc.tiff",
+            "vh": "https://sentinel1euwestrtc.blob.core.windows.net/sentinel1-grd-rtc/GRD/2023/10/7/IW/DV/S1A_IW_GRDH_1SDV_20231007T121409_20231007T121434_050659_061A83_C58B/measurement/iw-vh.rtc.tiff"
+          }
+        }
+      ],
+      "finite_fraction": 1.0
+    }
+  ],
+  "failures": [],
+  "requested_date_range": [
+    "2022-01-01",
+    "2024-12-31"
+  ],
+  "generated_at": "2026-11-15T01:34:13.492803+00:00",
+  "orbit": {
+    "direction": "ascending",
+    "relative_orbit": 12
+  },
+  "available_same_orbit_dates": 84,
+  "lake_bbox_dem": {
+    "file": "dem_lake.tif",
+    "provider": "Copernicus GLO-30 DSM via public AWS",
+    "urls": [],
+    "sha256": "ff4e78399114ac716a85634cfad98d92f6597c569a5c96adf32ee94d90c7fa6d"
+  },
+  "flood_bbox_dem": {
+    "file": "dem_flood.tif",
+    "provider": "Copernicus GLO-30 DSM via public AWS",
+    "urls": [],
+    "sha256": "45fb23a1855bff693d675ffa759a15226475c98c4783228da0bdc99f7151d6f7"
+  },
+  "climate": {
+    "provider": "ECMWF reanalysis via Open-Meteo",
+    "file": "climate.json"
+  },
+  "status": "observed_crops_ready"
+}
