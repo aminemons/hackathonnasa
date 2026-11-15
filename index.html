@@ -502,10 +502,10 @@ async function loadQuakes(){
  return g;
 }
 async function reloadQuakes(){for(const id of ['quakes','depth']){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
-function setPeriod(p){period=p;$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));if(state.hist?.on)setLayer('hist',false);reloadQuakes()}
+function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));if(state.hist?.on)setLayer('hist',false);reloadQuakes()}
 $('#seg').onclick=e=>{
   if(e.target.dataset.history==='30'){
-    $('#seg button').forEach(b=>b.classList.toggle('on',b===e.target));
+    $$('#seg button').forEach(b=>b.classList.toggle('on',b===e.target));
     $('#hFrom').value=new Date().getFullYear()-29;
     $('#hTo').value=new Date().getFullYear();
     openTab('Time');reloadHist();
