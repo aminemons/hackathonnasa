@@ -8,6 +8,8 @@ is additionally checked through live API smoke tests after deployment.
 import base64
 import json
 import re
+from datetime import datetime
+from urllib.parse import parse_qs, urlsplit
 from playwright.sync_api import sync_playwright, expect
 
 PNG=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLttAAAAABJRU5ErkJggg==")
@@ -37,10 +39,14 @@ def main():
         browser=w.chromium.launch(headless=True,args=["--no-sandbox"])
         page=browser.new_page(viewport={"width":1440,"height":900})
         errors=[]
+        history_years=set()
         page.on("pageerror",lambda error:errors.append(str(error)))
         def interceptor(route):
             url=route.request.url
             if "earthquake.usgs.gov/earthquakes/feed/" in url or "/fdsnws/event/1/query" in url:
+                query=parse_qs(urlsplit(url).query)
+                if query.get("limit")==["20000"]:
+                    history_years.add(int(query["starttime"][0][:4]))
                 body={"features":[{"id":"example","geometry":{"type":"Point","coordinates":[86.9,27.9,9.1]},
                   "properties":{"mag":5.4,"time":NOW,"place":"Example",
                     "url":"https://earthquake.usgs.gov/earthquakes/eventpage/example","alert":"yellow"}}]}
@@ -53,12 +59,10 @@ def main():
                 return route.fulfill(status=200,content_type="application/json",
                     body=json.dumps({"status":"ok","events":[]}))
             if "/api/events" in url:
-                from urllib.parse import urlsplit,parse_qs
                 q=parse_qs(urlsplit(url).query)
                 payload=events(q.get("hazard",[""])[0],q.get("days",["1"])[0])
                 return route.fulfill(status=200,content_type="application/json",body=json.dumps(payload))
             if "/api/glof" in url:
-                from urllib.parse import urlsplit,parse_qs
                 q=parse_qs(urlsplit(url).query)
                 payload=site_detail(q["site"][0]) if "site" in q else CATALOG
                 return route.fulfill(status=200,content_type="application/json",body=json.dumps(payload))
@@ -78,9 +82,11 @@ def main():
         page.locator("#seg button[data-d='1']").click()
         expect(page.locator("#seg button[data-d='1'].on")).to_be_visible()
         assert page.locator("#mag").count()==1
-        assert page.locator("#h30").count()==1
-        assert "30 calendar years" in page.locator("#tTime").inner_text()
-        assert page.locator("#c_lhasa").count()>=0
+        expect(page.get_by_text("30 calendar years",exact=True)).to_be_visible()
+        page.locator("#h30").click()
+        expect(page.locator("#hStat")).to_contain_text("1 earthquakes",timeout=10000)
+        year=datetime.now().year
+        assert history_years==set(range(year-29,year+1))
         page.locator("#tabs button[data-t='Dataset']").click()
         # Glacier historical annual speed: visible even if outline source is offline.
         page.locator("details:has(summary:has-text('Glaciers')) summary").first.click()
