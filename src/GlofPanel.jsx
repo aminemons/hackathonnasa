@@ -95,8 +95,10 @@ export default function GlofPanel() {
     setMapping(true); setMapError('');
     try {
       const geometry = await get({site:sid, view:'geometry', date:row.date}, AbortSignal.timeout(15000));
-      const { showGlofOnMap } = await import('./main.js');
-      if (showGlofOnMap(summary.site, geometry, row.date)) document.getElementById('glof-monitor').close();
+      // Prefer the public NISASTER Leaflet map; keep the legacy MapLibre
+      // pathway only for the old React build. Do not import old app on click.
+      const show = window.TerraPulseGlofMap || (await import('./main.js')).showGlofOnMap;
+      if (show(summary.site, geometry, row.date)) document.getElementById('glof-monitor').close();
       else setMapError('The interactive map is unavailable. The Equal Earth study map and downloads remain available.');
     } catch (e) { setMapError(e.message); }
     finally { setMapping(false); }
