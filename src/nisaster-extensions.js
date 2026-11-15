@@ -281,7 +281,82 @@ function showNISAR() {
     }
   };
 }
-const tools={forecast:showForecast,scar:showScar,exposure:showExposure,nisar:showNISAR};
+// Ishaq's historical GLOF evidence: React only supplies the research panel.
+// The public map stays Meryem's original Leaflet map, never a second canvas.
+let glofReady = null;
+function showGlof() {
+  if (!glofReady) {
+    TP.toast('Loading the five-lake GLOF observatory…');
+    glofReady = Promise.all([
+      import('react'),
+      import('react-dom/client'),
+      import('./GlofPanel.jsx'),
+    ]).then(([React, ReactDOM, view]) => {
+      const host = document.createElement('div');
+      host.id = 'tp-glof-root';
+      document.body.appendChild(host);
+      ReactDOM.flushSync
+        ? ReactDOM.flushSync(() => ReactDOM.createRoot(host).render(React.createElement(view.default)))
+        : ReactDOM.createRoot(host).render(React.createElement(view.default));
+      return host;
+    }).catch(error => {
+      glofReady = null;
+      throw error;
+    });
+  }
+  glofReady.then(() => {
+    // React 19 schedules the initial render; wait until dialog exists.
+    let attempts = 0;
+    const openPanel = () => {
+      const dialog = document.getElementById('glof-monitor');
+      if (dialog && !dialog.open) dialog.showModal();
+      else if (!dialog && attempts++ < 15) requestAnimationFrame(openPanel);
+      else if (!dialog) TP.toast('GLOF view did not mount. Refresh the app and try again.');
+    };
+    requestAnimationFrame(openPanel);
+  }).catch(error => {
+    TP.toast('Unable to load GLOF view: '+error.message);
+  });
+}
+window.TerraPulseGlofMap = (site, geometry, date) => {
+  if (!TP.map || !site || !geometry || geometry.type !== 'FeatureCollection'
+      || !Array.isArray(geometry.features)) return false;
+  const source = L.geoJSON(geometry, {
+    style: feature => {
+      const kind = feature?.properties?.layer;
+      const color = kind === 'glacial_lake' ? '#17b8d1'
+        : kind === 'historical_lake_inventory' ? '#f5aa35'
+        : '#8fa4b5';
+      return {color, weight:2, fillColor:color, fillOpacity:0.32};
+    },
+    pointToLayer: (feature,latlng)=>L.circleMarker(latlng,{
+      color:'#1150a2', radius:4, fillColor:'#17b8d1',fillOpacity:.8,
+    }),
+    onEachFeature: (feature, layer) => {
+      const kind = String(feature?.properties?.layer || 'historical context');
+      const dateValue = String(feature?.properties?.date || 'Date unavailable');
+      const holder = document.createElement('div');
+      const title = document.createElement('strong');
+      title.textContent = kind.replaceAll('_',' ');
+      holder.appendChild(title);
+      const detail = document.createElement('p');
+      detail.textContent = 'Source date: ' + dateValue;
+      holder.appendChild(detail);
+      layer.bindPopup(holder);
+    },
+  });
+  toggleMapLayer(source);
+  if (Array.isArray(site.lake_bbox) && site.lake_bbox.length===4) {
+    const [west,south,east,north] = site.lake_bbox.map(Number);
+    if ([west,south,east,north].every(Number.isFinite))
+      TP.map.fitBounds([[south,west],[north,east]],{padding:[25,25],maxZoom:12});
+  } else {
+    TP.map.setView([site.lat,site.lon],11);
+  }
+  TP.toast('GLOF: '+site.name+' · radar date '+date+' · monitoring only, not a breach warning.');
+  return true;
+};
+const tools={forecast:showForecast,scar:showScar,exposure:showExposure,nisar:showNISAR,glof:showGlof};
 $('#ds').addEventListener('click',event=>{
   const button=event.target.closest('[data-tp-open]');
   if(button&&tools[button.dataset.tpOpen]){event.preventDefault();tools[button.dataset.tpOpen]();}

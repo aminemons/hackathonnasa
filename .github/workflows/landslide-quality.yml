@@ -21,17 +21,21 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             machine learning/requirements.txt
+            machine learning/glof/requirements.txt
       - name: Install API and scientific test dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install -r "machine learning/requirements.txt"
+          python -m pip install -r "machine learning/glof/requirements.txt"
       - name: Validate Python syntax
         run: python -m compileall -q api "machine learning"
       - name: Test API, ONNX example and scar classification contract
         run: python -m unittest discover -s api/tests -v
       - name: Test GUNW geospatial preprocessing with synthetic products
         run: python -m unittest discover -s "machine learning/tests" -v
+      - name: Reproduce a real GLOF water-model observation
+        run: python "machine learning/glof/check_example.py"
 
   frontend:
     runs-on: ubuntu-latest
@@ -42,4 +46,5 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm run test:glof
       - run: npm run build

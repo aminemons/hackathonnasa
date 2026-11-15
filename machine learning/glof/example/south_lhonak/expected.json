@@ -1,0 +1,9 @@
+{
+  "date": "2023-10-07",
+  "lake_area_km2": 0.5724,
+  "tolerance_km2": 0.0004,
+  "source_ids": [
+    "S1A_IW_GRDH_1SDV_20231007T121409_20231007T121434_050659_061A83_rtc"
+  ],
+  "weights_sha256": "dfa31e476ff3123dcd8a815bc15a393bf55c8ea20df60d2f9ac3bc8323e853b7"
+}

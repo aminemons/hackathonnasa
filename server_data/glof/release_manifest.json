@@ -1,0 +1,106 @@
+{
+  "files": [
+    {
+      "file": "public/data/glof/south_lhonak/velocity.png",
+      "sha256": "1f075ab5501b08c79b8b93db12bdeb85aa97fae6b1e9c07909093fbbd68b47f0"
+    },
+    {
+      "file": "public/data/glof/south_lhonak/elevation.png",
+      "sha256": "89b8b66ce6e3d191b2e6a7eb2375dfd0aab116d44516382037c520bae27f56b6"
+    },
+    {
+      "file": "public/data/glof/south_lhonak/glacier_surface_change_m.tif",
+      "sha256": "2cdf5909b95010036e60b8a7aaf9b22d9937096df8b5ecbc2fe127a930c47a86"
+    },
+    {
+      "file": "public/data/glof/imja_tsho/velocity.png",
+      "sha256": "53f598f2896be011e98f51b911cf5246e9fc42a54c42b768b57304977783a464"
+    },
+    {
+      "file": "public/data/glof/tsho_rolpa/velocity.png",
+      "sha256": "cb98a991d836ed8ece27f1e739957d37016e564f45a64503cc542a3ee9f6f8c5"
+    },
+    {
+      "file": "public/data/glof/suicide_basin/velocity.png",
+      "sha256": "b8c0abf3d8cce6f9771a4e9eb3d72dbaad5ce402463b165fb1833b42c82dd950"
+    },
+    {
+      "file": "server_data/glof/model/water_model.json",
+      "sha256": "dfa31e476ff3123dcd8a815bc15a393bf55c8ea20df60d2f9ac3bc8323e853b7"
+    },
+    {
+      "file": "server_data/glof/model/water_model_card.json",
+      "sha256": "48f477ef159b60c25e4081d3e95fa6ed0be955a25949943f040a741a9824c4d3"
+    },
+    {
+      "file": "server_data/glof/catalog.json",
+      "sha256": "f0060cbbd5c90741316701119a1ca85d38b1a2cfcbeaa0ff7361a7eb474cab0e"
+    },
+    {
+      "file": "server_data/glof/imja_tsho/context.geojson",
+      "sha256": "5b08fbe5713015783d1d6ac6f7bde68b45184ca7183540d07e342f2bdc4bd5ba"
+    },
+    {
+      "file": "server_data/glof/imja_tsho/epochs.geojson.json",
+      "sha256": "81f6fc79be642c96948ff0c3bbc9a807f1d54b267ec6e7649d7ef5d80bbae26a"
+    },
+    {
+      "file": "server_data/glof/imja_tsho/summary.json",
+      "sha256": "2a1d23d50fc951724979688aaab15283a523b4bffa6975cfcf1ab8a18bd4daf8"
+    },
+    {
+      "file": "server_data/glof/palcacocha/context.geojson",
+      "sha256": "b477f512bbb3a53dcf77a7d519a9748900a64d939bf35cf98f49b43ac3142f77"
+    },
+    {
+      "file": "server_data/glof/palcacocha/epochs.geojson.json",
+      "sha256": "1d6991aca37b8abef7765bed3073b3502f6addd60c70b550bf993f4da2b4a1f6"
+    },
+    {
+      "file": "server_data/glof/palcacocha/summary.json",
+      "sha256": "e8d56f8f6444171dc60c8a2d08a1608bbbf0225b0ba1b581d4f240defa6692e1"
+    },
+    {
+      "file": "server_data/glof/south_lhonak/context.geojson",
+      "sha256": "b16a24dd72fa109fb2456de5d7a67884a0e6f5f5055119f5675ca7b890ec386d"
+    },
+    {
+      "file": "server_data/glof/south_lhonak/epochs.geojson.json",
+      "sha256": "e83011a2d5db6aea44bb30555cdca8441a398c0f8f251d3ae5c1e8621fcbbe64"
+    },
+    {
+      "file": "server_data/glof/south_lhonak/summary.json",
+      "sha256": "e25ab26458404884222255c1501be0f8899d8039b17e26f7876a647a4356f48d"
+    },
+    {
+      "file": "server_data/glof/suicide_basin/context.geojson",
+      "sha256": "8eca506f89315ef5ae709d4b7c50f4d57290f64fd29d954fb373da9cd0db5b7c"
+    },
+    {
+      "file": "server_data/glof/suicide_basin/epochs.geojson.json",
+      "sha256": "ff93d6efa234ec11b0cb5ee78b49ca551f16f54b819dab6e91430925911a8cb7"
+    },
+    {
+      "file": "server_data/glof/suicide_basin/summary.json",
+      "sha256": "c05662637bb954344d54dfbc8423b8347fd3a9d90b37216145d68c0722a2d89c"
+    },
+    {
+      "file": "server_data/glof/tsho_rolpa/context.geojson",
+      "sha256": "33610b1d96d45c21036829b9671f75c8a5a4fd3336f877a37e8aa495683a2443"
+    },
+    {
+      "file": "server_data/glof/tsho_rolpa/epochs.geojson.json",
+      "sha256": "5af109600a17f207f322ca4e3508f05e5d7ce4bcab7c45f2f8f7887c13e7e3cf"
+    },
+    {
+      "file": "server_data/glof/tsho_rolpa/summary.json",
+      "sha256": "fff3cad0153bda05bb2d8d6f75e17c2a070dbf7fb4fd0d1f22ab4c0d8e3d7a85"
+    },
+    {
+      "file": "server_data/glof/validation.json",
+      "sha256": "7b9ae90d19b9ccbf3a2c5dd344f6631a78274700e55ce818d1b7fd6c3ec353ec"
+    }
+  ],
+  "sites": 5,
+  "radar_epochs": 253
+}

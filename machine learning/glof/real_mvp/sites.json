@@ -1,0 +1,162 @@
+[
+  {
+    "site_id": "south_lhonak",
+    "name": "South Lhonak Lake",
+    "country": "India (Sikkim)",
+    "lake_lon": 88.195,
+    "lake_lat": 27.91,
+    "lake_bbox": [
+      88.12,
+      27.86,
+      88.26,
+      27.96
+    ],
+    "flood_bbox": [
+      88.1,
+      27.55,
+      88.7,
+      28.0
+    ],
+    "downstream_towns": [
+      [
+        "Chungthang",
+        88.646,
+        27.604
+      ],
+      [
+        "Lachen",
+        88.556,
+        27.717
+      ]
+    ],
+    "known_glof_dates": [
+      "2023-10-04"
+    ],
+    "notes": "Moraine-dammed lake; Oct 2023 outburst destroyed the Teesta-III dam at Chungthang."
+  },
+  {
+    "site_id": "imja_tsho",
+    "name": "Imja Tsho",
+    "country": "Nepal (Khumbu)",
+    "lake_lon": 86.925,
+    "lake_lat": 27.898,
+    "lake_bbox": [
+      86.88,
+      27.87,
+      86.98,
+      27.93
+    ],
+    "flood_bbox": [
+      86.7,
+      27.7,
+      87.0,
+      27.93
+    ],
+    "downstream_towns": [
+      [
+        "Dingboche",
+        86.83,
+        27.892
+      ],
+      [
+        "Namche Bazaar",
+        86.713,
+        27.805
+      ]
+    ],
+    "known_glof_dates": [],
+    "notes": "Rapidly growing moraine-dammed lake; outlet lowered in 2016 for risk reduction."
+  },
+  {
+    "site_id": "tsho_rolpa",
+    "name": "Tsho Rolpa",
+    "country": "Nepal (Rolwaling)",
+    "lake_lon": 86.475,
+    "lake_lat": 27.862,
+    "lake_bbox": [
+      86.43,
+      27.84,
+      86.53,
+      27.89
+    ],
+    "flood_bbox": [
+      86.2,
+      27.7,
+      86.53,
+      27.89
+    ],
+    "downstream_towns": [
+      [
+        "Beding",
+        86.373,
+        27.86
+      ],
+      [
+        "Na",
+        86.43,
+        27.866
+      ]
+    ],
+    "known_glof_dates": [],
+    "notes": "One of Nepal's largest moraine-dammed lakes; partially drained in 2000 via spillway."
+  },
+  {
+    "site_id": "palcacocha",
+    "name": "Laguna Palcacocha",
+    "country": "Peru (Cordillera Blanca)",
+    "lake_lon": -77.379,
+    "lake_lat": -9.397,
+    "lake_bbox": [
+      -77.42,
+      -9.43,
+      -77.34,
+      -9.36
+    ],
+    "flood_bbox": [
+      -77.6,
+      -9.56,
+      -77.34,
+      -9.36
+    ],
+    "downstream_towns": [
+      [
+        "Huaraz",
+        -77.528,
+        -9.527
+      ]
+    ],
+    "known_glof_dates": [],
+    "notes": "Historic 1941 outburst devastated Huaraz; still a high-priority hazard."
+  },
+  {
+    "site_id": "suicide_basin",
+    "name": "Suicide Basin (Mendenhall Glacier)",
+    "country": "USA (Alaska)",
+    "lake_lon": -134.488,
+    "lake_lat": 58.456,
+    "lake_bbox": [
+      -134.56,
+      58.42,
+      -134.42,
+      58.49
+    ],
+    "flood_bbox": [
+      -134.68,
+      58.33,
+      -134.42,
+      58.49
+    ],
+    "downstream_towns": [
+      [
+        "Juneau (Mendenhall Valley)",
+        -134.58,
+        58.37
+      ]
+    ],
+    "known_glof_dates": [
+      "2023-08-05",
+      "2024-08-06"
+    ],
+    "notes": "Ice-dammed basin with near-annual outbursts \u2014 best site for supervised labels."
+  }
+]

@@ -50,3 +50,43 @@
   #chat { right:6px; bottom:6px; }
   #chatBox { max-height:65svh; }
 }
+
+
+/* Ishaq GLOF evidence adapted to Meryem's blue/white NISASTER design. */
+#glof-monitor {
+  --muted:#5f6f8c; --blue:#004aad; --accent:#ff6b35; --surface:#fff; --line:#dbe3f1;
+  width:min(1060px,calc(100vw - 24px));max-height:calc(100dvh - 24px);
+  color:#0f2347;background:#fff;border:1px solid #dbe3f1;border-radius:14px;
+  box-shadow:0 18px 70px #00296b66;overflow-y:auto;font:14px/1.45 "Source Sans 3","Segoe UI",Arial,sans-serif;
+}
+#glof-monitor::backdrop { background:#001b4eaa;backdrop-filter:blur(2px); }
+#glof-monitor .glof-heading {background:linear-gradient(90deg,#00296b,#004aad);padding:16px 20px;margin:-24px -24px 12px;color:white;border-radius:10px 10px 0 0;align-items:center;}
+#glof-monitor .glof-heading h2,#glof-monitor .glof-heading .glof-kicker,
+#glof-monitor .glof-heading p{color:#fff;}
+#glof-monitor .glof-heading .glof-kicker {opacity:.84;}
+#glof-monitor .glof-heading .quiet {background:transparent;color:#fff;border:1px solid #ffffff99;padding:6px 12px;border-radius:7px;font-size:22px;cursor:pointer;}
+#glof-monitor .glof-signal {background:#f4f7fc;border-color:#dbe3f1;color:#0f2347;border-radius:8px;}
+#glof-monitor .glof-signal strong {color:#00296b;font-weight:760;}
+#glof-monitor .glof-signal p, #glof-monitor .glof-caption, #glof-monitor p {color:#51627f;}
+#glof-monitor .glof-limit {color:#6f402a;border-left:3px solid #ff6b35;background:#fff8f4;padding:8px 11px;}
+#glof-monitor .glof-world {background:#edf4fb;border-color:#dbe3f1;}
+#glof-monitor .glof-land path {fill:#cbdcee;stroke:#9fbbd6;}
+#glof-monitor .glof-world text {fill:#0f2347;stroke:#fff;}
+#glof-monitor .glof-world circle {fill:#ff6b35;stroke:#fff;}
+#glof-monitor .glof-world circle.selected {fill:#004aad;stroke:#004aad;}
+#glof-monitor .glof-modes button,#glof-monitor .glof-lakes button,
+#glof-monitor .glof-actions button {background:#fff;color:#004aad;border:1px solid #bfcee4;border-radius:7px;padding:8px 12px;cursor:pointer;}
+#glof-monitor .glof-modes [aria-pressed="true"],
+#glof-monitor .glof-lakes [aria-pressed="true"] {background:#004aad;color:#fff;border-color:#004aad;}
+#glof-monitor .glof-actions .lab-primary {background:#004aad;color:#fff;border-color:#004aad;}
+#glof-monitor .glof-toolbar select {background:#fff;color:#0f2347;}
+#glof-monitor .glof-sources article {background:#f4f7fc;border-radius:8px;}
+#glof-monitor a {color:#004aad;text-decoration:underline;}
+#glof-monitor .glof-world text {stroke-width:2px;}
+@media(max-width:720px) {
+  #glof-monitor{width:calc(100vw - 10px);max-height:calc(100dvh - 12px);padding:14px;}
+  #glof-monitor .glof-heading {margin:-14px -14px 12px;padding:12px 14px;}
+  #glof-monitor .glof-signals {grid-template-columns:1fr;}
+  #glof-monitor .glof-modes {flex-wrap:wrap;}
+  #glof-monitor .glof-sources {grid-template-columns:1fr;}
+}

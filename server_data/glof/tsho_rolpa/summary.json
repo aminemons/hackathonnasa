@@ -1,0 +1,1777 @@
+{
+  "schema_version": "1.0",
+  "generated_utc": "2026-11-15T06:37:57.244854+00:00",
+  "site": {
+    "site_id": "tsho_rolpa",
+    "name": "Tsho Rolpa",
+    "country": "Nepal (Rolwaling)",
+    "lake_lon": 86.475,
+    "lake_lat": 27.862,
+    "lake_bbox": [
+      86.43,
+      27.84,
+      86.53,
+      27.89
+    ],
+    "flood_bbox": [
+      86.2,
+      27.7,
+      86.53,
+      27.89
+    ],
+    "downstream_towns": [
+      [
+        "Beding",
+        86.373,
+        27.86
+      ],
+      [
+        "Na",
+        86.43,
+        27.866
+      ]
+    ],
+    "known_glof_dates": [],
+    "notes": "One of Nepal's largest moraine-dammed lakes; partially drained in 2000 via spillway."
+  },
+  "title": "Three-indicator GLOF change observatory",
+  "assessment": "observations_for_review",
+  "assessment_explanation": "Inspect lake area, annual glacier movement and dated surface change together. Each indicator has separate dates and evidence limits.",
+  "confidence": "limited",
+  "available_indicators": 2,
+  "confidence_kind": "qualitative evidence grade; not a calibrated event probability",
+  "lake": {
+    "status": "modelled_area_observations",
+    "confidence": "moderate",
+    "source_group": "ESA / Copernicus Sentinel-1",
+    "units": "km2",
+    "water_level_m": null,
+    "lake_volume_m3": null,
+    "water_level_status": "not_measured",
+    "volume_status": "not_measured",
+    "series": [
+      {
+        "date": "2022-01-05",
+        "accepted": true,
+        "lake_area_km2": 1.0552,
+        "raw_lake_area_km2": 1.0552,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9964000000000001,
+          1.1036000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220105T001136_20220105T001201_041318_04E975_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-01-29",
+        "accepted": true,
+        "lake_area_km2": 0.9396,
+        "raw_lake_area_km2": 0.9396,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.6784,
+          1.0356
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220129T001135_20220129T001200_041668_04F517_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-02-22",
+        "accepted": true,
+        "lake_area_km2": 0.056,
+        "raw_lake_area_km2": 0.056,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.0088,
+          0.5276000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220222T001135_20220222T001200_042018_05014D_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-03-06",
+        "accepted": true,
+        "lake_area_km2": 0.0128,
+        "raw_lake_area_km2": 0.0128,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.0,
+          0.25720000000000004
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220306T001135_20220306T001200_042193_05073D_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-03-30",
+        "accepted": true,
+        "lake_area_km2": 0.3148,
+        "raw_lake_area_km2": 0.3148,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.21680000000000002,
+          0.7804
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220330T001135_20220330T001200_042543_051321_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-04-23",
+        "accepted": true,
+        "lake_area_km2": 1.1,
+        "raw_lake_area_km2": 1.1,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0664,
+          1.1624
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220423T001136_20220423T001201_042893_051ED6_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-05-17",
+        "accepted": true,
+        "lake_area_km2": 1.0148,
+        "raw_lake_area_km2": 1.0148,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9588000000000001,
+          1.0804
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220517T001137_20220517T001202_043243_052A17_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-05-29",
+        "accepted": true,
+        "lake_area_km2": 1.0548,
+        "raw_lake_area_km2": 1.0548,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0,
+          1.0952
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220529T001138_20220529T001203_043418_052F44_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-06-22",
+        "accepted": true,
+        "lake_area_km2": 1.0324,
+        "raw_lake_area_km2": 1.0324,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9528000000000001,
+          1.0864
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220622T001140_20220622T001205_043768_0539B2_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-07-16",
+        "accepted": true,
+        "lake_area_km2": 1.0488,
+        "raw_lake_area_km2": 1.0488,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.016,
+          1.1072
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220716T001141_20220716T001206_044118_05441E_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-08-09",
+        "accepted": true,
+        "lake_area_km2": 1.1664,
+        "raw_lake_area_km2": 1.1664,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1152,
+          1.2284000000000002
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220809T001132_20220809T001157_044468_054E71_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-08-21",
+        "accepted": true,
+        "lake_area_km2": 1.17,
+        "raw_lake_area_km2": 1.17,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1248,
+          1.2196
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220821T001132_20220821T001157_044643_055454_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-09-14",
+        "accepted": true,
+        "lake_area_km2": 1.152,
+        "raw_lake_area_km2": 1.152,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1116000000000001,
+          1.2124000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20220914T001133_20220914T001158_044993_05601A_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-10-08",
+        "accepted": true,
+        "lake_area_km2": 1.15,
+        "raw_lake_area_km2": 1.15,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.106,
+          1.2064000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20221008T001134_20221008T001159_045343_056BDC_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-11-01",
+        "accepted": true,
+        "lake_area_km2": 1.1716,
+        "raw_lake_area_km2": 1.1716,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1380000000000001,
+          1.2104000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20221101T001134_20221101T001159_045693_0576F9_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-11-13",
+        "accepted": true,
+        "lake_area_km2": 1.1064,
+        "raw_lake_area_km2": 1.1064,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0176,
+          1.1840000000000002
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20221113T001133_20221113T001158_045868_057CDF_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-12-07",
+        "accepted": true,
+        "lake_area_km2": 1.1816,
+        "raw_lake_area_km2": 1.1816,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1424,
+          1.2396
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20221207T001133_20221207T001158_046218_0588C2_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2022-12-31",
+        "accepted": true,
+        "lake_area_km2": 1.1564,
+        "raw_lake_area_km2": 1.1564,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0908,
+          1.2212
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20221231T001131_20221231T001156_046568_0594A3_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-01-24",
+        "accepted": true,
+        "lake_area_km2": 1.1112,
+        "raw_lake_area_km2": 1.1112,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9860000000000001,
+          1.1852
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230124T001130_20230124T001155_046918_05A075_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-02-05",
+        "accepted": true,
+        "lake_area_km2": 1.0404,
+        "raw_lake_area_km2": 1.0404,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9112,
+          1.1560000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230205T001130_20230205T001155_047093_05A64A_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-03-01",
+        "accepted": true,
+        "lake_area_km2": 1.1108,
+        "raw_lake_area_km2": 1.1108,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0036,
+          1.1748
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230301T001130_20230301T001155_047443_05B220_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-03-25",
+        "accepted": true,
+        "lake_area_km2": 0.8272,
+        "raw_lake_area_km2": 0.8272,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.7068,
+          0.9592
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230325T001130_20230325T001155_047793_05BDF2_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-04-18",
+        "accepted": true,
+        "lake_area_km2": 0.9384,
+        "raw_lake_area_km2": 0.9384,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.8804000000000001,
+          1.0172
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230418T001130_20230418T001155_048143_05C9C3_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-04-30",
+        "accepted": true,
+        "lake_area_km2": 1.1056,
+        "raw_lake_area_km2": 1.1056,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0392000000000001,
+          1.1552
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230430T001131_20230430T001156_048318_05CFA3_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-05-24",
+        "accepted": true,
+        "lake_area_km2": 1.18,
+        "raw_lake_area_km2": 1.18,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1512,
+          1.2152
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230524T001132_20230524T001157_048668_05DA7F_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-06-17",
+        "accepted": true,
+        "lake_area_km2": 1.1648,
+        "raw_lake_area_km2": 1.1648,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.12,
+          1.2008
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230617T001133_20230617T001158_049018_05E508_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-07-11",
+        "accepted": true,
+        "lake_area_km2": 1.1584,
+        "raw_lake_area_km2": 1.1584,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1096000000000001,
+          1.2228
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230711T001135_20230711T001200_049368_05EFC4_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-08-16",
+        "accepted": true,
+        "lake_area_km2": 1.1444,
+        "raw_lake_area_km2": 1.1444,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0932,
+          1.2416
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230816T001137_20230816T001202_049893_060055_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-09-09",
+        "accepted": true,
+        "lake_area_km2": 1.1544,
+        "raw_lake_area_km2": 1.1544,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0856000000000001,
+          1.2352
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20230909T001138_20230909T001203_050243_060C47_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-10-03",
+        "accepted": true,
+        "lake_area_km2": 1.1524,
+        "raw_lake_area_km2": 1.1524,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1064,
+          1.2044000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20231003T001139_20231003T001204_050593_061840_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-10-27",
+        "accepted": true,
+        "lake_area_km2": 1.1788,
+        "raw_lake_area_km2": 1.1788,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1496,
+          1.2268000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20231027T001139_20231027T001204_050943_062431_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-11-08",
+        "accepted": true,
+        "lake_area_km2": 1.1676,
+        "raw_lake_area_km2": 1.1676,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1216000000000002,
+          1.2092
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20231108T001138_20231108T001203_051118_062A37_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-12-02",
+        "accepted": true,
+        "lake_area_km2": 1.176,
+        "raw_lake_area_km2": 1.176,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1276000000000002,
+          1.2212
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20231202T001138_20231202T001203_051468_06363F_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2023-12-26",
+        "accepted": true,
+        "lake_area_km2": 1.164,
+        "raw_lake_area_km2": 1.164,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1288,
+          1.2156
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20231226T001136_20231226T001201_051818_06426E_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-01-19",
+        "accepted": true,
+        "lake_area_km2": 1.0644,
+        "raw_lake_area_km2": 1.0644,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.9168000000000001,
+          1.1472
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240119T001135_20240119T001200_052168_064E5A_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-01-31",
+        "accepted": true,
+        "lake_area_km2": 0.81,
+        "raw_lake_area_km2": 0.81,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.5552,
+          1.0824
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240131T001135_20240131T001200_052343_065449_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-02-24",
+        "accepted": true,
+        "lake_area_km2": 1.0072,
+        "raw_lake_area_km2": 1.0072,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.7528,
+          1.1672
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240224T001134_20240224T001159_052693_06601E_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-03-19",
+        "accepted": true,
+        "lake_area_km2": 0.1744,
+        "raw_lake_area_km2": 0.1744,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          0.1028,
+          0.2164
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240319T001135_20240319T001200_053043_066C51_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-04-24",
+        "accepted": true,
+        "lake_area_km2": 1.1704,
+        "raw_lake_area_km2": 1.1704,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1408,
+          1.2068
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240424T001135_20240424T001200_053568_0680B7_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-05-06",
+        "accepted": true,
+        "lake_area_km2": 1.1748,
+        "raw_lake_area_km2": 1.1748,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1400000000000001,
+          1.2132
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240506T001136_20240506T001201_053743_0687A1_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-05-30",
+        "accepted": true,
+        "lake_area_km2": 1.1476,
+        "raw_lake_area_km2": 1.1476,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0964,
+          1.1944000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240530T001136_20240530T001201_054093_0693D5_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-06-23",
+        "accepted": true,
+        "lake_area_km2": 1.1596,
+        "raw_lake_area_km2": 1.1596,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.118,
+          1.2028
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240623T001135_20240623T001200_054443_069FEE_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-07-17",
+        "accepted": true,
+        "lake_area_km2": 1.1572,
+        "raw_lake_area_km2": 1.1572,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0972,
+          1.2288000000000001
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240717T001134_20240717T001159_054793_06AC14_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-07-29",
+        "accepted": true,
+        "lake_area_km2": 1.1624,
+        "raw_lake_area_km2": 1.1624,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1196000000000002,
+          1.2252
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240729T001133_20240729T001158_054968_06B230_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-08-22",
+        "accepted": true,
+        "lake_area_km2": 1.1536,
+        "raw_lake_area_km2": 1.1536,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1008,
+          1.21
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240822T001134_20240822T001159_055318_06BEBB_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-09-15",
+        "accepted": true,
+        "lake_area_km2": 1.1512,
+        "raw_lake_area_km2": 1.1512,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1036000000000001,
+          1.218
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20240915T001134_20240915T001159_055668_06CC29_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-10-09",
+        "accepted": true,
+        "lake_area_km2": 1.1884,
+        "raw_lake_area_km2": 1.1884,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1520000000000001,
+          1.2616
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20241009T001135_20241009T001200_056018_06D9F9_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-10-21",
+        "accepted": true,
+        "lake_area_km2": 1.174,
+        "raw_lake_area_km2": 1.174,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1320000000000001,
+          1.2072
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20241021T001135_20241021T001200_056193_06E0E9_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-11-14",
+        "accepted": true,
+        "lake_area_km2": 1.1624,
+        "raw_lake_area_km2": 1.1624,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.0876000000000001,
+          1.2056
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20241114T001134_20241114T001159_056543_06EED0_rtc"
+        ],
+        "operational_status": "not_assessed"
+      },
+      {
+        "date": "2024-12-20",
+        "accepted": true,
+        "lake_area_km2": 1.1736,
+        "raw_lake_area_km2": 1.1736,
+        "area_filter_changed": false,
+        "area_estimate_status": "mapped_component",
+        "lake_area_sensitivity_km2": [
+          1.1316000000000002,
+          1.2524
+        ],
+        "interval_kind": "threshold_sensitivity_not_95pct_ci",
+        "valid_fraction": 1.0,
+        "source_ids": [
+          "S1A_IW_GRDH_1SDV_20241220T001131_20241220T001156_057068_0703B1_rtc"
+        ],
+        "operational_status": "not_assessed"
+      }
+    ],
+    "independent_checks": [
+      {
+        "sar_date": "2023-10-03",
+        "optical_datetime": "2023-10-14T04:47:41.024000Z",
+        "date_gap_days": 11.19978037037037,
+        "tp": 2630,
+        "fp": 0,
+        "fn": 598,
+        "tn": 19225,
+        "iou": 0.8147459727385378,
+        "f1": 0.8979173779446911,
+        "precision": 1.0,
+        "recall": 0.8147459727385378,
+        "valid_pixels": 22453,
+        "scope": "Raw pixel classifier diagnostic; final connected component not separately audited for this lake."
+      },
+      {
+        "sar_date": "2024-07-29",
+        "optical_datetime": "2024-08-09T04:47:01.024000Z",
+        "date_gap_days": 11.199317407407408,
+        "tp": 2082,
+        "fp": 0,
+        "fn": 359,
+        "tn": 6627,
+        "iou": 0.8529291274068005,
+        "f1": 0.9206279018350653,
+        "precision": 1.0,
+        "recall": 0.8529291274068005,
+        "valid_pixels": 9068,
+        "scope": "Raw pixel classifier diagnostic; final connected component not separately audited for this lake."
+      }
+    ],
+    "independent_monthly_water": [],
+    "area_drop_candidates": [
+      {
+        "between": [
+          "2022-01-29",
+          "2022-02-22"
+        ],
+        "area_drop_pct": 94.04001702852277,
+        "interpretation": "Observed-model area-drop candidate; seasonal ice, geometry and classification error require review. Post-change detection, not forecast."
+      },
+      {
+        "between": [
+          "2022-02-22",
+          "2022-03-06"
+        ],
+        "area_drop_pct": 77.14285714285715,
+        "interpretation": "Observed-model area-drop candidate; seasonal ice, geometry and classification error require review. Post-change detection, not forecast."
+      },
+      {
+        "between": [
+          "2024-02-24",
+          "2024-03-19"
+        ],
+        "area_drop_pct": 82.68467037331216,
+        "interpretation": "Observed-model area-drop candidate; seasonal ice, geometry and classification error require review. Post-change detection, not forecast."
+      }
+    ],
+    "interpretation": "Mapped area only. Missing water under snow/ice and ambiguous shorelines remain unresolved; changes are review candidates.",
+    "confidence_basis": "Heuristic water-map evidence grade only: median optical-reference IoU 0.8338375500726691 across 2 checks with at least100 annotated water pixels. Automatic references and date mismatch remain uncertain. This does not grade breach forecasting.",
+    "confidence_kind": "Heuristic water-map grade from automatic optical references; not event probability."
+  },
+  "movement": {
+    "status": "annual_glacier_context",
+    "confidence": "limited",
+    "value_m_yr": 2.2131781578063965,
+    "source_group": "NASA MEaSUREs / ITS_LIVE",
+    "units": "m/year",
+    "interpretation": "Annual movement of the mapped glacier candidate within the downloaded AOI, not a short-term surge forecast.",
+    "series": [
+      {
+        "year": 1987,
+        "median_m_yr": 62.801151275634766,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1987"
+      },
+      {
+        "year": 1988,
+        "median_m_yr": 4.089097023010254,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1988"
+      },
+      {
+        "year": 1989,
+        "median_m_yr": 3.8721747398376465,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1989"
+      },
+      {
+        "year": 1990,
+        "median_m_yr": 4.302629470825195,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1990"
+      },
+      {
+        "year": 1991,
+        "median_m_yr": 5.324228286743164,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1991"
+      },
+      {
+        "year": 1992,
+        "median_m_yr": 4.485498905181885,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1992"
+      },
+      {
+        "year": 1993,
+        "median_m_yr": 3.681276321411133,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1993"
+      },
+      {
+        "year": 1994,
+        "median_m_yr": 3.7006118297576904,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1994"
+      },
+      {
+        "year": 1995,
+        "median_m_yr": 3.267291784286499,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1995"
+      },
+      {
+        "year": 1996,
+        "median_m_yr": 4.431966304779053,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1996"
+      },
+      {
+        "year": 1997,
+        "median_m_yr": 4.0343217849731445,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1997"
+      },
+      {
+        "year": 1998,
+        "median_m_yr": 3.628030776977539,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1998"
+      },
+      {
+        "year": 1999,
+        "median_m_yr": 3.650245189666748,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_1999"
+      },
+      {
+        "year": 2000,
+        "median_m_yr": 3.3736371994018555,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2000"
+      },
+      {
+        "year": 2001,
+        "median_m_yr": 2.978982925415039,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2001"
+      },
+      {
+        "year": 2002,
+        "median_m_yr": 2.4946188926696777,
+        "valid_glacier_pixels": 482,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 0.9816700610997964,
+        "source_item_id": "RGI14A_ANNUAL_2002"
+      },
+      {
+        "year": 2003,
+        "median_m_yr": 3.166255474090576,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2003"
+      },
+      {
+        "year": 2004,
+        "median_m_yr": 1.9917442798614502,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2004"
+      },
+      {
+        "year": 2005,
+        "median_m_yr": 2.4734110832214355,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2005"
+      },
+      {
+        "year": 2006,
+        "median_m_yr": 2.7869043350219727,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2006"
+      },
+      {
+        "year": 2007,
+        "median_m_yr": 2.069831132888794,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2007"
+      },
+      {
+        "year": 2008,
+        "median_m_yr": 2.4689042568206787,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2008"
+      },
+      {
+        "year": 2009,
+        "median_m_yr": 2.533566951751709,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2009"
+      },
+      {
+        "year": 2010,
+        "median_m_yr": 2.5935916900634766,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2010"
+      },
+      {
+        "year": 2011,
+        "median_m_yr": 2.54333758354187,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2011"
+      },
+      {
+        "year": 2012,
+        "median_m_yr": 2.0667667388916016,
+        "valid_glacier_pixels": 482,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 0.9816700610997964,
+        "source_item_id": "RGI14A_ANNUAL_2012"
+      },
+      {
+        "year": 2013,
+        "median_m_yr": 2.4572062492370605,
+        "valid_glacier_pixels": 490,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 0.9979633401221996,
+        "source_item_id": "RGI14A_ANNUAL_2013"
+      },
+      {
+        "year": 2014,
+        "median_m_yr": 1.870593547821045,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2014"
+      },
+      {
+        "year": 2015,
+        "median_m_yr": 1.9451638460159302,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2015"
+      },
+      {
+        "year": 2016,
+        "median_m_yr": 2.0499866008758545,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2016"
+      },
+      {
+        "year": 2017,
+        "median_m_yr": 2.100240468978882,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2017"
+      },
+      {
+        "year": 2018,
+        "median_m_yr": 2.2231593132019043,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2018"
+      },
+      {
+        "year": 2019,
+        "median_m_yr": 2.007370710372925,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2019"
+      },
+      {
+        "year": 2020,
+        "median_m_yr": 1.803317904472351,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2020"
+      },
+      {
+        "year": 2021,
+        "median_m_yr": 2.26361346244812,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2021"
+      },
+      {
+        "year": 2022,
+        "median_m_yr": 2.289170026779175,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2022"
+      },
+      {
+        "year": 2023,
+        "median_m_yr": 1.6468044519424438,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2023"
+      },
+      {
+        "year": 2024,
+        "median_m_yr": 2.2131781578063965,
+        "valid_glacier_pixels": 491,
+        "outline_pixels_in_aoi": 491,
+        "valid_fraction_of_outline_in_aoi": 1.0,
+        "source_item_id": "RGI14A_ANNUAL_2024"
+      }
+    ],
+    "latest_year": 2024,
+    "baseline_median_m_yr": 2.5684646368026733,
+    "baseline_years": 36,
+    "latest_to_historical_ratio": null,
+    "valid_fraction_of_outline_in_aoi": 1.0,
+    "baseline_rule": "Median of glacier-mask annual medians through 2022; at least three years; ratio withheld when baseline <=5m/yr.",
+    "caveat": "Outline may predate observations. AOI clips the glacier. Per-pixel velocity uncertainty is not fully propagated; confidence is a heuristic evidence grade.",
+    "latest_source_quality": {
+      "count": {
+        "median": 4284.0,
+        "pixels": 491
+      },
+      "v_error": {
+        "median": 0.0,
+        "pixels": 491
+      }
+    },
+    "quality_note": "Count is annual image-pair support; v_error is integer-quantized m/year, so zero is not exact zero uncertainty. These diagnostics are not a confidence interval on the mask median."
+  },
+  "elevation": {
+    "status": "unavailable",
+    "confidence": "unavailable",
+    "partial_surface_volume_change_m3": null,
+    "source_group": "Research / CNES-derived Pleiades",
+    "units": "m and m3",
+    "interpretation": "Partial surface-volume change over a historical glacier outline on common valid terrain, not total glacier volume or lake water volume.",
+    "reason": "No matched high-resolution repeat DEMs with a usable glacier outline for this site."
+  },
+  "glacier_candidate": {
+    "line_type": "glac_bound",
+    "anlys_id": 146402,
+    "glac_id": "G086537E27874N",
+    "db_area": 35.4742,
+    "rec_status": "okay",
+    "src_date": "2009-11-08T00:00:00Z",
+    "glac_name": "Rolwaling",
+    "subm_id": 577,
+    "chief_affl": "International Centre for Integrated Mountain Development (ICIMOD)",
+    "source_group": "International / GLIMS via NSIDC",
+    "source_url": "https://nsidc.org/data/nsidc-0272/versions/1",
+    "geometry_role": "latest available outline per GLIMS glacier ID; not a validated feeding-glacier delineation",
+    "source_date_preserved": true,
+    "same_analysis_holes_subtracted": 0
+  },
+  "glacier_attribution": "Spatial candidate selection prefers a named glacier >=1km\u00b2 within 2km, then a substantial nearby outline, then nearest within 5km. Hydrological linkage is unverified. Statistics use only downloaded grid intersections.",
+  "sources": [
+    {
+      "provider": "NASA / ASF",
+      "product": "NISAR L-band GCOV",
+      "status": "observed",
+      "detail": "Real NISAR pair with concept IDs; separate GPU 1 radiometric regression. No NISAR water/hazard accuracy claimed.",
+      "url": "https://nisar-docs.asf.alaska.edu/"
+    },
+    {
+      "provider": "India / ISRO",
+      "product": "S-band / Bhoonidhi",
+      "status": "not_ingested",
+      "detail": "NISAR is joint NASA\u2013ISRO. No ISRO S-band observations are silently substituted by ESA Sentinel-1.",
+      "url": "https://bhoonidhi.nrsc.gov.in/NISAR/"
+    },
+    {
+      "provider": "ESA / Copernicus",
+      "product": "Sentinel-1 C-band RTC",
+      "status": "observed",
+      "detail": "50 real same-orbit epochs, 2022-01-05 to 2024-12-20. Model trained on hand-labelled C-band GRD: RTC radiometric/domain transfer is evaluated separately.",
+      "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+    },
+    {
+      "provider": "ESA / Copernicus",
+      "product": "Independent Sentinel-2 optical reference",
+      "status": "available",
+      "detail": "Cloud/snow-masked spectral references, fixed independently of SAR. Date gaps and automatic label uncertainty are reported."
+    },
+    {
+      "provider": "Copernicus",
+      "product": "GLO-30 observed terrain",
+      "status": "observed",
+      "detail": "Real 30 m DSM, resampled onto 20 m processing grid. Local relief is a HAND proxy, not hydrologically derived HAND."
+    },
+    {
+      "provider": "NASA MEaSUREs",
+      "product": "ITS_LIVE annual velocities",
+      "status": "observed_crops_ready",
+      "detail": "Measured annual velocity and available 1985\u20132022 median. Velocity is not a glacier thinning measurement.",
+      "url": "https://its-live.jpl.nasa.gov/"
+    },
+    {
+      "provider": "NASA MEaSUREs",
+      "product": "ITS_LIVE annual glacier velocity",
+      "status": "annual_glacier_context",
+      "url": "https://its-live.jpl.nasa.gov/"
+    },
+    {
+      "provider": "GLIMS / NSIDC and contributing analysts",
+      "product": "Dated glacier outlines",
+      "status": "acquired",
+      "url": "https://www.glims.org/"
+    },
+    {
+      "provider": "EC JRC / Google",
+      "product": "Global Surface Water occurrence v1.5",
+      "status": "acquired",
+      "url": "https://global-surface-water.appspot.com/download"
+    },
+    {
+      "provider": "Research / CNES-derived Pleiades",
+      "product": "Repeat terrain and partial glacier surface change",
+      "status": "unavailable",
+      "url": "https://zenodo.org/records/13124662"
+    },
+    {
+      "provider": "Joint NASA\u2013ISRO mission / NASA ASF access",
+      "product": "NISAR L-band radiometric comparison",
+      "status": "complete",
+      "url": "https://nisar-docs.asf.alaska.edu/"
+    },
+    {
+      "provider": "India / ISRO Bhoonidhi",
+      "product": "NISAR S-band",
+      "status": "not_ingested",
+      "url": "https://bhoonidhi.nrsc.gov.in/NISAR/"
+    }
+  ],
+  "source_acquisition": {
+    "site_id": "tsho_rolpa",
+    "acquired_utc": "2026-11-15T06:29:01.559380+00:00",
+    "records": [
+      {
+        "kind": "glacier_outlines",
+        "status": "downloaded",
+        "file": "glaciers.geojson",
+        "sha256": "6563e51a5a372188a22482f003b62f913bcb4201967088da99b5261064d16f45",
+        "source_query": "https://integration.glims.org/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=GLIMS%3AGLIMS_Glacier_Outlines&outputFormat=application%2Fjson&srsName=EPSG%3A4326&bbox=86.4%2C27.81%2C86.56%2C27.92%2CEPSG%3A4326&maxFeatures=3000",
+        "source_group": "International / GLIMS via NSIDC",
+        "source_features": 239,
+        "latest_glacier_count": 101,
+        "source_dates": [
+          "1999-04-27T00:00:00Z",
+          "2009-11-08T00:00:00Z",
+          "2010-04-09T00:00:00Z"
+        ],
+        "glacier_names": [
+          "Langdak",
+          "Ripimo Shar",
+          "Rolwaling",
+          "Thyangbo"
+        ],
+        "aoi_bbox": [
+          86.4,
+          27.81,
+          86.56,
+          27.92
+        ],
+        "selection_rule": "latest available okay glacial boundary per glacier ID, source year >=1980; reconstructed older outlines retained only in raw source",
+        "citation": "GLIMS Glacier Database, Version 1; GLIMS/NSIDC. Per-feature submitter, analysis ID, source date and analyst affiliation retained.",
+        "limitation": "Latest source date varies by glacier and may be historical. IDs can represent different delineations; union masks avoid double-counting overlapping outlines. No automatic feeding-glacier identity is certified."
+      },
+      {
+        "kind": "historical_water_occurrence",
+        "status": "downloaded",
+        "file": "jrc_occurrence.tif",
+        "sha256": "2fa5438b8a0f2c1bf9ddc9e0c756a74d8c23e7c9242a1c36bb72ab7d7006b319",
+        "source_url": "https://s3.waw4-1.cloudferro.com/swift/v1/global-surface-water/download2024/Aggregated/VER1-5/occurrence/occurrence_80E_30N_v1_5_2024.tif",
+        "source_group": "European Commission JRC / Google",
+        "version": "1.5",
+        "source_resolution_m": 30,
+        "target_pixel_spacing_m": 20,
+        "source_raster": {
+          "native_resolution_m": 30,
+          "note": "existing bounded crop; source URL retained"
+        },
+        "date_range": [
+          "1984",
+          "2024"
+        ],
+        "units": "water occurrence percent; 255 no data",
+        "valid_fraction": 1.0,
+        "tile_coverage_fraction": 1.0,
+        "observation_month": null,
+        "classification_codes": null,
+        "pixel_value_counts": {
+          "0": 133194,
+          "1": 2,
+          "2": 12,
+          "3": 12,
+          "4": 4,
+          "5": 21,
+          "6": 6,
+          "7": 10,
+          "8": 11,
+          "9": 13,
+          "10": 5,
+          "11": 6,
+          "12": 8,
+          "13": 7,
+          "14": 8,
+          "15": 13,
+          "16": 7,
+          "17": 19,
+          "18": 17,
+          "19": 13,
+          "20": 7,
+          "21": 9,
+          "22": 11,
+          "23": 10,
+          "24": 16,
+          "25": 9,
+          "26": 12,
+          "27": 18,
+          "28": 13,
+          "29": 25,
+          "30": 14,
+          "31": 13,
+          "32": 9,
+          "33": 16,
+          "34": 10,
+          "35": 17,
+          "36": 21,
+          "37": 15,
+          "38": 8,
+          "39": 15,
+          "40": 15,
+          "41": 5,
+          "42": 8,
+          "43": 10,
+          "44": 13,
+          "45": 15,
+          "46": 9,
+          "47": 10,
+          "48": 12,
+          "49": 9,
+          "50": 1,
+          "51": 8,
+          "52": 1,
+          "53": 11,
+          "54": 11,
+          "55": 3,
+          "56": 6,
+          "57": 5,
+          "58": 10,
+          "59": 8,
+          "60": 6,
+          "61": 6,
+          "62": 16,
+          "63": 10,
+          "64": 12,
+          "65": 9,
+          "66": 7,
+          "67": 11,
+          "68": 6,
+          "69": 20,
+          "70": 20,
+          "71": 16,
+          "72": 11,
+          "73": 14,
+          "74": 18,
+          "75": 20,
+          "76": 21,
+          "77": 15,
+          "78": 27,
+          "79": 35,
+          "80": 21,
+          "81": 26,
+          "82": 38,
+          "83": 33,
+          "84": 36,
+          "85": 34,
+          "86": 30,
+          "87": 23,
+          "88": 21,
+          "89": 25,
+          "90": 39,
+          "91": 49,
+          "92": 80,
+          "93": 77,
+          "94": 48,
+          "95": 64,
+          "96": 107,
+          "97": 123,
+          "98": 254,
+          "99": 611,
+          "100": 2455
+        },
+        "documentation": "https://global-surface-water.appspot.com/download",
+        "limitation": "Aggregated historical context only; includes dates after 2023 and must not be used as pre-event prediction truth or current lake level."
+      },
+      {
+        "kind": "velocity_quality",
+        "status": "downloaded",
+        "year": 2024,
+        "item_id": "RGI14A_ANNUAL_2024",
+        "source_group": "NASA MEaSUREs ITS_LIVE",
+        "source_url": "https://stac.itslive.cloud/collections/velocity-mosaics/items/RGI14A_ANNUAL_2024",
+        "files": [
+          {
+            "kind": "vx",
+            "file": "velocity_2024_vx.tif",
+            "sha256": "092a830b69e1c9471b5040596e30ba18630ba82ddd7715744bc501e6f54be4b2",
+            "url": "https://its-live-data.s3.amazonaws.com/velocity_mosaic/v2.1/annual/cog/ITS_LIVE_velocity_120m_RGI14A_2024_V02.1_vx.tif",
+            "units": "m/yr",
+            "source_encoding": {
+              "dtype": "float32",
+              "scale": 1.0,
+              "offset": 0.0,
+              "nodata": -32767.0,
+              "units": "meter/year",
+              "band_tags": {
+                "description": "mean annual velocity of sinusoidal fit to vx",
+                "fill_value": "-32767",
+                "grid_mapping": "mapping",
+                "NETCDF_VARNAME": "vx",
+                "standard_name": "land_ice_surface_x_velocity",
+                "units": "meter/year",
+                "_FillValue": "-32767"
+              },
+              "source_crs": "ESRI:102027"
+            },
+            "finite_fraction": 1.0
+          },
+          {
+            "kind": "vy",
+            "file": "velocity_2024_vy.tif",
+            "sha256": "5f67db474f8e251511f5df9ff1684d933b430c8d6b3d0eae09e8656f221460f1",
+            "url": "https://its-live-data.s3.amazonaws.com/velocity_mosaic/v2.1/annual/cog/ITS_LIVE_velocity_120m_RGI14A_2024_V02.1_vy.tif",
+            "units": "m/yr",
+            "source_encoding": {
+              "dtype": "float32",
+              "scale": 1.0,
+              "offset": 0.0,
+              "nodata": -32767.0,
+              "units": "meter/year",
+              "band_tags": {
+                "description": "mean annual velocity of sinusoidal fit to vy",
+                "fill_value": "-32767",
+                "grid_mapping": "mapping",
+                "NETCDF_VARNAME": "vy",
+                "standard_name": "land_ice_surface_y_velocity",
+                "units": "meter/year",
+                "_FillValue": "-32767"
+              },
+              "source_crs": "ESRI:102027"
+            },
+            "finite_fraction": 1.0
+          },
+          {
+            "kind": "count",
+            "file": "velocity_2024_count.tif",
+            "sha256": "2b3bc9c6b32775ed513a043e12f29ac0fed811382cbe4a47d777da29dac17cb5",
+            "url": "https://its-live-data.s3.amazonaws.com/velocity_mosaic/v2.1/annual/cog/ITS_LIVE_velocity_120m_RGI14A_2024_V02.1_count.tif",
+            "units": "image pair count",
+            "source_encoding": {
+              "dtype": "uint32",
+              "scale": 1.0,
+              "offset": 0.0,
+              "nodata": 0.0,
+              "units": "count",
+              "band_tags": {
+                "description": "number of image pairs used in error weighted least squares fit",
+                "fill_value": "0",
+                "grid_mapping": "mapping",
+                "missing_value": "0",
+                "NETCDF_VARNAME": "count",
+                "standard_name": "number_of_observations",
+                "units": "count"
+              },
+              "source_crs": "ESRI:102027"
+            },
+            "finite_fraction": 1.0
+          },
+          {
+            "kind": "v_error",
+            "file": "velocity_2024_v_error.tif",
+            "sha256": "26fff6d7839e22cddb44760c7c30f03044ef4658caeea9b8e965d94177a3567e",
+            "url": "https://its-live-data.s3.amazonaws.com/velocity_mosaic/v2.1/annual/cog/ITS_LIVE_velocity_120m_RGI14A_2024_V02.1_v_error.tif",
+            "units": "m/yr",
+            "source_encoding": {
+              "dtype": "uint16",
+              "scale": 1.0,
+              "offset": 0.0,
+              "nodata": 32767.0,
+              "units": "meter/year",
+              "band_tags": {
+                "description": "error weighted error for v",
+                "fill_value": "32767",
+                "grid_mapping": "mapping",
+                "missing_value": "32767",
+                "NETCDF_VARNAME": "v_error",
+                "standard_name": "v error",
+                "units": "meter/year"
+              },
+              "source_crs": "ESRI:102027"
+            },
+            "finite_fraction": 1.0
+          }
+        ],
+        "limitation": "Annual image-pair support and velocity error do not quantify breach probability. vx/vy are source-grid components; geographic vector interpretation requires the product projection. v_error is integer-quantized; valid zero is not proof of exactly zero uncertainty. Count zero is source NoData and is excluded."
+      }
+    ],
+    "failures": [],
+    "synthetic_fallback": false,
+    "status": "complete"
+  },
+  "observation_date_range": [
+    "2022-01-05",
+    "2024-12-20"
+  ],
+  "operational_warning_ready": false,
+  "breach_probability": null,
+  "water_level_measured": false,
+  "whole_glacier_volume_measured": false,
+  "context_layers": "context.geojson",
+  "assets": {
+    "velocity": "/data/glof/tsho_rolpa/velocity.png"
+  },
+  "data_sources": {
+    "sar_source": "observed_sentinel1_rtc",
+    "manifest": "manifest.json",
+    "weights_sha256": "dfa31e476ff3123dcd8a815bc15a393bf55c8ea20df60d2f9ac3bc8323e853b7"
+  },
+  "model": {
+    "path": "water/models/water_model.json",
+    "threshold": 0.35,
+    "sha256": "dfa31e476ff3123dcd8a815bc15a393bf55c8ea20df60d2f9ac3bc8323e853b7",
+    "features": [
+      "vv_db",
+      "vh_db",
+      "vv_minus_vh",
+      "vv_plus_vh",
+      "vv_mean3",
+      "vh_mean3",
+      "vv_mean9",
+      "vh_mean9",
+      "vv_mean25",
+      "vh_mean25",
+      "vv_std9",
+      "vh_std9",
+      "vv_std25",
+      "vh_std25",
+      "vv_local_residual",
+      "vh_local_residual",
+      "vv_edge",
+      "vh_edge",
+      "vh_dark_fraction",
+      "slope_deg",
+      "local_height_m"
+    ]
+  }
+}
