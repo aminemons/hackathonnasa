@@ -1,0 +1,67 @@
+name: Consolidate completed TerraPulse branches
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/branch-consolidation.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  preserve-then-prune:
+    if: github.repository == 'aminemons/hackathonnasa' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve each recorded head as an archive tag before deleting an old branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Frozen heads prevent silently deleting any branch someone has updated since audit.
+          cat > /tmp/legacy-branches.tsv <<'BRANCHES'
+          dataset-alarm-glacier-reliability	06031dc3552f459ecf47e9e18ef23a2e8ef85b07
+          integrate-ishaq-glof-nisaster	87a2d324ff17b9ab9e00b9c74843758061e182e8
+          landslide-gunw-backend	e2b14c149e4155fc2dc7131fa98e810cd3302a6a
+          landslide-human-exposure	b72a32aaac825385981a911f7fb88ca3348ed629
+          landslide-osm-reliability	8cd726874489b492976378a0afd918a26b2f3db2
+          landslide-scar-triage-gpu	005f765a38ade66ea1c54b65d64b79d58b12c0d2
+          landslide-ui-integration	9c425563550513fbaebf65e59239fa5e70b8948f
+          nisaster-reference-ui-chatbot	4a11ded22c6b3e2432395df86bfceb8f52411c44
+          nisaster-ui-stability	7f283c24bb669832591e266980f7dd86c6e71145
+          reliability-live-feeds-chat-voice-20261115	6d6f44a0574d2b6cfd85941929f3fedfa9ef41cb
+          science-audit-2026-11-15	1968584a1e459ff80b7b9cae10dbd501f51b927e
+          terrapulse-glof-ui-backend-release	adbe91c5e076e4700fc773ad77fd56c959f51eef
+          terrapulse-production-reliability-20261115	49586202705eecf10bd3b487460005a131ee0df7
+          three-hazard-scientific-alarm-hardening	aa75ede4aab04612d7d82270b897bcedcd1ff92f
+          BRANCHES
+          while IFS=$'\t' read -r branch expected; do
+            if [[ -z "${branch}" || "${branch}" == "main" ]]; then continue; fi
+            current="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${branch}" --jq '.object.sha')"
+            if [[ "${current}" != "${expected}" ]]; then
+              echo "::warning title=Branch advanced::Skipping ${branch} (head changed since audit)"
+              continue
+            fi
+            tag="archive-2026-11-15/${branch}"
+            if existing="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" --jq '.object.sha' 2>/dev/null)"; then
+              if [[ "${existing}" != "${expected}" ]]; then
+                echo "::error title=Archive collision::${tag} does not match audited head; stopping"
+                exit 1
+              fi
+            else
+              gh api -X POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/${tag}" -f sha="${expected}" >/dev/null
+            fi
+            archived="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${tag}" --jq '.object.sha')"
+            [[ "${archived}" == "${expected}" ]] || { echo 'Archive verification failed'; exit 1; }
+            latest="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${branch}" --jq '.object.sha')"
+            if [[ "${latest}" != "${expected}" ]]; then
+              echo "::warning title=Race detected::Skipping updated ${branch}"
+              continue
+            fi
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}" >/dev/null
+            echo "Archived and removed obsolete branch ${branch}"
+          done < /tmp/legacy-branches.tsv
+          echo 'Remaining branches:'
+          gh api "repos/${GITHUB_REPOSITORY}/branches?per_page=100" --jq '.[].name'
