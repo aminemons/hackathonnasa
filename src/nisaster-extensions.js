@@ -288,6 +288,7 @@ function showNISAR() {
 // The public map stays Meryem's original Leaflet map, never a second canvas.
 let glofReady = null;
 function showGlof(requestedSite = null) {
+  if(typeof requestedSite==='string')window.TerraPulseRequestedGlofSite=requestedSite;
   if (!glofReady) {
     TP.toast('Loading the five-lake GLOF observatory…');
     glofReady = Promise.all([
