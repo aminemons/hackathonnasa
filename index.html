@@ -121,7 +121,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: catalogue reports for earthquakes and landslides, plus historical glacial-lake observations (not warnings). <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
   <p>Hover a country to see its earthquakes for the chosen period.</p>
   <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
-  <p><b>SAR layers</b> (floods, land subsidence, glacial motion) come from Sentinel-1 via Google Earth Engine. Their links expire, so regenerate <code>layers.json</code> when they go blank.</p></div></section>
+  <p><b>Radar imagery:</b> “Find NISAR” searches NASA Earthdata for acquisition metadata; “Show daily radar” displays NASA GIBS browse imagery. The GIBS image is a visualization and may mosaic acquisitions; this view does not expose calibrated backscatter values. Guelma, Réghaïa and Pine Island comparisons use dated, bundled browse crops. The lake outlines are published Sentinel-1 model outputs with site-specific confidence and dates. This app does not publish Google Earth Engine tile layers; the Guelma Earth Engine script is a separate preparation workflow.</p></div></section>
  <section class="page" id="pSources"><div class="doc"><h2>Sources</h2><ul>
   <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
   <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>
@@ -130,7 +130,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – dated satellite fire, flood, aerosol and imagery products; availability varies</li>
   <li><a target="_blank" href="https://github.com/fraxen/tectonicplates">Tectonic plates (Bird, 2003)</a></li>
   <li>Esri basemaps and hillshade; OpenStreetMap contributors</li>
-  <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
+  <li><a target="_blank" href="https://nisar-docs.asf.alaska.edu/worldview/">NASA/ASF NISAR Worldview browse imagery</a> via NASA GIBS; see individual Earthdata records for acquisition metadata</li>
   <li><a href="/data/hazard-registry.json" target="_blank" rel="noopener">Data registry: source, update semantics, uncertainty and model status (JSON)</a></li>
   <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul></div></section>
  <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
@@ -344,10 +344,10 @@ const DS=[
    toast('NASA LHASA outlook: score <0.02 low, 0.02–0.10 moderate, ≥0.10 elevated (visual research bins only). Check source validity.');
    return layer;
  }},
- // Land subsidence (SAR layers from layers.json join here)
+ // Land-surface temperature context; no land-subsidence displacement product is published here.
  {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context; MODIS)',kw:'land temperature heat surface context',leg:['#f2994a','Surface temperature; not subsidence displacement'],load:gibs('MODIS_Terra_L3_Land_Surface_Temp_Daily_Day_TES',7,'png',3)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
- // Glaciers & ice (SAR glacier layers from layers.json join here)
+ // Glaciers & ice
  {id:'glac',g:'Glaciers & ice',n:'Glacier outlines (static; Natural Earth)',kw:'glacier glaciers ice caps outlines geographic',leg:['#6ec6ff','Glacier footprint, not movement'],load:glac},
  {id:'motion',g:'Glaciers & ice',n:'Observed glacier motion (NASA ITS_LIVE)',kw:'glacier motion speed velocity ice flow glacier movement',leg:['#18a8d9','Measured annual glacier speed (m/year; marker size)'],view:[28,87,6],hint:'Historical measured glacier speeds; marker motion is not inferred or forecast.',load:async()=>{if(!window.TerraPulseGlacier)throw Error('Glacier module initializing; please retry');return window.TerraPulseGlacier.createMotionLayer()}},
  {id:'seaice',g:'Glaciers & ice',dated:1,n:'Polar ice surface temperature (MODIS)',kw:'sea ice polar arctic antarctic temperature',leg:['#7a8794','Ice surface temperature; not sea ice concentration'],view:[76,-40,3],hint:'Satellite temperature is not a glacier speed measurement. Select historical glacier motion for measured velocities.',load:gibs('MODIS_Terra_Ice_Surface_Temp_Day',7,'png',2)},
@@ -551,13 +551,6 @@ $('#xCsv').onclick=()=>{const ids=Object.keys(EV_HIST);if(!ids.length)return xst
  const r=['id,hazard,time_iso,latitude,longitude,title,link'];
  ids.forEach(id=>EV_HIST[id].forEach(x=>r.push([x[0],EV_NAME[id],isFinite(x[1])?new Date(x[1]).toISOString():'',x[2],x[3],'"'+String(x[4]).replace(/"/g,'""')+'"','"'+String(x[5]||'')+'"'].join(','))));
  saveCsv(r,'past_events_'+$('#xFrom').value+'-'+$('#xTo').value+'.csv')};
-/* ---------- Earth Engine layers.json (join the matching disaster group) ---------- */
-async function loadEE(){try{const j=await fetchJ('layers.json');
- const arr=Array.isArray(j)?j:Object.entries(j).map(([n,v])=>typeof v==='string'?{name:n,url:v}:{name:n,...v});
- arr.forEach((o,i)=>{const url=o.url||o.tiles||o.tile_url||o.urlFormat;if(!url)return;const name=o.name||o.label||('SAR layer '+(i+1));
-  const grp=/^flood/i.test(name)?'Floods':/^subs/i.test(name)?'Land subsidence':/^glac/i.test(name)?'Glaciers & ice':'Satellite imagery';
-  const kw=name.toLowerCase().replace(/:/g,' ')+' sar radar '+(/flood/i.test(name)?'flood floods':/subs/i.test(name)?'subsidence sinking':'glacier glacial ice motion');
-  DS.unshift({id:'ee'+i,g:grp,n:'SAR · '+name,kw,leg:[o.legend||'#b388ff',name],load:()=>L.tileLayer(url,{opacity:.8,maxZoom:14,attribution:'Google Earth Engine / Sentinel-1'})})});buildList()}catch(e){}}
 /* ---------- countries + hover ---------- */
 let countries=null;const cL={};
 function inRing(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
@@ -609,7 +602,7 @@ function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=n
  $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
 function syncSide(){updateTime();renderAlarm()}
 /* ---------- start ---------- */
-buildList();legend();updateTime();setLayer('quakes',true);loadEE();alarmInit();go('Map');
+buildList();legend();updateTime();setLayer('quakes',true);alarmInit();go('Map');
 window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG,loadCountries};
 </script>
 <script type="module" src="/src/nisaster-extensions.js"></script>

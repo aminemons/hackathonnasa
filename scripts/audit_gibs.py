@@ -8,8 +8,14 @@ from urllib.request import urlopen, Request
 from xml.etree import ElementTree as ET
 import re
 
-HTML=(Path(__file__).resolve().parents[1]/"index.html").read_text()
+ROOT=Path(__file__).resolve().parents[1]
+HTML=(ROOT/"index.html").read_text(encoding="utf-8")
 LAYERS=re.findall(r"load:gibs\('([^']+)',(\d+),'([^']+)'",HTML)
+IMAGERY=(ROOT/"src"/"imagery.js").read_text(encoding="utf-8")
+RADAR=re.search(r"title:\s*'NISAR radar',\s*id:\s*'([^']+)',\s*zoom:\s*(\d+)",IMAGERY)
+if not RADAR:
+    raise SystemExit("NASA GIBS NISAR layer is missing from src/imagery.js")
+LAYERS.append((RADAR.group(1),RADAR.group(2),"png"))
 URL="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi?SERVICE=WMTS&REQUEST=GetCapabilities"
 print("[GIBS] Checking",len(LAYERS),"curated satellite visualizations", flush=True)
 with urlopen(Request(URL,headers={"User-Agent":"TerraPulse-research-health-check/1.0"}), timeout=30) as r:
