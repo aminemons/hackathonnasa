@@ -90,7 +90,7 @@ def main():
         assert page.locator("#ac_fi").count()==0
         assert page.locator("#ac_fl").count()==0
         expect(page.locator("#aList")).to_contain_text("M 5.4")
-        assert "emergency" in page.locator("#aSafety").inner_text().lower()
+        assert "evacuation" in page.locator("#aSafety").inner_text().lower()
         # The page must have no uncaught execution errors.
         if errors:
             raise AssertionError("Browser JS exceptions: "+" | ".join(errors[:7]))

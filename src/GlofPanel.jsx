@@ -3,14 +3,43 @@ import { feature } from 'topojson-client';
 import { equalEarth, worldPath, initialEpoch, lakeSegments } from './glofMath.js';
 import './glof.css';
 
-const api = query => '/api/glof?' + new URLSearchParams(query);
+const studyPath = (site = '') => `${import.meta.env.BASE_URL}data/glof-study/${site ? encodeURIComponent(site) + '/' : ''}`;
+const api = query => query?.site
+  ? studyPath(query.site) + 'summary.json'
+  : studyPath() + (query?.view === 'validation' ? 'validation.json' : 'catalog.json');
 const number = (value, places = 2) => Number.isFinite(value) ? value.toLocaleString('en', {maximumFractionDigits: places, minimumFractionDigits: places}) : 'Unavailable';
+async function readStudy(url, signal) {
+  const response = await fetch(url, {signal, cache:'default'});
+  if (!response.ok || !response.headers.get('content-type')?.includes('application/json'))
+    throw new Error('Static historical study evidence is unavailable (' + response.status + ').');
+  return response.json();
+}
 async function get(query, signal) {
-  const response = await fetch(api(query), { signal });
-  if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('The GLOF API is unavailable. Start the Python backend for local development.');
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || 'The monitoring evidence could not load.');
-  return result;
+  if(query?.view !== 'geometry')
+    return readStudy(api(query), signal);
+  if(!query.site || !query.date) throw new Error('A study lake and a measured date are required.');
+  const path=studyPath(query.site);
+  const [context, epochs] = await Promise.all([
+    readStudy(path+'context.geojson',signal),
+    readStudy(path+'epochs.geojson.json',signal)
+  ]);
+  const chosen=epochs[query.date];
+  if(!chosen || !Array.isArray(chosen.features)) throw new Error('No observed geometry for that date.');
+  return {type:'FeatureCollection',features:[...context.features,...chosen.features],
+    site_id:query.site,radar_date:query.date,
+    interpretation:'Dated modelled water with separately dated historical glacier context.'};
+}
+function downloadAreaCsv(summary) {
+  const quoted=value=>'"'+String(value??'').replaceAll('"','""')+'"';
+  const rows=[['date','modelled_lake_area_km2','area_estimate_status','accepted','valid_fraction','sensor','operational_status']];
+  for(const observation of summary.lake.series) rows.push([
+    observation.date, observation.lake_area_km2, observation.area_estimate_status,
+    observation.accepted, observation.valid_fraction, 'ESA Sentinel-1','not_assessed'
+  ]);
+  const data=rows.map(row=>row.map(quoted).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));
+  const link=document.createElement('a');link.href=url;link.download='glof-lake-area.csv';
+  link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 function WorldMap({countries, sites, selected, onSelect}) {
@@ -157,7 +186,7 @@ export default function GlofPanel() {
         <label className="glof-epoch">Radar observation <input aria-label="GLOF radar epoch" type="range" min="0" max={Math.max(0,series.length-1)} value={epoch} disabled={mapping} onChange={e=>setEpoch(Number(e.target.value))} /><time>{row?.date}</time></label>
         <p className="glof-caption">Missing observations remain gaps. Glacier movement and elevation cards keep their own dates as you replay the lake.</p>
         {row && !row.accepted && <p className="glof-limit">This acquisition is flagged by quality control. The raw estimate is retained for review.</p>}
-        <div className="glof-actions"><button className="quiet lab-primary" onClick={onMap} disabled={mapping || !row}>{mapping ? 'Loading lake geometry…' : 'Show this epoch on map'}</button><a href={api({site:sid,view:'csv'})}>Download area CSV</a><a href={api({site:sid})} target="_blank" rel="noreferrer">Evidence JSON ↗</a></div>
+        <div className="glof-actions"><button className="quiet lab-primary" onClick={onMap} disabled={mapping || !row}>{mapping ? 'Loading lake geometry…' : 'Show this epoch on map'}</button><button className="quiet" type="button" onClick={() => downloadAreaCsv(summary)}>Download area CSV</button><a href={api({site:sid})} target="_blank" rel="noreferrer">Evidence JSON ↗</a></div>
         {mapError && <p role="alert">{mapError}</p>}
       </section>
       {!!summary.lake.independent_monthly_water.length && <section className="glof-note"><h3>Independent monthly water observations · JRC</h3><p>{summary.lake.independent_monthly_water.map(r => `${r.month}: ${number(r.mapped_connected_water_area_km2,3)} km²`).join(' · ')}</p><p>October 2023 may combine observations before and after the outburst. Monthly optical water and individual radar dates are separate estimates.</p></section>}
