@@ -1,0 +1,19 @@
+name: Portable host
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  container-and-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the complete frontend and Python host
+        run: docker build -t terrapulse-host .
+      - name: Verify real model inference and HTTP contracts in the image
+        run: docker run --rm --entrypoint python terrapulse-host -m unittest discover -s deployment/tests -v
