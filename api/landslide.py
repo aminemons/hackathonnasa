@@ -26,7 +26,7 @@ def model_card():
     metrics = json.loads((DATA / "landslide_spatial_metrics.json").read_text(encoding="utf-8"))
     return {
         "model": "TerraPulse Sentinel-2 + Terrain U-Net ensemble",
-        "model_version": "spatial-detector-1",
+        "model_version": "spatial-detector-2",
         "revision": metrics["revision"],
         "source": "https://huggingface.co/datasets/ibm-nasa-geospatial/Landslide4sense",
         "input": "12 Sentinel-2 bands and ALOS slope/elevation",
@@ -34,6 +34,7 @@ def model_card():
         "threshold": metrics["validation"]["threshold"],
         "validation": metrics["validation"],
         "test": metrics["test"],
+        "test_scope": "Repeated fixed Landslide4Sense benchmark on 80 chips",
         "chips": {name: len(ids) for name, ids in metrics["chip_ids"].items()},
         "task": "post-event scar mapping",
         "screening_definition": "Heuristic connected-candidate review priority; NOT physical danger or safety",

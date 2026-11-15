@@ -18,7 +18,7 @@ const stages = [
     title: 'Find landslide scars',
     source: 'Sentinel-2 + terrain · U-Net',
     description: 'Compare the predicted disturbed ground with mapped reference scars.',
-    caveat: '66.2% F1 on the fixed Landslide4Sense test subset; not a future-failure prediction.',
+    caveat: '72.3% F1 on the repeated Landslide4Sense benchmark. The model detects post-event scars.',
     action: 'Compare detection',
   },
   {

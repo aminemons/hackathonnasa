@@ -20,7 +20,7 @@ try:
 except ImportError:
     from site_exposure import screen_site, validate
 
-OVERPASS = os.environ.get("TP_OVERPASS_API_URL", "https://overpass-api.de/api/interpreter")
+OVERPASS = os.environ.get("TP_OVERPASS_API_URL", "https://overpass.private.coffee/api/interpreter")
 USER_AGENT = "TerraPulse-SpaceApps-research/1.1 (https://github.com/aminemons/hackathonnasa)"
 MAX_BODY = 3_000_000
 MAX_ELEMENTS = 10000

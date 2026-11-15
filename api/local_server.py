@@ -13,9 +13,9 @@ from urllib.parse import urlsplit
 import os
 
 try:
-    from . import chat, exposure, forecast, glof, landslide, events, events
+    from . import catalog, chat, events, exposure, forecast, glof, landslide
 except ImportError:
-    import chat, exposure, forecast, glof, landslide
+    import catalog, chat, events, exposure, forecast, glof, landslide
 
 GET = {
     "/api/landslide": landslide.handler.do_GET,
@@ -24,6 +24,7 @@ GET = {
     "/api/chat": chat.handler.do_GET,
     "/api/glof": glof.handler.do_GET,
     "/api/events": events.handler.do_GET,
+    "/api/catalog": catalog.handler.do_GET,
 }
 POST = {
     "/api/landslide": landslide.handler.do_POST,

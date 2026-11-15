@@ -76,7 +76,7 @@ assumed globally. InSAR acceleration requires repeat phase/coherence/geometry
 and dates; a single radar amplitude image is insufficient.
 
 **Actual quality evidence:** the current Landslide4Sense U-Net record reports
-test F1 about 0.662; the Sen1Floods11 water model reports event-split F1 about
+test F1 about 0.723 on the repeated 80-chip benchmark. The Sen1Floods11 water model reports event-split F1 about
 0.739. Those are benchmark values, not a live event risk precision. Glacier
 studies remain non-operational and largely dated to 2022–2024.
 Test controls with `npm run test:reliability`, `npm run build`, Python
@@ -133,22 +133,30 @@ In the **Landslides** dataset category, open:
   raster through `/api/forecast`. Scores are not locally calibrated probabilities.
 - **Post-event scar detector**: existing Sentinel-2 + ALOS U-Net at
   `/api/landslide`, including held-out example, reference mask,
-  TP/FP/FN visual comparison and 66.2% fixed benchmark subset F1.
+  TP/FP/FN visual comparison and 72.3% F1 on the repeated 80-chip benchmark.
 - **Human exposure**: `/api/exposure` fetches nearby mapped OpenStreetMap
   building footprints, roads and sensitive facilities. Its review priority
   is not a physical danger/safety assessment.
 - **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
   explicitly NOT the August landslide's detection model.
 
-The chatbot defines an **open-source LangGraph StateGraph** for deterministic
-intent routing and a strict UI-tool allowlist. Vercel uses the equivalent
-lightweight deterministic fallback (without installing LangGraph) because the
-full dependency exceeded Vercel's Python serverless bundle limit. For an
-actual LangGraph runtime on a self-hosted server, install
-\`requirements-chat-langgraph.txt\`. It
-does **not** use a generative language model or paid API. Map-science
-answers are deliberately limited to verifiable descriptions and available
-tools. This repository is open source under MIT (see LICENSE);
+The chatbot uses an optional server-side conversational model and a
+deterministic router for map actions. With Vercel OIDC enabled, the default is
+Vercel AI Gateway's `nvidia/nemotron-3.5-lightning-free` open-weight model.
+The model catalog lists zero input/output price. The provider may retain
+prompts and responses for model improvement. Source-linked explanations and
+supported map commands remain available during model outages. The browser
+keeps a short, in-memory conversation history for follow-up questions. Voice
+input and opt-in read-aloud use the browser's speech features.
+
+To use another OpenAI-compatible provider, configure server-side
+`TERRAPULSE_CHAT_API_URL` (complete `/chat/completions` URL),
+`TERRAPULSE_CHAT_MODEL`, and optional `TERRAPULSE_CHAT_API_KEY`. The endpoint
+must be reachable from Vercel over HTTPS and return an OpenAI-compatible
+completion within the request timeout. `GROQ_API_KEY` enables the optional
+Groq fallback.
+
+This repository is open source under MIT (see LICENSE);
 external OSM, NASA and map-tile/data usage remains subject to
 their own attribution and licenses.
 
@@ -225,7 +233,7 @@ npm run dev
 npm run build
 ```
 
-Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python api/landslide.py` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the React/Vite frontend and Python function share a domain.
+Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python -m api.local_server` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the Vite frontend and Python API share a domain.
 
 Use **Landslide forecast** to request a 30-arcsecond tile from NASA LHASA’s rainfall-triggered **Hazard Tomorrow** feed. Enter coordinates or use the map center (60°S–60°N). The Python route `GET /api/forecast?lon=3.05&lat=36.70` returns a preview, source GeoTIFF link, and retrieval timestamp. The public GIS service exposes no forecast issuance or validity timestamps. NASA supplies the model and forecasts. TerraPulse retrieves and displays its output.
 
@@ -237,7 +245,7 @@ Use **Detect scars → Run held-out example** to run a real Landslide4Sense test
 - `GET /api/landslide?example=1` scores the example and returns its RGB preview and reference labels.
 - `POST /api/landslide` accepts JSON with integer `width` and `height` (1–128) and `rows` in row-major order. Each pixel requires 14 values in Landslide4Sense order and units. Use null for missing bands. An entirely missing pixel returns a null score.
 
-Two residual U-Nets were trained on Linux on separate NVIDIA L40 GPUs. The ensemble and score threshold were selected on 48 validation chips before scoring 80 held-out chips. Average precision was 0.691 and F1 was 0.662. The Python backend runs the exported ONNX network on CPU. Tiles smaller than 128 × 128 are edge-padded for inference. The app requires prepared Sentinel-2 and terrain chips for custom inference. The worldwide map queries observations and existing inventories. The NISAR comparison shows backscatter change, with no field-validated hazard labels.
+The second spatial-detector release trained two residual U-Nets on 2,200 Landslide4Sense chips using two NVIDIA L40 GPUs. Candidate selection and threshold fitting used 48 validation chips. Validation average precision rose from 0.665 to 0.769. On the previously evaluated 80-chip test subset, average precision was 0.763 and F1 was 0.723. The bundled example chip reached F1 of 0.292. These are benchmark results from the same dataset. The Python API runs the ONNX model on CPU and edge-pads tiles smaller than 128 × 128. Custom inference uses prepared Sentinel-2 and terrain chips.
 
 Training uses [Landslide4Sense](https://github.com/iarai/Landslide4Sense-2022). The `machine learning/l4s_stage.py` script takes the baseline metrics, an output data directory, and the training chip count. Run `l4s_spatial.py train --help` for CUDA training and `l4s_spatial.py select --help` for validation selection, held-out evaluation, and ONNX export. The model artifact and split IDs are stored in `server_data/`. The separate `stage_gfs_window.py` script extracts timestamped NOAA GFS 24-hour precipitation from an archived, specified run for future forecast evaluation.
 
@@ -264,7 +272,7 @@ The three hazard tabs open worldwide catalogs. The default earthquake view shows
 
 Refresh the compact provider snapshots with `python scripts/prepare_world.py /path/to/DOI-WGMS-FoG-2026-02-10.zip`. The WGMS source is [Fluctuations of Glaciers Database, release 2026-02-10](https://doi.org/10.5904/wgms-fog-2026-02-10).
 
-The sidebar lists observations in the selected hazard and lets readers filter them by place. **Ask TerraPulse** uses this same catalog and fixed map actions. Try “Compare Guelma”, “Earthquakes in Japan”, “Show M5+ earthquakes”, “Show rainfall” or “Open Pine Island”. The assistant runs in the browser and uses provider records and methods directly.
+The sidebar lists observations in the selected hazard and lets readers filter them by place. **Ask TerraPulse** supports follow-up questions, validated map actions, browser speech recognition where available, and optional read-aloud replies. Try “Compare Guelma”, “Earthquakes in Japan”, “Show M5+ earthquakes”, “Show rainfall” or “Open Pine Island”. Voice input starts only after the microphone button is pressed; transcripts remain editable before sending.
 
 See [Data and models](docs/data-and-models.md) for collection IDs and units, the Guelma Earth Engine export workflow, and an evaluation plan for each hazard.
 
@@ -278,23 +286,15 @@ Recreate the imagery with `python scripts/prepare_radar_browse.py` after install
 
 NASA GIBS Blue Marble Shaded Relief and Bathymetry is the default basemap. The bundled Web Mercator overview mosaics the sixteen level-2 tiles, so the world opens without waiting on the satellite tile service. At regional zooms, the map requests finer NASA tiles. The browser fallback renders the same overview and observation locations. The optional [PB2002](https://github.com/fraxen/tectonicplates) plate boundaries by Peter Bird and Hugo Ahlenius / Nordpil are redistributed under [ODC-BY 1.0](https://opendatacommons.org/licenses/by/1-0/), with rounded coordinates and line segments split at the antimeridian.
 
-### Further reliability and conversational improvements
+### Map data availability
 
-- Same-origin EONET fallback uses a bounded official-category allowlist; archived
-  reports are labeled as historical. Flood maps may show a dated GDACS bulletin
+- The same-origin EONET fallback covers the supported NASA categories. The map
+  labels archived reports as historical. Flood maps may show a dated GDACS bulletin
   snapshot when current EONET records are empty.
 - GEM faults and Natural Earth glacier outlines are bundled locally.
-  The GEM geometry is simplified for visualization, not engineering use.
-- NASA GIBS imagery retries two older dates on tile errors. No-data regions
-  may remain unavailable; this is not evidence a hazard is absent.
-- The prominent **30 years · archive** control fetches historical USGS
-  earthquakes year-by-year; this is distinct from live reports.
+  The simplified GEM geometry is for map visualization.
+- NASA GIBS imagery can retry older observations after tile errors. Coverage
+  varies by product, date and map location.
+- The earthquake archive in **Time** loads historical USGS reports by year and
+  labels CSV exports when any requested year was unavailable.
 - The Sources page includes a user-run **Check data sources** table.
-- Voice input uses browser SpeechRecognition when supported; spoken answers
-  use SpeechSynthesis after explicit opt-in. No speech-service key is needed.
-- For an optional real conversational LLM, add a Groq free-tier API key
-  in Vercel Project Settings → Environment Variables as `GROQ_API_KEY`
-  (optional model override `GROQ_MODEL`, default `llama-3.1-8b-instant`).
-  Then redeploy. See https://console.groq.com/keys . Free quotas and
-  provider limits are not guaranteed. Without a key, grounded scientific
-  explanations and deterministic map actions remain functional.

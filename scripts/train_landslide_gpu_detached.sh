@@ -88,8 +88,12 @@ if [[ -z "$PY" ]]; then
   fi
   echo "[TerraPulse] Installing missing training packages in isolated environment."
   record running "Installing CUDA PyTorch and training dependencies; watch installation log"
+  # The L40 host's 580-series driver can run the verified CUDA 12.8 wheel.
+  # An unqualified PyPI torch install may pull a newer CUDA runtime.
   "$PY" -m pip install --disable-pip-version-check --timeout 90 --retries 5 \
-    'torch>=2.5,<3' 'numpy>=1.26,<3' 'h5py>=3.9' 'requests>=2.31' \
+    --index-url https://download.pytorch.org/whl/cu128 'torch==2.8.0+cu128'
+  "$PY" -m pip install --disable-pip-version-check --timeout 90 --retries 5 \
+    'numpy>=1.26,<3' 'h5py>=3.9' 'requests>=2.31' \
     'scikit-learn>=1.4,<2' 'onnx>=1.16' 'onnxruntime>=1.22,<2'
 fi
 
@@ -98,12 +102,15 @@ import torch, h5py, requests, sklearn, onnx, onnxruntime
 print(f"[TerraPulse] torch={torch.__version__} CUDA={torch.version.cuda} devices={torch.cuda.device_count()}", flush=True)
 assert torch.cuda.is_available(), "PyTorch CUDA is unavailable"
 assert torch.cuda.device_count() >= 2, "This two-GPU run requires both NVIDIA L40 devices"
+for index in range(2):
+    assert torch.ones(1, device=f"cuda:{index}").sum().item() == 1, f"CUDA kernel failed on GPU {index}"
 PY
 
 record running "Staging additional Landslide4Sense training chips"
 BASELINE="$REPO/server_data/landslide_spatial_metrics.json"
 COUNT="${TP_TRAIN_CHIPS:-2200}"
 if (( COUNT < 1024 || COUNT > 3799 )); then
+  record failed "TP_TRAIN_CHIPS must be from 1024 to 3799"
   echo "TP_TRAIN_CHIPS must be from 1024 to 3799."
   exit 2
 fi
@@ -145,8 +152,32 @@ record running "Training two independent U-Nets on both NVIDIA L40 GPUs"
 train_one() {
   local gpu="$1" width="$2" seed="$3" output="$4" dropout="$5"
   if [[ -f "$output/complete.flag" && -s "$output/model.pt" ]]; then
-    echo "[TerraPulse] Reusing successful checkpoint $output"
-    return
+    if "$PY" - "$output/model.pt" "$ROOT/data/manifest.json" "$REPO/machine learning/l4s_spatial.py" \
+      "$width" 16 38 "$seed" "$dropout" <<'PY'
+import hashlib, sys, torch
+checkpoint_path, manifest_path, trainer_path = sys.argv[1:4]
+width, batch, epochs, seed = map(int, sys.argv[4:8])
+dropout = float(sys.argv[8])
+expected = {
+    "width": width, "batch": batch, "epochs": epochs, "seed": seed,
+    "dropout": dropout,
+    "manifest_sha256": hashlib.sha256(open(manifest_path, "rb").read()).hexdigest(),
+    "trainer_sha256": hashlib.sha256(open(trainer_path, "rb").read()).hexdigest(),
+}
+try:
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    if checkpoint.get("training_signature") == expected:
+        raise SystemExit(0)
+except Exception:
+    pass
+raise SystemExit(1)
+PY
+    then
+      echo "[TerraPulse] Reusing matching successful checkpoint $output"
+      return
+    fi
+    echo "[TerraPulse] Existing checkpoint does not match this run; retraining $output"
+    rm -f "$output/complete.flag"
   fi
   mkdir -p "$output"
   CUDA_VISIBLE_DEVICES="$gpu" "$PY" -u l4s_spatial.py train \
@@ -165,6 +196,7 @@ FAILURES=0
 wait "$PID_A" || FAILURES=1
 wait "$PID_B" || FAILURES=1
 if (( FAILURES )); then
+  record failed "One or both GPU training jobs failed; see checkpoint logs"
   echo "[TerraPulse] One or both GPU training jobs failed."
   tail -n 20 "$ROOT/checkpoints/l40_0/train.log" || true
   tail -n 20 "$ROOT/checkpoints/l40_1/train.log" || true
@@ -200,10 +232,8 @@ report = {
 print("[TerraPulse] Release evaluation:", json.dumps(report, indent=2), flush=True)
 PY
 
-# Never replace the currently deployed 66.2% F1 model automatically:
-# choosing/promoting models based on repeated test scores would leak test
-# information. The candidate is left ready for a deliberate validation
-# review and API deployment via the connected GitHub workflow.
+# Leave the candidate and its validation-based release gate for review.
+# Repeated test scores are benchmark reporting and do not drive selection.
 record success "GPU training and held-out benchmark completed; candidate exported for review, not auto-deployed"
 echo "[TerraPulse] SUCCESS: model and report:"
 ls -lh "$ROOT/release"

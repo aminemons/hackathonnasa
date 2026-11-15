@@ -47,7 +47,7 @@ QUESTIONS = (
     ("difference between forecast and", "NASA LHASA forecasts rainfall-triggered hazard *before* a potential event. The U-Net identifies scar-like disturbed ground *after* an event. Neither by itself tells us who will be harmed."),
     ("what is a scar", "A landslide scar is visibly disturbed or exposed terrain left after slope material moves. Our optical U-Net maps likely scar pixels. It does not forecast when the slope will fail."),
     ("what are scars", "A scar is land already disturbed by a landslide. The Sentinel-2 U-Net maps potential post-event scars; it does not predict future collapse."),
-    ("how accurate", "Our U-Net scored 66.2% F1 on a fixed 80-tile Landslide4Sense test subset. That is not worldwide performance or an estimate of risk to people."),
+    ("how accurate", "The U-Net scored 72.3% F1 on the same 80-chip Landslide4Sense benchmark used in earlier runs. Performance on new regions remains unverified."),
     ("what is nisar", "NISAR is a NASA-ISRO synthetic aperture radar mission. TerraPulse currently displays real radar backscatter changes; its optical landslide U-Net is not trained on NISAR."),
     ("how dangerous", "We cannot classify real-world safety from a satellite scar or building proximity alone. The exposure tool checks mapped nearby buildings, but true danger needs downslope runout, occupancy, ground conditions, and local expert verification."),
     ("is it safe", "A low score or missing OSM building does not establish safety. For an actual slope threat, use authoritative local emergency information and qualified geotechnical assessment."),
@@ -74,18 +74,15 @@ def parse(state: State) -> dict:
     reply = ""
     intent = "explain"
     negative = bool(re.search(r"\b(hide|disable|remove|turn off|clear)\b", msg))
-    # Questions must not accidentally toggle or open map layers.
-    # The grounded science answer engine handles free-form questions.
-    is_question=bool(re.match(r"^(what|why|how|when|where|explain|compare|tell me|is it|can you explain)\b", msg))
-    wants_action=bool(re.search(r"\b(show|open|zoom|fly|go to|switch|turn on|turn off|hide|clear|display|inspect|check)\b",msg))
-    if is_question and not wants_action:
-        return {"normalized":msg,"actions":[],
-                "reply":"I can explain the evidence and distinguish observation, susceptibility, forecast and safety limitations.",
-                "intent":"explain"}
     # First, scientific explanations take precedence over commands.
     for phrase, text in QUESTIONS:
         if phrase in msg:
             return {"normalized": msg, "actions": [], "reply": text, "intent": "explain"}
+    if (re.search(r"\b(?:when will|what time will|exact time|exactly when|predict\w*)\b", msg)
+            and re.search(r"\b(?:earthquakes?|landslides?|slope failure|lake outburst|breach)\b", msg)):
+        return {"normalized": msg, "actions": [], "intent": "safety",
+                "reply": "TerraPulse shows dated observations, post-event analysis and research outlooks. "
+                         "It cannot predict the exact time of an earthquake, landslide or glacial-lake breach."}
     if re.search(r"\b(urgent|risk|dangerous|unsafe|casualties|death|evacuat\w*)\b", msg):
         if not re.search(r"\b(show|check|open|inspect)\b", msg):
             return {"normalized": msg, "actions": [],
@@ -95,6 +92,15 @@ def parse(state: State) -> dict:
         return {"normalized": msg, "actions": [],
                 "reply": "I can open NASA LHASA forecasts, compare post-event scar detections, inspect buildings/roads around a location, display NISAR observations, toggle map layers, select a basemap, open legend/time controls, or zoom to Nepal, Algeria, Japan, Chile and other supported places.",
                 "intent": "help"}
+
+    # General questions should explain available evidence, never turn a
+    # science keyword in the question into an unintended map action.
+    is_question = bool(re.match(r"^(what|why|how|when|where|explain|compare|tell me|is it|can you explain)\b", msg))
+    wants_action = bool(re.search(r"\b(show|open|zoom|fly|go to|switch|turn on|turn off|hide|clear|display|inspect|check)\b", msg))
+    if is_question and not wants_action:
+        return {"normalized": msg, "actions": [],
+                "reply": "I can explain the evidence and distinguish observation, susceptibility, forecast and safety limitations.",
+                "intent": "explain"}
 
     if re.search(r"\b(glof|glacial lake|outburst flood|lake outburst|monitor glacial lakes?)\b", msg):
         actions.append({"type":"open_tool", "value":"glof"})
@@ -179,6 +185,7 @@ def finalize(state: State) -> dict:
     return {
         "actions":[a for a in state.get("actions",[]) if a.get("type") in types][:3],
         "reply":state.get("reply","No matching map command found.")[:1000],
+        "intent":state.get("intent","explain"),
     }
 
 
@@ -204,6 +211,7 @@ def plan(message:str) -> dict:
         "actions":result["actions"],
         "engine":"LangGraph deterministic tool router" if COMPILED else "deterministic tool router (LangGraph not installed)",
         "model_is_generative":False,
+        "intent":result.get("intent","explain"),
         "sources":{
             "landslide_forecast":"NASA LHASA",
             "scar_detection":"Landslide4Sense Sentinel-2 and ALOS terrain U-Net",
