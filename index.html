@@ -206,9 +206,41 @@ const quakeFeed=(url,color)=>async()=>{const d=await fetchJ(url);const g=L.layer
  d.features.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
   L.circleMarker([la,lo],{radius:Math.max(6,m*2.4),color:'#fff',weight:2,fillColor:color,fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
 const depthCol=d=>d<10?'#e53935':d<35?'#fb8c00':d<70?'#fdd835':d<150?'#7cb342':d<300?'#29b6f6':'#5e35b1';
-const quakesByDepth=async()=>{const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);const g=L.layerGroup();
- d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,m=f.properties.mag||0;
-  L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.2,fillColor:depthCol(dp),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>Depth: ${dp.toFixed(1)} km<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g};
+let lastQuakeQuery=null;
+async function getQuakeFeatures() {
+ const key=period+':'+minMag;
+ if(lastQuakeQuery && lastQuakeQuery.key===key && Date.now()-lastQuakeQuery.at<120000)
+    return lastQuakeQuery.rows;
+ const params=new URLSearchParams({hazard:'eq',days:String(period),min_magnitude:String(minMag)});
+ const feed=await fetchJ('/api/events?'+params,20000);
+ if(feed.status!=='ok'||feed.hazard!=='eq'||!Array.isArray(feed.records))
+    throw Error('USGS event feed is unavailable');
+ const rows=feed.records
+   .filter(e=>Number.isFinite(e.lat)&&Number.isFinite(e.lon)&&Number.isFinite(e.magnitude))
+   .map(e=>({
+     id:e.id,
+     geometry:{type:'Point',coordinates:[e.lon,e.lat,e.depth_km]},
+     properties:{mag:e.magnitude,place:e.place||'Location unavailable',
+       time:e.time,url:e.url,sig:0}
+   }));
+ lastQuakeQuery={key,at:Date.now(),rows};return rows;
+}
+const quakesByDepth=async()=>{
+ const records=await getQuakeFeatures(),group=L.layerGroup();
+ records.forEach(f=>{
+   const [lon,lat,depth]=f.geometry.coordinates,m=f.properties.mag;
+   const label=Number.isFinite(depth)?depth.toFixed(1)+' km':'Unavailable';
+   const color=Number.isFinite(depth)?depthCol(depth):'#8496aa';
+   L.circleMarker([lat,lon],{renderer:CV,radius:Math.max(4,m*2),color:'#fff',
+      weight:1.1,fillColor:color,fillOpacity:.9})
+     .bindPopup('<strong>M '+m.toFixed(1)+'</strong> '+esc(f.properties.place)+
+       '<br>Depth: '+label+'<br>'+new Date(f.properties.time).toUTCString()+
+       '<br><a href="'+esc(f.properties.url)+'" target="_blank" rel="noopener">USGS source</a>')
+     .addTo(group);
+ });
+ group.terrapulse={status:records.length?'ready':'empty',count:records.length,source:'USGS ComCat'};
+ return group;
+};
 const FAULTS_EMBED=null;
 const FAULT_URLS=['https://static.geodataviewer.com/datasets/gem-active-faults.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults_harmonized.geojson'];
 const faults=async()=>{let j=FAULTS_EMBED;
@@ -368,10 +400,21 @@ function legend(){const r=DS.filter(d=>state[d.id]&&state[d.id].on&&d.leg).map(d
 function clearAll(){DS.forEach(d=>state[d.id]&&state[d.id].on&&setLayer(d.id,false))}
 /* ---------- earthquakes + time ---------- */
 const qc=m=>m>=7?'#d50000':m>=6?'#ff3d00':m>=5?'#ff6b35':m>=4?'#ff9800':'#ffc107';
-async function loadQuakes(){const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=3000&minmagnitude=${minMag}&starttime=${new Date(Date.now()-period*864e5).toISOString()}`);
- quakes=d.features;const g=L.layerGroup();
- quakes.forEach(f=>{const[lo,la]=f.geometry.coordinates,m=f.properties.mag||0;
-  L.circleMarker([la,lo],{radius:Math.max(4,m*2),color:'#fff',weight:1.5,fillColor:qc(m),fillOpacity:.9}).bindPopup(`<b>M ${m.toFixed(1)}</b> ${f.properties.place}<br>${new Date(f.properties.time).toUTCString()}<br><a target=_blank href="${f.properties.url}">USGS page</a>`).addTo(g)});return g}
+async function loadQuakes(){
+ quakes=await getQuakeFeatures();
+ const g=L.layerGroup();
+ quakes.forEach(f=>{
+   const [lon,lat]=f.geometry.coordinates,m=f.properties.mag;
+   L.circleMarker([lat,lon],{renderer:CV,radius:Math.max(4,m*2),color:'#fff',
+      weight:1.5,fillColor:qc(m),fillOpacity:.9})
+     .bindPopup('<b>M '+m.toFixed(1)+'</b> '+esc(f.properties.place)+
+       '<br>'+new Date(f.properties.time).toUTCString()+
+       '<br><a target="_blank" rel="noopener" href="'+esc(f.properties.url)+'">USGS page</a>')
+     .addTo(g);
+ });
+ g.terrapulse={status:quakes.length?'ready':'empty',count:quakes.length,source:'USGS ComCat'};
+ return g;
+}
 async function reloadQuakes(){for(const id of ['quakes','depth']){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
 function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));reloadQuakes()}
 $('#seg').onclick=e=>{if(e.target.dataset.d)setPeriod(+e.target.dataset.d)};
