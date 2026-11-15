@@ -73,7 +73,8 @@ export default function GlofPanel() {
     const controller = new AbortController();
     get({}, controller.signal).then(data => {
       setCatalog(data);
-      const linked = new URLSearchParams(location.search).get('glof');
+      const linked = window.TerraPulseRequestedGlofSite ||
+        new URLSearchParams(location.search).get('glof');
       if (linked) {
         if (data.sites.some(s => s.site_id === linked)) setSid(linked);
         document.getElementById('glof-monitor').showModal();
