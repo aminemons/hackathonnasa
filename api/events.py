@@ -106,10 +106,11 @@ def _usgs(min_mag, now, days=1):
     return events
 
 
-def _eonet(hazard):
+def _eonet(hazard, data=None):
     category = CATEGORIES[hazard]
-    data = _request("https://eonet.gsfc.nasa.gov/api/v3/events?" +
-                    urlencode({"status": "open", "category": category, "limit": 200}))
+    if data is None:
+        data = _request("https://eonet.gsfc.nasa.gov/api/v3/events?" +
+                        urlencode({"status": "open", "category": category, "limit": 200}))
     if not isinstance(data.get("events"), list):
         raise RuntimeError("EONET reported an invalid event collection")
     events = []
@@ -131,11 +132,38 @@ def _eonet(hazard):
             "id": f"eonet:{hazard}:{item['id']}",
             "title": str(item.get("title") or "Reported natural event")[:180],
             "time": timestamp, "lon": lon, "lat": lat,
+            "geometry": ({"type": "Polygon", "coordinates": g["coordinates"]}
+                         if g.get("type") == "Polygon" and isinstance(g.get("coordinates"), list)
+                         else None),
             "level": "observation",
             "notes": "NASA EONET reported event · not a hazard severity warning",
             "url": _valid_url(item.get("link"), "https://eonet.gsfc.nasa.gov/"),
         })
     return events
+
+
+def _landslide_archive():
+    root = Path(__file__).resolve().parents[1]
+    path = root / "public/data/landslides-eonet-archive.json"
+    if not path.is_file():
+        path = root / "dist/data/landslides-eonet-archive.json"
+    data = json.loads(path.read_text())
+    if data.get("source") != "NASA EONET" or data.get("scope") != "historical_eonet_archive":
+        raise RuntimeError("Landslide archive provenance invalid")
+    records = _eonet("ls", data)
+    if not records:
+        raise RuntimeError("Landslide archive contains no usable reports")
+    for record in records:
+        record["notes"] = "Historical NASA EONET report; not a currently active incident."
+        if record["geometry"]:
+            record["notes"] += " NASA-reported event region, not a mapped landslide scar."
+    return records, {
+        "source": "NASA EONET historical archive", "archive_only": True,
+        "search_scope": "historical_eonet_archive",
+        "observation_start": data["date_range"][0], "observation_end": data["date_range"][1],
+        "snapshot_retrieved_at": data["retrieved_at"],
+        "monitor_kind": "historical catalogue evidence, not currently active incidents",
+    }
 
 
 
@@ -193,7 +221,7 @@ def _glacial_lake_observations():
     return records
 
 
-def collect(hazard, min_mag=5.0, days=1):
+def collect(hazard, min_mag=5.0, days=1, include_recent=False):
     if hazard not in HAZARDS:
         raise ValueError("Unknown hazard; use eq, ls, gl, fi, or fl")
     try:
@@ -207,6 +235,9 @@ def collect(hazard, min_mag=5.0, days=1):
     now = datetime.now(timezone.utc)
     records = (_usgs(magnitude, now, days) if hazard == "eq" else
                _glacial_lake_observations() if hazard == "gl" else _eonet(hazard))
+    archive = {}
+    if hazard == "ls" and include_recent and not records:
+        records, archive = _landslide_archive()
     records.sort(key=lambda event: event["time"], reverse=True)
     return {
         "hazard": hazard, "label": HAZARDS[hazard][0], "source": HAZARDS[hazard][1],
@@ -221,6 +252,7 @@ def collect(hazard, min_mag=5.0, days=1):
             "Updates may arrive after the event. EONET open status is not severity. "
             "USGS PAGER describes possible earthquake impacts, not a prediction."
         ),
+        **archive,
     }
 
 
@@ -242,7 +274,8 @@ class handler(BaseHTTPRequestHandler):
         try:
             hazard = q.get("hazard", [""])[0]
             days = int(q.get("days", ["1"])[0])
-            payload = collect(hazard, q.get("min_magnitude", ["5"])[0], days=days)
+            payload = collect(hazard, q.get("min_magnitude", ["5"])[0], days=days,
+                              include_recent=q.get("include_recent", ["0"])[0] == "1")
         except ValueError as exc:
             return self.reply({"error": str(exc)}, 400)
         except (HTTPError, URLError, TimeoutError, OSError, RuntimeError, json.JSONDecodeError, KeyError, TypeError):

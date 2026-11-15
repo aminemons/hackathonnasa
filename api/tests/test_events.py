@@ -40,6 +40,17 @@ class SourceMonitorTests(unittest.TestCase):
                 self.assertEqual(result["status"], "ok")
                 self.assertEqual(result["records"], [])
 
+    @patch.object(events, "_request", return_value={"events": []})
+    def test_landslide_archive_is_opt_in_and_keeps_real_dates_and_regions(self, request):
+        result = events.collect("ls", include_recent=True)
+        self.assertEqual(len(result["records"]), 17)
+        self.assertTrue(result["archive_only"])
+        self.assertEqual(result["observation_start"], "2015-03-23")
+        self.assertEqual(result["observation_end"], "2020-03-23")
+        self.assertEqual(sum(bool(r["geometry"]) for r in result["records"]), 12)
+        self.assertTrue(all("not a currently active incident" in r["notes"] for r in result["records"]))
+        self.assertEqual(events.collect("ls")["records"], [])
+
     @patch.object(events, "_request")
     def test_eonet_polygon_retained_without_invented_center(self, request):
         request.return_value = {"events": [{

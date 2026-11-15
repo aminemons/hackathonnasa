@@ -10,6 +10,7 @@ const inFlight = new Map();
 const memory = new Map();
 const SITE_ROOT = '/data/glof-study/';
 const MAX_STORED = 800_000;
+const SESSION_PREFIX = 'tp-public-feed-v2:';
 
 function maybePoint(geometry) {
   if(geometry?.type!=='Point'||!Array.isArray(geometry.coordinates))return [null,null];
@@ -29,6 +30,15 @@ function finiteTime(value) {
 }
 function sorted(records) {
   return records.sort((a,b)=>b.time-a.time).slice(0,300);
+}
+function reportedPolygon(geometry) {
+  const rings=geometry?.coordinates;
+  if(geometry?.type!=='Polygon'||!Array.isArray(rings)||!rings.length)return null;
+  const point=p=>Array.isArray(p)&&p.length>=2&&Number.isFinite(p[0])&&
+    Number.isFinite(p[1])&&Math.abs(p[0])<=180&&Math.abs(p[1])<=90;
+  if(!rings.every(r=>Array.isArray(r)&&r.length>=4&&r.every(point)&&
+    r[0][0]===r.at(-1)[0]&&r[0][1]===r.at(-1)[1]))return null;
+  return {type:'Polygon',coordinates:rings};
 }
 export function normalizeUSGS(data,minMagnitude=5) {
   if(!Array.isArray(data?.features))throw Error('USGS feed schema invalid');
@@ -65,6 +75,7 @@ export function normalizeEONET(data,hazard) {
     rows.push({
       id:'eonet:'+hazard+':'+String(event.id).slice(0,100),
       title:String(event.title||'Natural event').slice(0,180),time:t,lon,lat,
+      geometry:reportedPolygon(latest),
       level:'observation',notes:'NASA EONET catalogue report, not danger severity',
       url:safeURL(event.link,'https://eonet.gsfc.nasa.gov/'),
     });
@@ -73,14 +84,14 @@ export function normalizeEONET(data,hazard) {
 }
 function readSession(key) {
   try {
-    const entry=JSON.parse(sessionStorage.getItem('tp-public-feed-v1:'+key)||'null');
+    const entry=JSON.parse(sessionStorage.getItem(SESSION_PREFIX+key)||'null');
     return entry&&Number.isFinite(entry.until)&&entry.until>Date.now()&&entry.data?.status==='ok' ? entry:null;
   }catch {return null;}
 }
 function putSession(key,data,ttl) {
   try {
     const payload=JSON.stringify({until:Date.now()+ttl,data});
-    if(payload.length<=MAX_STORED)sessionStorage.setItem('tp-public-feed-v1:'+key,payload);
+    if(payload.length<=MAX_STORED)sessionStorage.setItem(SESSION_PREFIX+key,payload);
   }catch {}
 }
 async function json(url,timeout=17000) {
@@ -102,12 +113,30 @@ async function catalog(category,options) {
   catch(error){throw Error('NASA EONET direct connection: '+String(initial?.message).slice(0,65)+
     '; server fallback: '+String(error?.message).slice(0,65));}
 }
-async function serverFallback(hazard,days,mag) {
+async function serverFallback(hazard,days,mag,includeRecent=false) {
   const qs=new URLSearchParams({hazard,days:String(days),min_magnitude:String(mag)});
+  if(includeRecent)qs.set('include_recent','1');
   const data=await json('/api/events?'+qs);
   if(data?.status!=='ok'||data.hazard!==hazard||!Array.isArray(data.records))
     throw Error('Same-origin source returned invalid records');
   return {...data,transport:'same_origin'};
+}
+async function landslideArchiveSnapshot() {
+  const data=await json('/data/landslides-eonet-archive.json');
+  if(data.source!=='NASA EONET'||data.scope!=='historical_eonet_archive'||
+    !Array.isArray(data.date_range)||data.date_range.length!==2||
+    !data.date_range.every(d=>/^\d{4}-\d{2}-\d{2}$/.test(d))||
+    !Number.isFinite(Date.parse(data.retrieved_at)))throw Error('Landslide archive provenance invalid');
+  const records=normalizeEONET(data,'ls').map(r=>({...r,
+    notes:'Historical NASA EONET report · not a currently active incident. '+
+      (r.geometry?'NASA-reported event region, not a mapped landslide scar.':'Reported point location.')
+  }));
+  if(!records.length)throw Error('Verified landslide archive has no usable reports');
+  return {hazard:'ls',source:'NASA EONET historical archive',records,
+    search_scope:'historical_eonet_archive',archive_only:true,
+    observation_start:data.date_range[0],observation_end:data.date_range[1],
+    snapshot_retrieved_at:data.retrieved_at,
+    monitor_kind:'historical catalogue evidence, not currently active incidents'};
 }
 async function floodArchiveSnapshot() {
   const data=await json('/data/world-floods.json');
@@ -184,12 +213,14 @@ async function direct(hazard,days,minMagnitude,includeRecent=false) {
         const saved=await floodArchiveSnapshot();
         return {hazard,...saved};
       }
+      if(hazard==='ls')return landslideArchiveSnapshot();
       throw error;
     }
     if(hazard==='fl'&&!records.length){
       const saved=await floodArchiveSnapshot();
       return {hazard,...saved};
     }
+    if(hazard==='ls'&&!records.length)return landslideArchiveSnapshot();
   }
   return {hazard,source,records,search_scope:scope,
     monitor_kind:'catalogue observations, not hazard or impact forecasts'};
@@ -211,9 +242,12 @@ export async function fetchHazardFeed({hazard,days=1,min_magnitude=5,include_rec
     try {batch=await direct(hazard,days,mag,include_recent);}
     catch(original){
       if(hazard==='gl')throw original;
-      try{batch=await serverFallback(hazard,days,mag);}
-      catch(fallback){throw Error('Public source: '+String(original.message).slice(0,75)+
-        '; fallback: '+String(fallback.message).slice(0,75));}
+      try{batch=await serverFallback(hazard,days,mag,include_recent);}
+      catch(fallback){
+        if(hazard==='ls'&&include_recent)batch=await landslideArchiveSnapshot();
+        else throw Error('Public source: '+String(original.message).slice(0,75)+
+          '; fallback: '+String(fallback.message).slice(0,75));
+      }
     }
     if(include_recent&&['ls','fl'].includes(hazard)&&batch.records.length===0&&
        batch.transport==='same_origin'){
@@ -223,8 +257,10 @@ export async function fetchHazardFeed({hazard,days=1,min_magnitude=5,include_rec
           notes:r.notes+' · historical report; not an active hazard'}));
         batch.search_scope='last_365_days_including_closed';
         if(hazard==='fl'&&!batch.records.length)batch={hazard,...await floodArchiveSnapshot()};
+        if(hazard==='ls'&&!batch.records.length)batch=await landslideArchiveSnapshot();
       }catch(error){
         if(hazard==='fl')batch={hazard,...await floodArchiveSnapshot()};
+        else if(hazard==='ls')batch=await landslideArchiveSnapshot();
         else throw error;
       }
     }

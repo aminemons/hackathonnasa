@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from deployment.gateway import app
-from api import exposure, chat_provider
+from api import exposure, chat_provider, events
 
 
 class GatewayTests(unittest.TestCase):
@@ -41,6 +41,15 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(result.status_code, 503)
         self.assertEqual(result.headers['Retry-After'], '60')
         self.assertNotIn('counts', result.json)
+
+    def test_archive_can_be_viewed_without_becoming_a_live_alarm(self):
+        with patch.object(events, '_request', return_value={'events': []}):
+            current = self.client.get('/api/events?hazard=ls')
+            archived = self.client.get('/api/events?hazard=ls&include_recent=1')
+        self.assertEqual(current.json['records'], [])
+        self.assertEqual(archived.status_code, 200)
+        self.assertEqual(len(archived.json['records']), 17)
+        self.assertTrue(archived.json['archive_only'])
 
     def test_real_model_inference_and_body_limit(self):
         result = self.client.get('/api/landslide?example=1')

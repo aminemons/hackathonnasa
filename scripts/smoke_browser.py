@@ -104,6 +104,15 @@ def main():
         expect(page.locator("#tp-motion-status")).to_contain_text("2024")
         page.locator("#tp-motion-range").fill("2023")
         expect(page.locator("#tp-motion-year")).to_have_text("2023")
+        # An empty recent EONET scope still permits dated archive browsing.
+        # Preserve all 12 source regions rather than dropping non-point reports.
+        page.locator("#tabs button[data-t='Dataset']").click()
+        page.locator("details:has(summary:has-text('Landslides')) summary").first.click()
+        page.locator("#c_slide").check()
+        expect(page.locator("label:has(#c_slide)")).to_contain_text("17 historical reports",timeout=15000)
+        expect(page.locator("label:has(#c_slide)")).to_contain_text("2015-03-23 to 2020-03-23")
+        page.wait_for_function("window.TerraPulseMap.state.slide.layer.getLayers().length === 17")
+        assert page.evaluate("window.TerraPulseMap.state.slide.layer.getLayers().filter(l=>l instanceof L.GeoJSON).length")==12
         # Three user-facing watches should start off, explicitly opt in, report 0 data
         # separately from unavailable, and never request browser notification access.
         page.locator("#nav button[data-p='Alarm']").click()
