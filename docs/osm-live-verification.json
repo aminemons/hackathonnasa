@@ -1,0 +1,52 @@
+[
+  {
+    "location": "Juneau",
+    "seconds": 4.17,
+    "osm_timestamp": "2026-11-14T21:20:41Z",
+    "availability": {
+      "provider": "Dresel north-america",
+      "scope": "north-america",
+      "mode": "upstream",
+      "cache_age_seconds": 0,
+      "retrieved_at": "2026-11-15T11:19:44+00:00"
+    },
+    "counts": {
+      "buildings_within_30m": 4,
+      "buildings_within_150m": 74,
+      "buildings_within_search_radius": 339,
+      "roads_within_30m": 2,
+      "roads_within_150m": 29,
+      "roads_within_search_radius": 205,
+      "paths_within_search_radius": 285,
+      "sensitive_places_within_100m": 0,
+      "sensitive_places_within_search_radius": 2
+    },
+    "map_features": 300,
+    "danger_assessment": "not_available"
+  },
+  {
+    "location": "Paris",
+    "seconds": 6.39,
+    "osm_timestamp": "2026-11-14T21:20:41Z",
+    "availability": {
+      "provider": "Dresel europe",
+      "scope": "europe",
+      "mode": "upstream",
+      "cache_age_seconds": 0,
+      "retrieved_at": "2026-11-15T11:19:50+00:00"
+    },
+    "counts": {
+      "buildings_within_30m": 0,
+      "buildings_within_150m": 20,
+      "buildings_within_search_radius": 140,
+      "roads_within_30m": 0,
+      "roads_within_150m": 56,
+      "roads_within_search_radius": 118,
+      "paths_within_search_radius": 525,
+      "sensitive_places_within_100m": 0,
+      "sensitive_places_within_search_radius": 2
+    },
+    "map_features": 300,
+    "danger_assessment": "not_available"
+  }
+]

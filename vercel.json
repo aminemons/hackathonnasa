@@ -1,8 +1,14 @@
 {
   "headers": [
-    {"source": "/data/glof-study/(.*)", "headers": [
-      {"key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"}
-    ]}
+    {
+      "source": "/data/glof-study/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"
+        }
+      ]
+    }
   ],
   "functions": {
     "api/landslide.py": {
@@ -10,7 +16,8 @@
       "maxDuration": 30
     },
     "api/exposure.py": {
-      "maxDuration": 25
+      "maxDuration": 25,
+      "includeFiles": "server_data/osm/**"
     },
     "api/chat.py": {
       "maxDuration": 10
@@ -19,7 +26,9 @@
       "includeFiles": "server_data/glof/**",
       "maxDuration": 10
     },
-    "api/catalog.py": {"maxDuration": 20},
+    "api/catalog.py": {
+      "maxDuration": 20
+    },
     "api/events.py": {
       "maxDuration": 20
     }

@@ -92,15 +92,18 @@ class ExposureTests(unittest.TestCase):
 
         class FakeResponse:
             status = 200
+            def __init__(self):
+                self.body = BytesIO(json.dumps(response).encode())
             def __enter__(self):
                 return self
             def __exit__(self, *args):
                 return False
             def read(self, limit):
-                return json.dumps(response).encode()
+                return self.body.read(limit)
 
         exposure_api._cache.clear()
         exposure_api._query_times.clear()
+        exposure_api._retry_at.clear()
         with patch.object(exposure_api, "urlopen", return_value=FakeResponse()) as mocked:
             first = exposure_api.exposure(85.53, 28.29)
             second = exposure_api.exposure(85.53, 28.29)
