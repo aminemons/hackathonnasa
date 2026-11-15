@@ -189,9 +189,36 @@ let quakes=[],period=7,minMag=4.5,imgDate=ymd(3);$('#imgDate').value=imgDate;$('
 /* ---------- dataset helpers ---------- */
 const COL={vol:'#e63946',fire:'#ff6b35',storm:'#c28be8',flood:'#3b8fe8',slide:'#ff2d95',dry:'#e8a23b'};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',8000)};
-const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{const d=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
- const l=L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${d}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`,{maxNativeZoom:lvl,opacity:.85,attribution:'NASA GIBS',className:cls});
- let ok=0,bad=0;l.on('tileload',()=>ok++);l.on('tileerror',()=>{bad++;if(bad===8&&!ok)toast('No image found for '+id.replace(/_/g,' ')+' on '+d+'. Try an earlier date under Time.')});return l};
+const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{
+ const base=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
+ const dated=days=>new Date(new Date(base+'T12:00:00Z').getTime()-days*864e5).toISOString().slice(0,10);
+ const address=day=>`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${day}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`;
+ const layer=L.tileLayer(address(dated(0)),{maxNativeZoom:lvl,opacity:.85,
+    attribution:'NASA GIBS · acquisition date varies',className:cls});
+ layer._terrapulseRecovers=true;
+ let attempt=0,success=0,fail=0;
+ const lagDays=[0,7,21];
+ layer.terrapulse={status:'loading',source:'NASA GIBS',date:dated(0)};
+ layer.on('tileload',()=>{
+   success++;layer.terrapulse.status='ready';
+ });
+ layer.on('tileerror',()=>{
+   fail++;
+   if(fail<6||success>0)return;
+   if(attempt>=lagDays.length-1){
+     layer.terrapulse.status='error';
+     toast('NASA GIBS layer '+id.replaceAll('_',' ')+
+        ' has no accessible imagery at this map extent on '+lagDays.map(dated).join(', ')+
+        '. Data coverage is unknown; try another region or date.');
+     return;
+   }
+   attempt++;success=0;fail=0;
+   layer.terrapulse={status:'loading',source:'NASA GIBS',date:dated(lagDays[attempt])};
+   layer.setUrl(address(dated(lagDays[attempt])));
+   toast('No NASA image for '+id.replaceAll('_',' ')+' at selected date. Trying '+dated(lagDays[attempt])+'…');
+ });
+ return layer;
+};
 const eonet=(cat,color,rad=7)=>async()=>{
  const mapped={landslides:'ls',wildfires:'fi',floods:'fl'},hazard=mapped[cat];
  let records=[],source='NASA EONET';
@@ -371,7 +398,7 @@ const DS=[
 ];
 const state={},openG=new Set(['Earthquakes']);let showMore=false;let focusG='Earthquakes';
 function row(d){const l=document.createElement('label');l.className='r';
- const st=state[d.id],badge=st?.status==='loading'?'Loading…':st?.status==='empty'?'No open reports':st?.status==='error'?'Unavailable':'';
+ const st=state[d.id],badge=st?.status==='loading'?'Loading…':st?.status==='empty'?'No reports for scope':st?.status==='error'?'Source unavailable':'';
  l.innerHTML=`<input type="checkbox" id="c_${d.id}" ${st?.on?'checked':''}><span class="tp-dataset-name">${d.n}${badge?'<small class="tp-dataset-status '+(st.status==='error'?'tp-source-error':'')+'">'+badge+'</small>':''}</span>`;
  if(st?.error)l.title=st.error;
  l.querySelector('input').onchange=e=>setLayer(d.id,e.target.checked);return l}
@@ -422,7 +449,7 @@ async function setLayer(id,on) {
    if(!st.on||st.gen!==token)return; // async request canceled by user
    if(!layer||typeof layer.addTo!=='function')throw Error('Layer returned no usable map data');
    st.layer=layer;st.status=layer.terrapulse?.status||'ready';
-   if(d.dated && layer instanceof L.TileLayer) {
+   if(d.dated && layer instanceof L.TileLayer && !layer._terrapulseRecovers) {
      let successfulTiles=0,failedTiles=0;
      layer.on('tileload',()=>successfulTiles++);
      layer.on('tileerror',()=>{
