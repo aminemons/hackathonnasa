@@ -292,7 +292,6 @@ const DS=[
  {id:'modis',g:'Floods',dated:1,n:'Mapped surface flooding (MODIS, 3-day)',kw:'flood floods water modis inundation',leg:['#2b6cb0','MODIS mapped flood extent (cloud gaps possible)'],load:gibs('MODIS_Combined_Flood_3-Day',9,'png',2)},
  // Wildfires
  {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
- {id:'mfire',g:'Wildfires',dated:1,n:'Thermal anomalies (MODIS combined)',kw:'fire fires wildfire hotspot thermal',leg:['#ff3d00','MODIS thermal anomaly, not a fire warning'],load:gibs('MODIS_Combined_Thermal_Anomalies_All',7,'png',2)},
  {id:'smoke',g:'Wildfires',dated:1,n:'Smoke and aerosol (MODIS)',kw:'smoke aerosol haze',leg:['#a0522d','Aerosol optical depth'],load:gibs('MODIS_Terra_Aerosol',6,'png',1)},
  // Storms
  {id:'storm',g:'Storms',n:'Severe storms (NASA EONET)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Severe storm'],load:eonet('severeStorms',COL.storm)},
@@ -305,7 +304,7 @@ const DS=[
  // Glaciers & ice (SAR glacier layers from layers.json join here)
  {id:'glac',g:'Glaciers & ice',n:'Glacier outlines (static; Natural Earth)',kw:'glacier glaciers ice caps outlines geographic',leg:['#6ec6ff','Glacier footprint, not movement'],load:glac},
  {id:'motion',g:'Glaciers & ice',n:'Observed glacier motion (NASA ITS_LIVE)',kw:'glacier motion speed velocity ice flow glacier movement',leg:['#18a8d9','Measured annual glacier speed (m/year; marker size)'],view:[28,87,6],hint:'Historical measured glacier speeds; marker motion is not inferred or forecast.',load:async()=>{if(!window.TerraPulseGlacier)throw Error('Glacier module initializing; please retry');return window.TerraPulseGlacier.createMotionLayer()}},
- {id:'seaice',g:'Glaciers & ice',dated:1,n:'Polar ice surface temperature (MODIS)',kw:'sea ice polar arctic antarctic temperature',leg:['#7a8794','Ice surface temperature; not sea ice concentration'],view:[76,-40,3],hint:'Satellite temperature is not a glacier speed measurement. Select historical glacier motion for measured velocities.',load:gibs('MODIS_Terra_Ice_Surface_Temp_Day',6,'png',2)},
+ {id:'seaice',g:'Glaciers & ice',dated:1,n:'Polar ice surface temperature (MODIS)',kw:'sea ice polar arctic antarctic temperature',leg:['#7a8794','Ice surface temperature; not sea ice concentration'],view:[76,-40,3],hint:'Satellite temperature is not a glacier speed measurement. Select historical glacier motion for measured velocities.',load:gibs('MODIS_Terra_Ice_Surface_Temp_Day',7,'png',2)},
  // More datasets
  {id:'dry',g:'Drought',n:'Drought (NASA EONET)',kw:'drought dry',leg:[COL.dry,'Drought'],load:eonet('drought',COL.dry)},
  {id:'true',g:'Satellite imagery',dated:1,n:'True colour (MODIS Terra)',kw:'true colour color imagery',load:gibs('MODIS_Terra_CorrectedReflectance_TrueColor',9,'jpeg')},
