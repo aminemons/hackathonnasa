@@ -90,13 +90,13 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
      <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="hFrom" min="1900" max="2100"> to <input type="number" id="hTo" min="1900" max="2100"></div>
      <div class="g">Minimum magnitude</div>
      <select id="hMag" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px"><option>5</option><option selected>6</option><option>6.5</option><option>7</option></select>
-     <p style="color:var(--m);font-size:12px">Default is the last 30 years. M5+ is about 45,000 events and takes a minute or so to load; M6+ is much faster.</p>
+     <p style="color:var(--m);font-size:12px">Use up to ten years per request to avoid source timeouts. Load older periods in batches.</p>
      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="hShow">Show on map</button><button class="btn" id="hCsv">Download CSV</button></div>
      <div id="hStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
     <div class="ts" data-t="ehist">
      <div class="g">Past events (NASA EONET archive)</div>
      <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="xFrom" min="1990" max="2100"> to <input type="number" id="xTo" min="1990" max="2100"></div>
-     <p style="color:var(--m);font-size:12px">Applies to the “Past … events” datasets that are switched on. Default is the last 30 years. How far back NASA's archive really goes depends on the hazard; the line below shows the years found.</p>
+     <p style="color:var(--m);font-size:12px">Applies to the “Past … events” datasets that are switched on. The default covers five calendar years. Select up to eight years per request. Missing archives and failed source requests are reported below.</p>
      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="xShow">Load these years</button><button class="btn" id="xCsv">Download CSV</button></div>
      <div id="xStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
     <div class="ts" data-t="dated">
@@ -253,6 +253,7 @@ const EV_HIST={},EV_NAME={};
 const xstat=t=>{const e=$('#xStat');if(e)e.textContent=t};
 const eonetHist=(id,cat,color,label)=>async()=>{EV_NAME[id]=label;const y0=+$('#xFrom').value,y1=+$('#xTo').value;
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
+ if(y1-y0>7)throw Error('Select up to 8 years per request; load older NASA EONET years in batches.');
  const years=[];for(let y=y0;y<=y1;y++)years.push(y);const rows=[];let done=0,bad=0;
  const one=async y=>{try{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=all&category=${cat}&start=${y}-01-01&end=${y}-12-31&limit=3000`);
    (d.events||[]).forEach(e=>{const g=e.geometry&&e.geometry[0];if(!g)return;let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];if(!isFinite(c[0])||!isFinite(c[1]))return;rows.push([e.id,Date.parse(g.date),c[1],c[0],e.title,e.link])})}catch(err){bad++}
@@ -429,6 +430,7 @@ let hist=[];
 const hstat=t=>{const e=$('#hStat');if(e)e.textContent=t};
 async function fetchHist(){const mag=+$('#hMag').value,y0=+$('#hFrom').value,y1=+$('#hTo').value,rows=[];
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
+ if(y1-y0>9)throw Error('Select at most 10 years per USGS request; download longer archives in batches.');
  for(let y=y0;y<=y1;y++){hstat('Loading '+y+' … ('+rows.length+' so far)');
   const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`);
   d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,p=f.properties;rows.push([f.id,p.time,la,lo,dp,p.mag,p.place||''])})}
@@ -441,10 +443,10 @@ async function downloadHist(){try{if(!hist.length)await fetchHist()}catch(e){ret
  const r=['id,time_iso,latitude,longitude,depth_km,magnitude,place'].concat(hist.map(x=>[x[0],new Date(x[1]).toISOString(),x[2],x[3],x[4],x[5],'"'+String(x[6]).replace(/"/g,'""')+'"'].join(',')));
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.join('\n')],{type:'text/csv'}));
  a.download='earthquakes_'+$('#hFrom').value+'-'+$('#hTo').value+'_M'+$('#hMag').value+'.csv';a.click()}
-$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-30;
+$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-7;
 $('#hShow').onclick=()=>reloadHist();$('#hCsv').onclick=downloadHist;
 async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}
-$('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-30;
+$('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-4;
 $('#xShow').onclick=async()=>{for(const id of Object.keys(state).filter(k=>k.startsWith('h_')&&state[k].on))await reloadLayer(id)};
 const saveCsv=(lines,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/csv'}));a.download=name;a.click()};
 $('#xCsv').onclick=()=>{const ids=Object.keys(EV_HIST);if(!ids.length)return xstat('Turn on a “Past … events” dataset first.');
