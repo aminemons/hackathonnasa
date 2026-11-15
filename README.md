@@ -140,15 +140,24 @@ In the **Landslides** dataset category, open:
 - **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
   explicitly NOT the August landslide's detection model.
 
-The chatbot defines an **open-source LangGraph StateGraph** for deterministic
-intent routing and a strict UI-tool allowlist. Vercel uses the equivalent
-lightweight deterministic fallback (without installing LangGraph) because the
-full dependency exceeded Vercel's Python serverless bundle limit. For an
-actual LangGraph runtime on a self-hosted server, install
-\`requirements-chat-langgraph.txt\`. It
-does **not** use a generative language model or paid API. Map-science
-answers are deliberately limited to verifiable descriptions and available
-tools. This repository is open source under MIT (see LICENSE);
+The chatbot uses an optional server-side OpenAI-compatible generative model
+for conversation, then validates every proposed map action against a strict
+allowlist. With Vercel OIDC enabled, it uses Vercel AI Gateway and the
+\`nvidia/nemotron-3.5-lightning-free\` open-weight model. Its current model
+catalog entry lists zero input/output price; the listed provider may retain
+prompts and responses for model improvement. If Gateway credentials or model
+service are unavailable, the deterministic router still handles supported
+map commands and safety questions. The app does not store chat history; the
+browser sends up to eight recent messages with each request for follow-up context.
+For another OpenAI-compatible provider, configure server-side
+\`TERRAPULSE_CHAT_API_URL\` (complete \`/chat/completions\` URL),
+\`TERRAPULSE_CHAT_MODEL\`, and optional \`TERRAPULSE_CHAT_API_KEY\`. Never put a
+provider credential in browser code. The endpoint must accept the OpenAI chat
+completions request shape, JSON-object response format, and return within the
+seven-second timeout; a GPU server must be reachable from Vercel over HTTPS,
+authenticate with the configured server-side token if required, support that
+response format, and keep cold start plus inference inside that timeout.
+This repository is open source under MIT (see LICENSE);
 external OSM, NASA and map-tile/data usage remains subject to
 their own attribution and licenses.
 
@@ -264,7 +273,7 @@ The three hazard tabs open worldwide catalogs. The default earthquake view shows
 
 Refresh the compact provider snapshots with `python scripts/prepare_world.py /path/to/DOI-WGMS-FoG-2026-02-10.zip`. The WGMS source is [Fluctuations of Glaciers Database, release 2026-02-10](https://doi.org/10.5904/wgms-fog-2026-02-10).
 
-The sidebar lists observations in the selected hazard and lets readers filter them by place. **Ask TerraPulse** uses this same catalog and fixed map actions. Try “Compare Guelma”, “Earthquakes in Japan”, “Show M5+ earthquakes”, “Show rainfall” or “Open Pine Island”. The assistant runs in the browser and uses provider records and methods directly.
+The sidebar lists observations in the selected hazard and lets readers filter them by place. **Ask TerraPulse** supports follow-up questions, validated map actions, browser speech recognition where available, and optional read-aloud replies. Try “Compare Guelma”, “Earthquakes in Japan”, “Show M5+ earthquakes”, “Show rainfall” or “Open Pine Island”. Voice input starts only after the microphone button is pressed; transcripts remain editable before sending.
 
 See [Data and models](docs/data-and-models.md) for collection IDs and units, the Guelma Earth Engine export workflow, and an evaluation plan for each hazard.
 

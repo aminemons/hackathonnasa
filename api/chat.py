@@ -1,16 +1,13 @@
-"""Stateless, open-source LangGraph map assistant for Vercel.
-
-No key, chat-history database, external generative AI endpoint or arbitrary
-tool execution. The browser executes only whitelisted map controls.
-"""
+"""Stateless chat API with an optional server-side OpenAI-compatible model."""
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlsplit
 import json
+import os
 
 try:
-    from .chat_router import plan
+    from .chat_provider import generate, is_configured
 except ImportError:
-    from chat_router import plan
+    from chat_provider import generate, is_configured
 
 
 class handler(BaseHTTPRequestHandler):
@@ -27,10 +24,11 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if urlsplit(self.path).path not in ("/api/chat","/api/chat/"):
             return self.respond({"error":"Endpoint not found"},404)
+        configured=chat_configured(self)
         self.respond({
-            "name":"TerraPulse open-source map assistant",
-            "framework":"LangGraph StateGraph (deterministic intent and action routing)",
-            "generative_llm_configured":False,
+            "name":"TerraPulse assistant",
+            "framework":"OpenAI-compatible server-side chat with deterministic fallback",
+            "generative_llm_configured":configured,
             "stores_conversations":False,
             "tools":["NASA LHASA forecast panel","Landslide scar comparison",
                      "OSM human-exposure screen","NISAR evidence gallery",
@@ -47,13 +45,26 @@ class handler(BaseHTTPRequestHandler):
             length=int(self.headers.get("Content-Length","0"))
         except ValueError:
             return self.respond({"error":"Invalid request size"},400)
-        if not (1 <= length <= 2048):
-            return self.respond({"error":"Request too large; maximum 2048 bytes"},413)
+        if not (1 <= length <= 12288):
+            return self.respond({"error":"Request too large; maximum 12288 bytes"},413)
         try:
             message=json.loads(self.rfile.read(length))
             if not isinstance(message,dict):
                 raise ValueError("Expected JSON object")
-            response=plan(message.get("message"))
+            prompt=message.get("message")
+            response=generate(prompt, message.get("history", []), request_gateway_token(self))
         except (ValueError,TypeError,json.JSONDecodeError) as error:
             return self.respond({"error":str(error)},400)
         self.respond(response)
+
+
+def request_gateway_token(request):
+    # Vercel injects this runtime-only header; do not trust similarly named
+    # headers supplied to this endpoint outside a Vercel function.
+    if os.environ.get("VERCEL") == "1":
+        return request.headers.get("x-vercel-oidc-token")
+    return None
+
+
+def chat_configured(request):
+    return is_configured(request_gateway_token(request))

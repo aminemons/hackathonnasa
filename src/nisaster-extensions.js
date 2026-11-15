@@ -403,22 +403,76 @@ function chatSay(message,user=false){
   el.textContent=String(message??'');
   $('#log').appendChild(el);
   $('#log').scrollTop=$('#log').scrollHeight;
+  if(!user&&speechEnabled&&window.speechSynthesis){
+    try{
+      window.speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(el.textContent);
+      utterance.lang=navigator.language||'en-US';
+      utterance.onerror=()=>{voiceStatus.textContent='Read-aloud could not play this reply.';};
+      window.speechSynthesis.speak(utterance);
+    }catch{voiceStatus.textContent='Read-aloud could not play this reply.';}
+  }
 }
-let chatInFlight=false;
+let chatInFlight=false, speechEnabled=false;
+const chatHistory=[];
 window.tpAsk=async raw=>{
   const prompt=String(raw||'').trim().slice(0,800);
   if(!prompt||chatInFlight)return;
   chatInFlight=true;
   chatSay(prompt,true);
+  const history=chatHistory.slice(-8);
+  chatHistory.push({role:'user',content:prompt});
   try{
     const r=await getJSON('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:prompt})});
+      body:JSON.stringify({message:prompt,history})});
     for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[])) await applyAction(action);
-    chatSay(r.reply||'I could not find a matching map tool.');
+    const reply=r.reply||'I could not find a matching map tool.';
+    chatSay(reply);
+    chatHistory.push({role:'assistant',content:reply});
+    if(chatHistory.length>8)chatHistory.splice(0,chatHistory.length-8);
   }catch(e){
-    chatSay('The assistant service is temporarily unavailable. The Dataset sidebar and map controls remain usable. ('+e.message+')');
+    const reply='The assistant service is temporarily unavailable. The Dataset sidebar and map controls remain usable.';
+    chatSay(reply);
+    chatHistory.push({role:'assistant',content:reply});
   }finally{chatInFlight=false;}
 };
+const voiceStatus=$('#voiceStatus'), voiceButton=$('#voiceBtn'), speakButton=$('#speakBtn');
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  voiceButton.addEventListener('click',()=>{
+    const recognition=new SpeechRecognition();
+    recognition.lang=navigator.language||'en-US';
+    recognition.continuous=false;
+    recognition.interimResults=false;
+    voiceButton.disabled=true;
+    voiceStatus.textContent='Listening…';
+    recognition.onresult=event=>{
+      const transcript=event.results?.[0]?.[0]?.transcript?.trim();
+      if(transcript)$('#ci').value=transcript.slice(0,800);
+      voiceStatus.textContent=transcript?'Review the transcript, then send.':'No speech detected.';
+      $('#ci').focus();
+    };
+    recognition.onerror=()=>{voiceStatus.textContent='Voice input could not start. Check microphone access and try again.';};
+    recognition.onend=()=>{voiceButton.disabled=false;if(voiceStatus.textContent==='Listening…')voiceStatus.textContent='';};
+    try{recognition.start();}catch{voiceButton.disabled=false;voiceStatus.textContent='Voice input is already active.';}
+  });
+}else{
+  voiceButton.disabled=true;
+  voiceButton.title='Voice input is not supported in this browser';
+  voiceStatus.textContent='Voice input is not supported in this browser.';
+}
+if(window.speechSynthesis&&'SpeechSynthesisUtterance'in window){
+  speakButton.addEventListener('click',()=>{
+    speechEnabled=!speechEnabled;
+    speakButton.setAttribute('aria-pressed',String(speechEnabled));
+    speakButton.textContent='Read replies: '+(speechEnabled?'on':'off');
+    if(!speechEnabled)window.speechSynthesis.cancel();
+    voiceStatus.textContent=speechEnabled?'New replies will be read aloud.':'';
+  });
+}else{
+  speakButton.disabled=true;
+  speakButton.textContent='Speech output unavailable';
+}
 
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
 // notifications or permission requests are performed on page load.

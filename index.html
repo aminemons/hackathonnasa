@@ -63,6 +63,9 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
 .msg{margin:6px 0;padding:7px 11px;border-radius:12px;max-width:92%}
 .bot{background:var(--bg)}.me{background:var(--blue);color:#fff;margin-left:auto;width:fit-content}
 #cf{display:flex;gap:6px;padding:9px;border-top:1px solid var(--line)}
+#cf input{min-width:0;flex:1}
+#voiceBtn,#speakBtn{flex:0 0 auto;padding:7px 9px}
+#voiceStatus{padding:0 10px 7px;color:var(--m);font-size:12px}
 .chip{display:inline-block;border:1px solid var(--blue);color:var(--blue);border-radius:14px;padding:1px 9px;margin:2px;cursor:pointer;font-size:12px}
 .doc{max-width:860px;margin:0 auto;padding:28px 22px;overflow:auto;height:100%}.doc h2{color:var(--blue)}.doc a{color:#1a5fd0}
 .ts{display:none}.ts.show{display:block}
@@ -114,7 +117,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
    <div class="card" id="bm"><button id="bmBtn">Base map ▾</button><div id="bmList"></div></div>
    <div class="card" id="info"><b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div></div>
    <div class="card" id="chat"><button id="chatBtn">Chat with chatbot <span class="logo lslot"></span></button>
-    <div id="chatBox"><div id="chatHead">TerraPulse assistant</div><div id="log"></div><form id="cf"><input type="text" id="ci" placeholder="e.g. show floods in Algeria" autocomplete="off"><button class="btn">Send</button></form></div></div>
+    <div id="chatBox"><div id="chatHead">TerraPulse assistant</div><div id="log"></div><form id="cf"><input type="text" id="ci" placeholder="Ask a question or control the map" autocomplete="off" maxlength="800"><button class="btn" type="button" id="voiceBtn" aria-label="Speak a question" title="Speak a question">🎙</button><button class="btn" type="submit">Send</button></form><div style="padding:0 9px 8px;display:flex;justify-content:space-between;align-items:center"><button class="btn" type="button" id="speakBtn" aria-pressed="false">Read replies: off</button><span id="voiceStatus" role="status" aria-live="polite"></span></div></div></div>
   </div>
  </section>
  <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>
