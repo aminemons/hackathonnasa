@@ -154,9 +154,14 @@ let base;function setBase(n){if(!BM[n])return false;if(base)map.removeLayer(base
 $('#bmList').innerHTML=Object.keys(BM).map(n=>`<div>${n}</div>`).join('');
 $('#bmList').onclick=e=>{if(e.target.tagName==='DIV'){setBase(e.target.textContent);$('#bmList').classList.remove('on')}};
 $('#bmBtn').onclick=()=>$('#bmList').classList.toggle('on');setBase('Satellite');
-const fetchJ=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()};
+const fetchJ=async (url,timeoutMs=18000)=>{const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{const response=await fetch(url,{signal:controller.signal});
+ if(!response.ok)throw Error('HTTP '+response.status);
+ return await response.json()}catch(error){throw Error(error.name==='AbortError'?'Source request timed out':error.message)}
+ finally{clearTimeout(timer)}};
 const ymd=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
-let quakes=[],period=7,minMag=4.5,imgDate=ymd(1);$('#imgDate').value=imgDate;$('#imgDate').max=ymd(0);
+let quakes=[],period=7,minMag=4.5,imgDate=ymd(3);$('#imgDate').value=imgDate;$('#imgDate').max=ymd(0);
 /* ---------- dataset helpers ---------- */
 const COL={vol:'#e63946',fire:'#ff6b35',storm:'#c28be8',flood:'#3b8fe8',slide:'#ff2d95',dry:'#e8a23b'};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',8000)};
@@ -214,7 +219,7 @@ const DS=[
  {id:'quakes',g:'Earthquakes',n:'Earthquakes, live (USGS)',kw:'earthquake earthquakes quake quakes seismic',leg:['#ff6b35','Earthquake (bigger = stronger)'],load:loadQuakes},
  {id:'depth',g:'Earthquakes',n:'Earthquakes by depth',kw:'depth shallow deep earthquake',leg:['#e53935','Shallow (red) to deep (purple)'],load:quakesByDepth},
  {id:'sig',g:'Earthquakes',n:'Significant earthquakes, 30 days',kw:'significant major strongest earthquake',leg:['#d50000','Significant earthquake'],load:quakeFeed('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson','#d50000')},
- {id:'plates',g:'Earthquakes',n:'Tectonic plates',kw:'plate plates tectonic boundary',leg:['#ff9f1c','Plate boundary'],load:async()=>L.geoJSON(await fetchJ('https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json'),{style:{color:'#ff9f1c',weight:1.5}})},
+ {id:'plates',g:'Earthquakes',n:'Tectonic plates',kw:'plate plates tectonic boundary',leg:['#ff9f1c','Plate boundary'],load:async()=>L.geoJSON(await fetchJ('/data/plate-boundaries.json'),{style:{color:'#ff9f1c',weight:1.5}})},
  {id:'faults',g:'Earthquakes',n:'Active faults (GEM, global)',kw:'faults fault gem slip',leg:['#ff4d6d','Active fault'],load:faults},
  {id:'hist',g:'Earthquakes',n:'Historical earthquakes (set years in Time)',kw:'historical history archive past',leg:['#ff9800','Historical earthquake (bigger = stronger)'],load:loadHist},
  // Volcanoes
@@ -338,7 +343,7 @@ let countries=null;const cL={};
 function inRing(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
 function inC(f,x,y){const g=f.geometry,P=g.type==='Polygon'?[g.coordinates]:g.coordinates;return P.some(p=>inRing(x,y,p[0])&&!p.slice(1).some(h=>inRing(x,y,h)))}
 const IDLE='<b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div>';
-async function loadCountries(){try{countries=await fetchJ('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json');
+async function loadCountries(loader){try{countries=await loader();
  L.geoJSON(countries,{style:{color:'#fff',weight:.5,fillOpacity:0,opacity:.35},onEachFeature:(f,l)=>{cL[f.properties.name.toLowerCase()]=l;
   l.on('mouseover',()=>{l.setStyle({fillOpacity:.15,weight:2,opacity:.95});showInfo(f,l)});l.on('mouseout',()=>{l.setStyle({fillOpacity:0,weight:.5,opacity:.35});$('#info').innerHTML=IDLE})}}).addTo(map)}catch(e){}}
 function showInfo(f,l){const b=l.getBounds();let n=0,mx=0,top='';const on=state.quakes&&state.quakes.on;
@@ -384,8 +389,8 @@ function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=n
  $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
 function syncSide(){updateTime();renderAlarm()}
 /* ---------- start ---------- */
-buildList();legend();updateTime();setLayer('quakes',true);loadCountries();loadEE();alarmInit();go('Map');
-window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG};
+buildList();legend();updateTime();setLayer('quakes',true);loadEE();alarmInit();go('Map');
+window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG,loadCountries};
 </script>
 <script type="module" src="/src/nisaster-extensions.js"></script>
 </body></html>
