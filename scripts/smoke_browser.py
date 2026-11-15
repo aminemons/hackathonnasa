@@ -49,6 +49,9 @@ def main():
             if "eonet.gsfc.nasa.gov/api/v3/events" in url:
                 return route.fulfill(status=200,content_type="application/json",
                     headers={"access-control-allow-origin":"*"},body=json.dumps({"events":[]}))
+            if "/api/catalog" in url:
+                return route.fulfill(status=200,content_type="application/json",
+                    body=json.dumps({"status":"ok","events":[]}))
             if "/api/events" in url:
                 from urllib.parse import urlsplit,parse_qs
                 q=parse_qs(urlsplit(url).query)

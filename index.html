@@ -190,12 +190,21 @@ const eonet=(cat,color,rad=7)=>async()=>{
  const mapped={landslides:'ls',wildfires:'fi',floods:'fl'},hazard=mapped[cat];
  let records=[],source='NASA EONET';
  if(hazard){
-   const d=await sourceFeed({hazard});
+   const d=await sourceFeed({hazard,include_recent:hazard==='ls'||hazard==='fl'});
    if(d.status!=='ok'||d.hazard!==hazard||!Array.isArray(d.records))
      throw Error('NASA source status could not be verified');
    records=d.records;
+   source=d.source||source;
+   if(d.search_scope&&d.search_scope!=='currently_open')
+     toast((d.search_scope==='bundled_historical_snapshot'?'Archived GDACS snapshot':
+       'Historical EONET reports, including closed events')+
+       ' for '+cat+'. These are NOT currently active incidents.');
  }else{
-   const d=await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category='+encodeURIComponent(cat)+'&limit=200');
+   const fetchCategory=async()=>{const query=new URLSearchParams({status:'open',category:cat,limit:'200'});
+     try{return await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?'+query);}
+     catch{return fetchJ('/api/catalog?'+query);}
+   };
+   const d=await fetchCategory();
    records=(d.events||[]).map(e=>{
      const gm=e.geometry?.at(-1);
      const c=gm?.type==='Point'?gm.coordinates:null;
@@ -215,7 +224,7 @@ const eonet=(cat,color,rad=7)=>async()=>{
      .addTo(g);
  });
  g.terrapulse={status:records.length?'ready':'empty',count:records.length,shown:drawn,source};
- if(!records.length)toast('NASA EONET has no currently open '+cat+' reports. The dataset loaded successfully.');
+ if(!records.length)toast(source+' returned no available '+cat+' reports. Try the dated forecast or radar datasets.');
  else if(drawn<records.length)toast('NASA EONET returned '+records.length+
    ' reports; '+(records.length-drawn)+' lack point coordinates and cannot be pinned exactly.');
  return g;
@@ -259,7 +268,7 @@ const quakesByDepth=async()=>{
  return group;
 };
 const FAULTS_EMBED=null;
-const FAULT_URLS=['https://static.geodataviewer.com/datasets/gem-active-faults.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults_harmonized.geojson'];
+const FAULT_URLS=['https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults.geojson'];
 const faults=async()=>{let j=FAULTS_EMBED;
  for(const u of FAULT_URLS){if(j)break;try{const r=await fetch(u);if(r.ok)j=await r.json()}catch(e){}}
  if(!j)throw new Error('GEM faults file not reachable');
@@ -272,7 +281,11 @@ const eonetHist=(id,cat,color,label)=>async()=>{EV_NAME[id]=label;const y0=+$('#
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
  if(y1-y0>7)throw Error('Select up to 8 years per request; load older NASA EONET years in batches.');
  const years=[];for(let y=y0;y<=y1;y++)years.push(y);const rows=[];let done=0,bad=0;
- const one=async y=>{try{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=all&category=${cat}&start=${y}-01-01&end=${y}-12-31&limit=3000`);
+ const one=async y=>{try{const query=new URLSearchParams({status:'all',category:cat,
+   start:y+'-01-01',end:y+'-12-31',limit:'1500'});
+   let d;try{d=await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?'+query);}
+   catch{d=await fetchJ('/api/catalog?'+query);}
+
    (d.events||[]).forEach(e=>{const g=e.geometry&&e.geometry[0];if(!g)return;let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];if(!isFinite(c[0])||!isFinite(c[1]))return;rows.push([e.id,Date.parse(g.date),c[1],c[0],e.title,e.link])})}catch(err){bad++}
   done++;xstat('Loading '+label+': '+done+'/'+years.length+' years … '+rows.length+' events')};
  for(let i=0;i<years.length;i+=5)await Promise.all(years.slice(i,i+5).map(one));
@@ -287,7 +300,7 @@ const CV=L.canvas({padding:.5});
 /* ---------- glacier and ice outlines (embedded by Python when possible) ---------- */
 const GLAC_EMBED=null;
 const glac=async()=>{let R=GLAC_EMBED;
- if(!R)R=await Promise.all(['ne_10m_glaciated_areas','ne_10m_antarctic_ice_shelves_polys'].map(n=>fetchJ(`https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/${n}.geojson`).catch(()=>null)));
+ if(!R)R=await Promise.all(['ne_50m_glaciated_areas','ne_50m_antarctic_ice_shelves_polys'].map(n=>fetchJ(`/data/${n}.geojson`).catch(()=>null)));
  R=(R||[]).filter(Boolean);if(!R.length)throw new Error('glacier outlines not reachable');const g=L.layerGroup();
  R.forEach(j=>L.geoJSON(j,{renderer:CV,style:{color:'#6ec6ff',weight:.6,fillColor:'#bfe9ff',fillOpacity:.75}}).addTo(g));return g};
 
@@ -305,7 +318,7 @@ const DS=[
  // Volcanoes
  {id:'vol',g:'Volcanoes',n:'Active volcanoes (NASA EONET)',kw:'volcano volcanoes eruption',leg:[COL.vol,'Active volcano'],load:eonet('volcanoes',COL.vol)},
  // Floods
- {id:'eflood',g:'Floods',n:'Flood events (NASA EONET)',kw:'flood floods',leg:[COL.flood,'Flood event'],load:eonet('floods',COL.flood)},
+ {id:'eflood',g:'Floods',n:'Flood reports (EONET / GDACS historical)',kw:'flood floods',leg:[COL.flood,'Reported flood location (source date shown)'],load:eonet('floods',COL.flood)},
  {id:'modis',g:'Floods',dated:1,n:'Mapped surface flooding (MODIS, 3-day)',kw:'flood floods water modis inundation',leg:['#2b6cb0','MODIS mapped flood extent (cloud gaps possible)'],load:gibs('MODIS_Combined_Flood_3-Day',9,'png',2)},
  // Wildfires
  {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
@@ -314,7 +327,7 @@ const DS=[
  {id:'storm',g:'Storms',n:'Severe storms (NASA EONET)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Severe storm'],load:eonet('severeStorms',COL.storm)},
  {id:'wv',g:'Storms',dated:1,n:'Cloud fraction (MODIS; atmospheric context)',kw:'cloud clouds atmosphere storm fraction context',leg:['#6a9fd8','Cloud fraction (not rainfall)'],load:gibs('MODIS_Terra_Cloud_Fraction_Day',6,'png',2)},
  // Landslides
- {id:'slide',g:'Landslides',n:'Landslide events (NASA EONET)',kw:'landslide landslides',leg:[COL.slide,'Landslide'],load:eonet('landslides',COL.slide,12)},
+ {id:'slide',g:'Landslides',n:'Landslide reports (current / archived EONET)',kw:'landslide landslides',leg:[COL.slide,'Reported landslide location (dated, not a forecast)'],load:eonet('landslides',COL.slide,12)},
  // Land subsidence (SAR layers from layers.json join here)
  {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context; MODIS)',kw:'land temperature heat surface context',leg:['#f2994a','Surface temperature; not subsidence displacement'],load:gibs('MODIS_Terra_L3_Land_Surface_Temp_Daily_Day_TES',7,'png',3)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
