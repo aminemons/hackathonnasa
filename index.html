@@ -256,24 +256,23 @@ const DS=[
  {id:'vol',g:'Volcanoes',n:'Active volcanoes (NASA EONET)',kw:'volcano volcanoes eruption',leg:[COL.vol,'Active volcano'],load:eonet('volcanoes',COL.vol)},
  // Floods
  {id:'eflood',g:'Floods',n:'Flood events (NASA EONET)',kw:'flood floods',leg:[COL.flood,'Flood event'],load:eonet('floods',COL.flood)},
- {id:'modis',g:'Floods',dated:1,n:'Flood detection (MODIS)',kw:'flood floods water modis inundation',leg:['#2b6cb0','Water detected (clouds can hide it)'],load:gibs('MODIS_Combined_Flood_2-Day',12,'png',1)},
- {id:'rain',g:'Floods',dated:1,n:'Rain rate (NASA IMERG)',kw:'rain rainfall precipitation imerg',leg:['#3b8fe8','Rainfall intensity'],load:gibs('IMERG_Precipitation_Rate',6,'png',1)},
+ {id:'modis',g:'Floods',dated:1,n:'Mapped surface flooding (MODIS, 3-day)',kw:'flood floods water modis inundation',leg:['#2b6cb0','MODIS mapped flood extent (cloud gaps possible)'],load:gibs('MODIS_Combined_Flood_3-Day',9,'png',2)},
  // Wildfires
  {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
- {id:'mfire',g:'Wildfires',dated:1,n:'Active fires (MODIS)',kw:'fire fires wildfire hotspot thermal',leg:['#ff3d00','Fire / thermal anomaly'],load:gibs('MODIS_Terra_Thermal_Anomalies_All',9,'png')},
+ {id:'mfire',g:'Wildfires',dated:1,n:'Thermal anomalies (MODIS combined)',kw:'fire fires wildfire hotspot thermal',leg:['#ff3d00','MODIS thermal anomaly, not a fire warning'],load:gibs('MODIS_Combined_Thermal_Anomalies_All',7,'png',2)},
  {id:'smoke',g:'Wildfires',dated:1,n:'Smoke and aerosol (MODIS)',kw:'smoke aerosol haze',leg:['#a0522d','Aerosol optical depth'],load:gibs('MODIS_Terra_Aerosol',6,'png',1)},
  // Storms
  {id:'storm',g:'Storms',n:'Severe storms (NASA EONET)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Severe storm'],load:eonet('severeStorms',COL.storm)},
- {id:'wv',g:'Storms',dated:1,n:'Water vapour (MODIS)',kw:'water vapour vapor moisture storm',leg:['#6a9fd8','Atmospheric moisture'],load:gibs('MODIS_Terra_Water_Vapor_5km_Day',6,'png',1)},
+ {id:'wv',g:'Storms',dated:1,n:'Cloud fraction (MODIS; atmospheric context)',kw:'cloud clouds atmosphere storm fraction context',leg:['#6a9fd8','Cloud fraction (not rainfall)'],load:gibs('MODIS_Terra_Cloud_Fraction_Day',6,'png',2)},
  // Landslides
  {id:'slide',g:'Landslides',n:'Landslide events (NASA EONET)',kw:'landslide landslides',leg:[COL.slide,'Landslide'],load:eonet('landslides',COL.slide,12)},
  // Land subsidence (SAR layers from layers.json join here)
- {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context)',kw:'land temperature heat subsidence context',leg:['#f2994a','Hotter ground'],load:gibs('MODIS_Terra_Land_Surface_Temp_Day',7,'png',2)},
+ {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context; MODIS)',kw:'land temperature heat surface context',leg:['#f2994a','Surface temperature; not subsidence displacement'],load:gibs('MODIS_Terra_L3_Land_Surface_Temp_Daily_Day_TES',7,'png',3)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
  // Glaciers & ice (SAR glacier layers from layers.json join here)
  {id:'glac',g:'Glaciers & ice',n:'Glacier outlines (static; Natural Earth)',kw:'glacier glaciers ice caps outlines geographic',leg:['#6ec6ff','Glacier footprint, not movement'],load:glac},
  {id:'motion',g:'Glaciers & ice',n:'Observed glacier motion (NASA ITS_LIVE)',kw:'glacier motion speed velocity ice flow glacier movement',leg:['#18a8d9','Measured annual glacier speed (m/year; marker size)'],view:[28,87,6],hint:'Historical measured glacier speeds; marker motion is not inferred or forecast.',load:async()=>{const module=await import('./src/glacier-motion.js');return module.createMotionLayer()}},
- {id:'seaice',g:'Glaciers & ice',dated:1,n:'Sea ice concentration (AMSR2)',kw:'sea ice arctic antarctic polar',leg:['#7a8794','Sea ice (darker grey = more ice)'],view:[76,-40,3],hint:'Sea ice only exists near the poles. Showing the Arctic; pan south for the Antarctic.',load:gibs('AMSR2_Sea_Ice_Concentration_12km',6,'png',1,'seaice-grey')},
+ {id:'seaice',g:'Glaciers & ice',dated:1,n:'Polar ice surface temperature (MODIS)',kw:'sea ice polar arctic antarctic temperature',leg:['#7a8794','Ice surface temperature; not sea ice concentration'],view:[76,-40,3],hint:'Satellite temperature is not a glacier speed measurement. Select historical glacier motion for measured velocities.',load:gibs('MODIS_Terra_Ice_Surface_Temp_Day',6,'png',2)},
  // More datasets
  {id:'dry',g:'Drought',n:'Drought (NASA EONET)',kw:'drought dry',leg:[COL.dry,'Drought'],load:eonet('drought',COL.dry)},
  {id:'true',g:'Satellite imagery',dated:1,n:'True colour (MODIS Terra)',kw:'true colour color imagery',load:gibs('MODIS_Terra_CorrectedReflectance_TrueColor',9,'jpeg')},
