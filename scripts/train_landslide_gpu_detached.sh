@@ -145,8 +145,32 @@ record running "Training two independent U-Nets on both NVIDIA L40 GPUs"
 train_one() {
   local gpu="$1" width="$2" seed="$3" output="$4" dropout="$5"
   if [[ -f "$output/complete.flag" && -s "$output/model.pt" ]]; then
-    echo "[TerraPulse] Reusing successful checkpoint $output"
-    return
+    if "$PY" - "$output/model.pt" "$ROOT/data/manifest.json" "$REPO/machine learning/l4s_spatial.py" \
+      "$width" 16 38 "$seed" "$dropout" <<'PY'
+import hashlib, sys, torch
+checkpoint_path, manifest_path, trainer_path = sys.argv[1:4]
+width, batch, epochs, seed = map(int, sys.argv[4:8])
+dropout = float(sys.argv[8])
+expected = {
+    "width": width, "batch": batch, "epochs": epochs, "seed": seed,
+    "dropout": dropout,
+    "manifest_sha256": hashlib.sha256(open(manifest_path, "rb").read()).hexdigest(),
+    "trainer_sha256": hashlib.sha256(open(trainer_path, "rb").read()).hexdigest(),
+}
+try:
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    if checkpoint.get("training_signature") == expected:
+        raise SystemExit(0)
+except Exception:
+    pass
+raise SystemExit(1)
+PY
+    then
+      echo "[TerraPulse] Reusing matching successful checkpoint $output"
+      return
+    fi
+    echo "[TerraPulse] Existing checkpoint does not match this run; retraining $output"
+    rm -f "$output/complete.flag"
   fi
   mkdir -p "$output"
   CUDA_VISIBLE_DEVICES="$gpu" "$PY" -u l4s_spatial.py train \

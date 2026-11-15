@@ -1,5 +1,6 @@
 """Train CUDA U-Nets and select by validation AP before touching held-out test."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import time
@@ -150,6 +151,13 @@ def train(args):
     best, best_epoch = -1.0, 0
     start = time.monotonic()
     counts = read_manifest(args.data)["chip_ids"]
+    manifest_hash = hashlib.sha256((args.data / "manifest.json").read_bytes()).hexdigest()
+    trainer_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    training_signature = {
+        "width": args.width, "batch": args.batch, "epochs": args.epochs,
+        "seed": args.seed, "dropout": args.dropout,
+        "manifest_sha256": manifest_hash, "trainer_sha256": trainer_hash,
+    }
     args.output.mkdir(parents=True, exist_ok=True)
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -181,7 +189,8 @@ def train(args):
             target = args.output / "model.pt"
             torch.save({"width": args.width, "state": model.state_dict(), "validation": val, "epoch": epoch,
                         "seed": args.seed, "device": torch.cuda.get_device_name(device),
-                        "chips": {part: len(ids) for part, ids in counts.items()}}, target.with_suffix(".tmp"))
+                        "chips": {part: len(ids) for part, ids in counts.items()},
+                        "training_signature": training_signature}, target.with_suffix(".tmp"))
             target.with_suffix(".tmp").replace(target)
         if epoch - best_epoch >= 12 and epoch >= 24:
             break
