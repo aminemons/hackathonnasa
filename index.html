@@ -101,7 +101,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
      <div id="xStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
     <div class="ts" data-t="dated">
      <div class="g">Satellite image date</div><input type="date" id="imgDate">
-     <p style="color:var(--m);font-size:12px">Applies to the daily NASA satellite layers that are switched on (flood detection, rain, fires, snow, sea ice, true colour…). Pick any past date to see the archive: MODIS and rain layers go back to about 2000, sea ice (AMSR2) and night lights (VIIRS) start around 2012, and each layer has its own start date.</p></div>
+     <p style="color:var(--m);font-size:12px">Applies to dated NASA GIBS images. Product availability and processing latency vary; empty imagery is not evidence a hazard is absent.</p></div>
    </div>
    <div class="tc" id="tLegend"><h4>Legend</h4><div id="legend"></div></div>
    <div class="tc" id="tAlarm"><h4 id="miniHead">Latest alerts</h4><div id="miniCtl"></div><div id="miniAlarm" style="color:var(--m)">No alerts yet.</div><p><a href="#" id="toAlarm" style="color:var(--blue);font-weight:700">Alarm settings →</a></p></div>
@@ -125,9 +125,8 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
   <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>
   <li><a target="_blank" href="https://eonet.gsfc.nasa.gov/">NASA EONET</a> – volcanoes, wildfires, storms, floods, landslides, drought</li>
-  <li><a target="_blank" href="https://landslides.nasa.gov">NASA Global Landslide Catalog</a> – reported landslides</li>
   <li><a target="_blank" href="https://github.com/nvkelso/natural-earth-vector">Natural Earth</a> – glacier and ice shelf outlines</li>
-  <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – MODIS flood detection and snow cover, AMSR2 sea ice, rain, fires, imagery, night lights</li>
+  <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – dated satellite fire, flood, aerosol and imagery products; availability varies</li>
   <li><a target="_blank" href="https://github.com/fraxen/tectonicplates">Tectonic plates (Bird, 2003)</a></li>
   <li>Esri basemaps and hillshade; OpenStreetMap contributors</li>
   <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
@@ -135,7 +134,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
  <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
   <p>Switch on the hazards you want to watch. New events show up below, with a browser notification and an optional sound. Earthquakes are checked every 2 minutes and the others every 10 minutes, while this page is open.</p>
   <div id="aCards"></div>
-  <p><label class="r"><input type="checkbox" id="aSound" checked> Play a sound for new alerts</label></p>
+  <p><label class="r"><input type="checkbox" id="aSound"> Sound for newly observed notable events</label></p>
   <h3>Latest alerts</h3><div id="aList"></div></div></section>
 </div>
 <script>
@@ -233,13 +232,12 @@ const DS=[
  {id:'wv',g:'Storms',dated:1,n:'Water vapour (MODIS)',kw:'water vapour vapor moisture storm',leg:['#6a9fd8','Atmospheric moisture'],load:gibs('MODIS_Terra_Water_Vapor_5km_Day',6,'png',1)},
  // Landslides
  {id:'slide',g:'Landslides',n:'Landslide events (NASA EONET)',kw:'landslide landslides',leg:[COL.slide,'Landslide'],load:eonet('landslides',COL.slide,12)},
- {id:'glc',g:'Landslides',n:'Global landslide catalog (NASA)',kw:'landslide landslides catalog inventory global',leg:[COL.slide,'Reported landslide (bigger, darker = 10+ deaths)'],load:glc},
  // Land subsidence (SAR layers from layers.json join here)
  {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context)',kw:'land temperature heat subsidence context',leg:['#f2994a','Hotter ground'],load:gibs('MODIS_Terra_Land_Surface_Temp_Day',7,'png',2)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
  // Glaciers & ice (SAR glacier layers from layers.json join here)
- {id:'glac',g:'Glaciers & ice',n:'Glaciers and ice caps (global outlines)',kw:'glacier glaciers ice caps outlines shelf',leg:['#6ec6ff','Glacier, ice cap or ice shelf'],load:glac},
- {id:'snow',g:'Glaciers & ice',dated:1,n:'Snow cover (MODIS, daily)',kw:'snow glacier glaciers ice cover',leg:['#9fe3f0','Snow cover'],load:gibs('MODIS_Terra_NDSI_Snow_Cover',8,'png',1)},
+ {id:'glac',g:'Glaciers & ice',n:'Glacier outlines (static; Natural Earth)',kw:'glacier glaciers ice caps outlines geographic',leg:['#6ec6ff','Glacier footprint, not movement'],load:glac},
+ {id:'motion',g:'Glaciers & ice',n:'Observed glacier motion (NASA ITS_LIVE)',kw:'glacier motion speed velocity ice flow glacier movement',leg:['#18a8d9','Measured annual glacier speed (m/year; marker size)'],view:[28,87,6],hint:'Historical measured glacier speeds; marker motion is not inferred or forecast.',load:async()=>{const module=await import('./src/glacier-motion.js');return module.createMotionLayer()}},
  {id:'seaice',g:'Glaciers & ice',dated:1,n:'Sea ice concentration (AMSR2)',kw:'sea ice arctic antarctic polar',leg:['#7a8794','Sea ice (darker grey = more ice)'],view:[76,-40,3],hint:'Sea ice only exists near the poles. Showing the Arctic; pan south for the Antarctic.',load:gibs('AMSR2_Sea_Ice_Concentration_12km',6,'png',1,'seaice-grey')},
  // More datasets
  {id:'dry',g:'Drought',n:'Drought (NASA EONET)',kw:'drought dry',leg:[COL.dry,'Drought'],load:eonet('drought',COL.dry)},
@@ -369,7 +367,7 @@ async function run(raw){say(raw.replace(/</g,'&lt;'),1);const t=' '+raw.toLowerC
  let p=null;const q=t.match(/(\d+)\s*(hour|day|week|month)/);if(q){const n=+q[1]*({hour:1/24,day:1,week:7,month:30}[q[2]]);p=n<=1?1:n<=7?7:30}else if(/today|24 h|yesterday/.test(t))p=1;else if(/this week|a week/.test(t))p=7;else if(/this month|a month/.test(t))p=30;
  if(p){setPeriod(p);done.push('period '+(p===1?'24 hours':p+' days'))}
  const off=/\b(hide|turn off|remove|stop)\b/.test(t),verb=/\b(show|display|turn on|add|see|where|enable|hide|remove|turn off)\b/.test(t);let hits=DS.filter(d=>d.kw&&d.kw.split(' ').some(k=>k&&new RegExp('\\b'+k+'\\b').test(t)));
- if(/\b(histor\w*|past|archive)\b/.test(t)){const hh=hits.filter(d=>d.id.startsWith('h_')||d.id==='glc'),h2=hh.length?hh:hits.filter(d=>d.id==='hist');if(h2.length)hits=h2}
+ if(/\b(histor\w*|past|archive)\b/.test(t)){const hh=hits.filter(d=>d.id.startsWith('h_')),h2=hh.length?hh:hits.filter(d=>d.id==='hist');if(h2.length)hits=h2}
  if(/\b(sar|radar)\b/.test(t)){const e=hits.filter(d=>d.id.startsWith('ee'));hits=e.length?e:DS.filter(d=>d.id.startsWith('ee'))}
  if(hits.length&&(verb||(!m&&!p&&!bm)))for(const d of hits){await setLayer(d.id,!off);done.push((off?'hid ':'showed ')+d.n)}
  let place=Object.keys(cL).filter(k=>new RegExp('\\b'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b').test(t)).sort((a,b)=>b.length-a.length)[0];
@@ -379,7 +377,7 @@ async function run(raw){say(raw.replace(/</g,'&lt;'),1);const t=' '+raw.toLowerC
 /* Source-attributed opt-in reports in src/alarm-system.js. */
 function renderAlarm(){window.TerraPulseAlarm?.render()}
 function alarmInit(){ /* mounted by the extension */ }
-const TT=d=>d.id==='quakes'||d.id==='depth'?'eq':d.id==='hist'?'hist':d.id==='glc'?'glc':d.id.startsWith('h_')?'ehist':d.dated?'dated':null;
+const TT=d=>d.id==='quakes'||d.id==='depth'?'eq':d.id==='hist'?'hist':d.id==='motion'?'motion':d.id.startsWith('h_')?'ehist':d.dated?'dated':null;
 function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=new Set(on.map(TT).filter(Boolean));
  $$('#tTime .ts').forEach(e=>e.classList.toggle('show',!on.length||types.has(e.dataset.t)));
  const named=on.filter(TT).map(d=>d.n);
@@ -387,7 +385,7 @@ function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=n
 function syncSide(){updateTime();renderAlarm()}
 /* ---------- start ---------- */
 buildList();legend();updateTime();setLayer('quakes',true);loadCountries();loadEE();alarmInit();go('Map');
-window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList};
+window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG};
 </script>
 <script type="module" src="/src/nisaster-extensions.js"></script>
 </body></html>
