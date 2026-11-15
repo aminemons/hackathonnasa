@@ -156,6 +156,13 @@ must be reachable from Vercel over HTTPS and return an OpenAI-compatible
 completion within the request timeout. `GROQ_API_KEY` enables the optional
 Groq fallback.
 
+For Google Gemini, set server-side `GEMINI_API_KEY` and optionally
+`GEMINI_MODEL` (default `gemini-3.5-flash-lite`). This uses Google's native
+`generateContent` API and takes precedence over an older custom provider.
+The key is sent only in Google's authentication header; map actions remain
+deterministic and local answers remain available during provider outages.
+Never put real keys in this repository or browser assets.
+
 This repository is open source under MIT (see LICENSE);
 external OSM, NASA and map-tile/data usage remains subject to
 their own attribution and licenses.

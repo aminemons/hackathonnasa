@@ -27,6 +27,50 @@ def model_response(text):
 
 
 class ChatProviderTests(unittest.TestCase):
+    @patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-secret",
+                              "TERRAPULSE_CHAT_API_URL": "https://api.x.ai/v1/chat/completions",
+                              "TERRAPULSE_CHAT_API_KEY": "old-grok-secret",
+                              "AI_GATEWAY_API_KEY": "gateway-only"}, clear=True)
+    @patch.object(chat_provider, "urlopen")
+    def test_gemini_native_request_replaces_old_provider_and_maps_history(self, urlopen):
+        urlopen.return_value = Response({"candidates": [{"content": {"parts": [
+            {"text": "Private model reasoning", "thought": True},
+            {"text": "Radar measures microwave energy returned from Earth's surface."}
+        ]}}]})
+        history = [{"role": "user", "content": "What is SAR?"},
+                   {"role": "assistant", "content": "Radar observations."}]
+        result = chat_provider.respond("How does radar measure the surface?", history)
+        req = urlopen.call_args.args[0]
+        self.assertEqual(req.full_url, chat_provider.GEMINI_BASE + "gemini-3.5-flash-lite:generateContent")
+        self.assertEqual(req.get_header("X-goog-api-key"), "gemini-secret")
+        self.assertIsNone(req.get_header("Authorization"))
+        sent = json.loads(req.data)
+        self.assertIn("Verified evidence:", sent["systemInstruction"]["parts"][0]["text"])
+        self.assertEqual([m["role"] for m in sent["contents"]], ["user", "model", "user"])
+        self.assertNotIn("old-grok-secret", req.data.decode())
+        self.assertTrue(result["model_is_generative"])
+        self.assertIn("Google Gemini", result["engine"])
+        self.assertNotIn("Private model reasoning", result["reply"])
+
+    @patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-secret"}, clear=True)
+    @patch.object(chat_provider, "urlopen", side_effect=TimeoutError)
+    def test_gemini_outage_preserves_local_answers_and_deterministic_actions(self, _urlopen):
+        explanation = chat_provider.respond("How does radar measure the surface?")
+        self.assertFalse(explanation["model_is_generative"])
+        self.assertTrue(_urlopen.called)
+        _urlopen.reset_mock()
+        result = chat_provider.respond("show faults")
+        self.assertFalse(result["model_is_generative"])
+        self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
+        _urlopen.assert_not_called()
+
+    @patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-secret", "GEMINI_MODEL": "../other-host"}, clear=True)
+    @patch.object(chat_provider, "urlopen")
+    def test_invalid_gemini_model_never_sends_the_key(self, urlopen):
+        self.assertFalse(chat_provider.is_configured())
+        chat_provider.respond("How does radar measure the surface?")
+        urlopen.assert_not_called()
+
     @patch.dict("os.environ", {"AI_GATEWAY_API_KEY": "gateway-key"}, clear=True)
     @patch.object(chat_provider, "urlopen")
     def test_gateway_defaults_to_verified_free_model_and_returns_plain_answer(self, urlopen):
@@ -76,7 +120,8 @@ class ChatProviderTests(unittest.TestCase):
     def test_actions_always_come_from_deterministic_router(self, model_reply):
         result = chat_provider.respond("show faults")
         self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
-        self.assertTrue(model_reply.called)
+        model_reply.assert_not_called()
+        self.assertFalse(result["model_is_generative"])
 
     @patch.dict("os.environ", {"GROQ_API_KEY": "groq-key"}, clear=True)
     @patch.object(chat_provider, "_model_reply")
