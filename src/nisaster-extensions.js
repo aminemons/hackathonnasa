@@ -442,7 +442,7 @@ window.tpAsk=async raw=>{
     const r=await getJSON('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({message:prompt,history:prior})});
     const failed=[];
-    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[]){
+    for(const action of (Array.isArray(r.actions)?r.actions.slice(0,3):[])){
       try {await applyAction(action);}catch(error){failed.push(String(error?.message||'Map tool failed'));}
     }
     const reply=String(r.reply||'I can explain the data or help you explore map layers.')+
