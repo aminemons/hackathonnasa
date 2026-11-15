@@ -12,6 +12,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlsplit
 from urllib.request import Request, urlopen
 import json
+import logging
 import os
 import time
 
@@ -20,7 +21,7 @@ try:
 except ImportError:
     from site_exposure import screen_site, validate
 
-OVERPASS = os.environ.get("TP_OVERPASS_API_URL", "https://overpass-api.de/api/interpreter")
+OVERPASS = os.environ.get("TP_OVERPASS_API_URL", "https://overpass.private.coffee/api/interpreter")
 USER_AGENT = "TerraPulse-SpaceApps-research/1.1 (https://github.com/aminemons/hackathonnasa)"
 MAX_BODY = 3_000_000
 MAX_ELEMENTS = 10000
@@ -145,7 +146,10 @@ class handler(BaseHTTPRequestHandler):
 
         try:
             result = exposure(lon, lat, radius)
-        except (OSError, HTTPError, URLError, TimeoutError, RuntimeError, ValueError, json.JSONDecodeError):
+        except (OSError, HTTPError, URLError, TimeoutError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+            # Diagnostics must never contain the user-selected coordinates.
+            logging.warning("TerraPulse OSM lookup failed: %s HTTP=%s",
+                            type(exc).__name__, getattr(exc, "code", "NA"))
             return self.send_json({
                 "status": "unavailable",
                 "error": "The OSM data service is busy or unreachable. No safety conclusion can be made.",
