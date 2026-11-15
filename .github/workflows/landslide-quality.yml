@@ -1,0 +1,45 @@
+name: Landslide quality checks
+
+on:
+  push:
+    branches: [landslide-scar-triage-gpu, landslide-gunw-backend]
+  pull_request:
+    branches: [landslide-gunw-backend, main]
+
+permissions:
+  contents: read
+
+jobs:
+  python-and-inference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            machine learning/requirements.txt
+      - name: Install API and scientific test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -r "machine learning/requirements.txt"
+      - name: Validate Python syntax
+        run: python -m compileall -q api "machine learning"
+      - name: Test API, ONNX example and scar classification contract
+        run: python -m unittest discover -s api/tests -v
+      - name: Test GUNW geospatial preprocessing with synthetic products
+        run: python -m unittest discover -s "machine learning/tests" -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build

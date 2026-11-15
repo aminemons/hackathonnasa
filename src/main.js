@@ -5,6 +5,7 @@ import { observations } from './cases.js';
 import { worldExplorer, globalFloodDate } from './world.js';
 import { mountAssistant, normalize } from './assistant.js';
 import { mountCatalog } from './catalog.js';
+import { mountDiscovery } from './discovery.js';
 import { drawImagery, imagery } from './imagery.js';
 import { basemapStyle, addBasemap, setBasemap, addPlates, plateSource, projectWorld } from './basemap.js';
 
@@ -41,6 +42,13 @@ let quakePromise;
 const grids = new Map();
 let updateVersion = 0;
 let focusedCase;
+let choosingRadarPoint = false;
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || !choosingRadarPoint) return;
+  choosingRadarPoint = false;
+  map.getCanvas().style.cursor = "";
+  byId("map-note").textContent = "";
+});
 let fallbackSelection;
 
 const regions = {
@@ -310,6 +318,75 @@ byId('regions').addEventListener('click', event => {
   }
 });
 
+const openDiscovery = mountDiscovery({
+  selectMapPoint() {
+    if (!mapReady) return false;
+    choosingRadarPoint = true;
+    byId("map-note").textContent = "Click a location to search for NISAR observations.";
+    map.getCanvas().style.cursor = "crosshair";
+    return true;
+  },
+  showLandslides(coords, data) {
+    if (!mapReady) return false;
+    current = null;
+    mode = null;
+    focusedCase = "world";
+    imageryKey = null;
+    fallbackSelection = null;
+    setUrl(false);
+    map.jumpTo({center: coords, zoom: 9});
+    render();
+    const id = "coolr-outlines";
+    map.addSource(id, {type:"geojson", data, attribution:"NASA COOLR"});
+    map.addLayer({type:"line",id,source:id,paint:{"line-color":"#ffce78","line-width":2}});
+    byId("map-note").textContent = "Mapped landslide outlines · NASA COOLR";
+    return true;
+  },
+  showRadar(coords, date) {
+    if (!mapReady) return false;
+    current = null;
+    mode = null;
+    focusedCase = "world";
+    fallbackSelection = null;
+    imageryKey = "radar";
+    imageryDate = date;
+    setUrl(false);
+    map.jumpTo({center: coords, zoom: 9});
+    render();
+    return true;
+  },
+});
+byId("find-radar").onclick = () => {
+  const center = mapReady ? map.getCenter() : {lng:0,lat:14};
+  openDiscovery(center.lng, center.lat);
+};
+
+export function forecastMapCenter() {
+  return mapReady ? map.getCenter().wrap() : null;
+}
+
+export function showForecastOnMap({ bounds, preview_png }) {
+  if (!mapReady) return false;
+  current = null;
+  mode = null;
+  focusedCase = "world";
+  imageryKey = null;
+  fallbackSelection = null;
+  setUrl(false);
+  render();
+  const [west, south, east, north] = bounds;
+  const id = "lhasa-forecast";
+  map.addSource(id, {
+    type: "image", url: preview_png,
+    coordinates: [[west, north], [east, north], [east, south], [west, south]],
+  });
+  map.addLayer({ id, type: "raster", source: id, paint: { "raster-resampling": "nearest", "raster-fade-duration": 0 } });
+  map.fitBounds([[west, south], [east, north]], { padding: 45, maxZoom: 10, duration: 0 });
+  byId("map-note").textContent = "Next-day rainfall-triggered landslide hazard · NASA LHASA";
+  byId("legend").innerHTML = '<strong>LHASA hazard score</strong><div class="hazard-gradient"></div><div class="legend-values"><span>Lower</span><span>Higher</span></div>';
+  return true;
+}
+
 async function startMap() {
   try {
     maplibregl = await import('maplibre-gl');
@@ -322,7 +399,13 @@ async function startMap() {
     map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'top-right');
     map.addControl(new maplibregl.ScaleControl({unit:'metric'}), 'bottom-right');
     map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
-    map.on('click', inspectPoint);
+    map.on('click', event => {
+      if (!choosingRadarPoint) return inspectPoint(event);
+      choosingRadarPoint = false;
+      map.getCanvas().style.cursor = '';
+      byId('map-note').textContent = '';
+      openDiscovery(event.lngLat.wrap().lng, event.lngLat.lat);
+    });
     await new Promise(resolve => map.once('load', resolve));
   } catch {
     mapUnavailable = true;
@@ -465,7 +548,7 @@ async function updateMap() {
   world.remove(map);
   markers.forEach(marker => marker.remove());
   markers = [];
-  for (const id of ['scene','contours','regional-context','satellite-context','tectonic-plates']) {
+  for (const id of ['scene','contours','regional-context','satellite-context','tectonic-plates','coolr-outlines','lhasa-forecast']) {
     if (map.getLayer(id)) map.removeLayer(id);
     if (map.getSource(id)) map.removeSource(id);
   }

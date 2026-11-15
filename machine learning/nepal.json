@@ -1,0 +1,17 @@
+{
+  "name": "Rasuwa debris avalanche, Nepal",
+  "occurred": "2026-08-26T02:52:10Z",
+  "bbox": [85.47, 28.25, 85.59, 28.34],
+  "source_location": [85.53, 28.29],
+  "source_study": "https://doi.org/10.1007/s12524-026-02611-x",
+  "track": 98,
+  "frame": 16,
+  "pass": "ASCENDING",
+  "polarization": "HH",
+  "event_acquisitions": ["2026-08-19T23:39:18Z", "2026-08-31T23:39:18Z"],
+  "control_acquisitions": ["2026-07-26T23:39:19Z", "2026-08-19T23:39:18Z"],
+  "event_granule": "G4296329930-ASF",
+  "control_granule": "G4287214426-ASF",
+  "event_reference": "https://www.usgs.gov/programs/landslide-hazards/science/2026-nepal-debris-avalanche-and-flash-flood",
+  "label_status": "Independent scar and reviewed stable polygons required. Do not label the downstream flood extent as slope failure."
+}

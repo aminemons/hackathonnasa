@@ -1,5 +1,36 @@
 # TerraPulse
 
+## Landslide scar screening and GPU follow-up
+
+**What is a scar?** It is land visibly disturbed *after* a landslide. The
+Sentinel-2 + terrain U-Net segments these post-event pixels; it is not a
+forecast of where a future landslide will happen.
+
+The **Detect scars** panel now shows the held-out satellite tile, independent
+reference mask, model prediction, and true-positive/false-positive/
+false-negative overlay at the same time. It reports metrics for that one tile
+separately from the fixed 80-chip test benchmark.
+
+The API's `screening.review_priority` is a **heuristic review queue**, *not*
+danger to people or a calibrated risk probability. Its low/medium/high tiers
+are assigned from connected candidate-pixel extent; no-candidate is not
+a safe-land declaration. Real consequence/severity classification requires
+independently assessed slope stability, event dynamics, runout, infrastructure
+and population exposure, and dedicated labels.
+
+The repo contains a reusable two-NVIDIA-L40 training script at
+`scripts/train_landslide_gpu_detached.sh`. It stages up to 2,200 pinned
+Landslide4Sense training chips (reusing any matching local chips), fits two
+independent spatial models and evaluates the fixed benchmark. It exports an
+ONNX candidate under `~/castor-audit/landslide-scar-gpu-v2/release/`, but
+**does not automatically replace the deployed model**. Promotion uses only
+validation AP, never test F1; the test set has already been inspected during
+prior iterations and is not a new independent generalization test.
+
+The October/November GCOV gallery is explicitly post-event radar monitoring,
+not a detector of the August 26 Rasuwa rock-ice avalanche. NISAR-GUNW
+preprocessing and reviewed terrain-failure labels are a separate research task.
+
 An observation atlas for the 2026 NASA Space Apps Challenge, [Dancing with the SARs](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/).
 
 ## Run
@@ -12,7 +43,21 @@ npm run dev
 npm run build
 ```
 
-The web build is static. Detailed cases include their imagery, vectors and observation data. Optional worldwide satellite layers request tiles from NASA GIBS.
+Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python api/landslide.py` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the React/Vite frontend and Python function share a domain.
+
+Use **Landslide forecast** to request a 30-arcsecond tile from NASA LHASA’s rainfall-triggered **Hazard Tomorrow** feed. Enter coordinates or use the map center (60°S–60°N). The Python route `GET /api/forecast?lon=3.05&lat=36.70` returns a preview, source GeoTIFF link, and retrieval timestamp. The public GIS service exposes no forecast issuance or validity timestamps. NASA supplies the model and forecasts. TerraPulse retrieves and displays its output.
+
+Use **Find NISAR** to search anywhere by coordinates, map point or place name. Catalog matches show NISAR acquisitions. The dialog also retrieves dated NASA COOLR inventory features and opens an illustrative NISAR GCOV comparison of Rasuwa. Existing flood, earthquake and glacier cases display sourced observations.
+
+Use **Detect scars → Run held-out example** to run a real Landslide4Sense test chip. The service also accepts compatible prepared tiles.
+
+- `GET /api/landslide` returns the model card, channel order and held-out metrics.
+- `GET /api/landslide?example=1` scores the example and returns its RGB preview and reference labels.
+- `POST /api/landslide` accepts JSON with integer `width` and `height` (1–128) and `rows` in row-major order. Each pixel requires 14 values in Landslide4Sense order and units. Use null for missing bands. An entirely missing pixel returns a null score.
+
+Two residual U-Nets were trained on Linux on separate NVIDIA L40 GPUs. The ensemble and score threshold were selected on 48 validation chips before scoring 80 held-out chips. Average precision was 0.691 and F1 was 0.662. The Python backend runs the exported ONNX network on CPU. Tiles smaller than 128 × 128 are edge-padded for inference. The app requires prepared Sentinel-2 and terrain chips for custom inference. The worldwide map queries observations and existing inventories. The NISAR comparison shows backscatter change, with no field-validated hazard labels.
+
+Training uses [Landslide4Sense](https://github.com/iarai/Landslide4Sense-2022). The `machine learning/l4s_stage.py` script takes the baseline metrics, an output data directory, and the training chip count. Run `l4s_spatial.py train --help` for CUDA training and `l4s_spatial.py select --help` for validation selection, held-out evaluation, and ONNX export. The model artifact and split IDs are stored in `server_data/`. The separate `stage_gfs_window.py` script extracts timestamped NOAA GFS 24-hour precipitation from an archived, specified run for future forecast evaluation.
 
 ## Published observations
 
@@ -29,7 +74,7 @@ python scripts/prepare_data.py
 
 The repository includes the processed outputs for the cases. The [NASA Earthdata GIBS](https://www.earthdata.nasa.gov/data/projects/gibs), [NASA JPL ARIA](https://aria.jpl.nasa.gov/), [USGS](https://earthquake.usgs.gov/) and Natural Earth products retain their own terms and attribution. The NASA Space Apps logo identifies the event. This is a participant project.
 
-The map presents dated observations. Forecast models and raw Earthdata processing beyond the published ARIA raster are future work.
+The sourced hazard cases present dated observations. The landslide forecast uses the independent NASA LHASA feed documented above.
 
 ## Worldwide map
 
