@@ -287,7 +287,10 @@ const DS=[
  {id:'h_ice',g:'Glaciers & ice',n:'Past sea and lake ice events (years in Time)',kw:'ice sea lake iceberg',leg:['#7fd3ff','Past ice event'],load:eonetHist('h_ice','seaLakeIce','#7fd3ff','ice')}
 ];
 const state={},openG=new Set(['Earthquakes']);let showMore=false;let focusG='Earthquakes';
-function row(d){const l=document.createElement('label');l.className='r';l.innerHTML=`<input type="checkbox" id="c_${d.id}" ${state[d.id]&&state[d.id].on?'checked':''}><span>${d.n}</span>`;
+function row(d){const l=document.createElement('label');l.className='r';
+ const st=state[d.id],badge=st?.status==='loading'?'Loading…':st?.status==='empty'?'No open reports':st?.status==='error'?'Unavailable':'';
+ l.innerHTML=`<input type="checkbox" id="c_${d.id}" ${st?.on?'checked':''}><span class="tp-dataset-name">${d.n}${badge?'<small class="tp-dataset-status '+(st.status==='error'?'tp-source-error':'')+'">'+badge+'</small>':''}</span>`;
+ if(st?.error)l.title=st.error;
  l.querySelector('input').onchange=e=>setLayer(d.id,e.target.checked);return l}
 function groupEl(name,items,q){const det=document.createElement('details');det.open=!!q||openG.has(name);
  const on=items.filter(d=>state[d.id]&&state[d.id].on).length;
@@ -312,9 +315,54 @@ function buildList(){const q=$('#dsq').value.toLowerCase().trim(),el=$('#ds');el
   if(showMore||q){el.insertAdjacentHTML('beforeend','<div class="g">More hazards and datasets</div>');extra.forEach(([n,it])=>el.appendChild(groupEl(n,it,q)))}}
  if(!el.querySelector('details'))el.insertAdjacentHTML('beforeend','<p style="color:var(--m)">No dataset found.</p>')}
 $('#dsq').oninput=buildList;
-async function setLayer(id,on){const d=DS.find(x=>x.id===id);if(!d)return;const s=state[id]=state[id]||{};s.on=on;if(on)focusG=d.g;const cb=$('#c_'+id);if(cb)cb.checked=on;
- if(on){try{if(!s.layer){if(!s.pend){const g0=s.gen=(s.gen||0),p=d.load().then(l=>{if(s.gen===g0)s.layer=l;return l});s.pend=p;p.finally(()=>{if(s.pend===p)s.pend=null}).catch(()=>{})}await s.pend}if(s.on&&s.layer){s.layer.addTo(map);if(d.view){map.flyTo([d.view[0],d.view[1]],d.view[2]);if(d.hint)toast(d.hint)}}}catch(e){s.on=false;if(cb)cb.checked=false;toast('Could not load “'+d.n+'” ('+e.message+').')}}
- else if(s.layer)map.removeLayer(s.layer);legend();buildList();syncSide()}
+async function setLayer(id,on) {
+ const d=DS.find(item=>item.id===id);if(!d)return;
+ const st=state[id]=state[id]||{gen:0,on:false,status:'idle'};
+ const cb=$('#c_'+id);
+ if(!on) {
+   st.on=false;st.gen++;st.status='idle';
+   if(st.layer && map.hasLayer(st.layer))map.removeLayer(st.layer);
+   st.pend=null;
+   if(cb)cb.checked=false;
+   legend();buildList();syncSide();return;
+ }
+ st.on=true;focusG=d.g;if(cb)cb.checked=true;
+ const token=++st.gen;
+ if(st.layer){
+   if(!map.hasLayer(st.layer))st.layer.addTo(map);
+   st.status=st.layer.terrapulse?.status||'ready';
+   legend();buildList();syncSide();return;
+ }
+ st.status='loading';legend();buildList();syncSide();
+ try {
+   const layer=await d.load();
+   if(!st.on||st.gen!==token)return; // async request canceled by user
+   if(!layer||typeof layer.addTo!=='function')throw Error('Layer returned no usable map data');
+   st.layer=layer;st.status=layer.terrapulse?.status||'ready';
+   if(d.dated && layer instanceof L.TileLayer) {
+     let successfulTiles=0,failedTiles=0;
+     layer.on('tileload',()=>successfulTiles++);
+     layer.on('tileerror',()=>{
+       failedTiles++;
+       if(failedTiles>=6 && successfulTiles===0 && st.on && st.layer===layer) {
+         st.on=false;st.status='error';st.error='No tiles were returned for the selected date, projection or region';
+         if(map.hasLayer(layer))map.removeLayer(layer);
+         st.layer=null;legend();buildList();syncSide();
+         toast('NASA image unavailable for '+d.n+' on '+imgDate+'. Try another date. The layer was disabled.');
+       }
+     });
+   }
+   layer.addTo(map);
+   if(d.view){map.flyTo([d.view[0],d.view[1]],d.view[2]);
+     if(d.hint)toast(d.hint)}
+ }catch(error){
+   if(st.gen!==token)return;
+   st.on=false;st.status='error';st.error=error.message||'Source unavailable';
+   toast('Could not load '+d.n+': '+st.error);
+ }finally {
+   if(st.gen===token){legend();buildList();syncSide();}
+ }
+}
 function legend(){const r=DS.filter(d=>state[d.id]&&state[d.id].on&&d.leg).map(d=>`<div class="lgd"><span class="sw" style="background:${d.leg[0]}"></span>${d.leg[1]}</div>`);
  $('#legend').innerHTML=r.join('')||'<span style="color:var(--m)">Turn on a dataset to see its legend.</span>'}
 function clearAll(){DS.forEach(d=>state[d.id]&&state[d.id].on&&setLayer(d.id,false))}
