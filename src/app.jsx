@@ -12,6 +12,8 @@ function App() {
   return (
     <>
   <header className="topbar">
+    <img src="/logo.png" style={height ="15px" width="15px"}>
+    </img>
     <a className="identity" href="./">TerraPulse</a>
     <nav className="tabs" id="cases" aria-label="Select hazard"></nav>
     <a className="partner" href="https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/" target="_blank" rel="noopener"><img src="./data/space-apps.png" alt="NASA Space Apps Challenge" /></a>
