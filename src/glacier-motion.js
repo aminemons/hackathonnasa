@@ -101,11 +101,11 @@ document.addEventListener('click',e=>{
 });
 
 export async function createMotionLayer() {
-  const catalog=await json('/api/glof');
+  const catalog=await json('/data/glof-study/catalog.json');
   if(!Array.isArray(catalog.sites)||catalog.sites.length<1)
     throw Error('Published glacial lake catalog is unavailable.');
   const details=await Promise.allSettled(catalog.sites.map(site=>
-    json('/api/glof?site='+encodeURIComponent(site.site_id))));
+    json('/data/glof-study/'+encodeURIComponent(site.site_id)+'/summary.json')));
   const group=L.layerGroup(),entries=[];
   for(let i=0;i<catalog.sites.length;i++){
     const site=catalog.sites[i],outcome=details[i];

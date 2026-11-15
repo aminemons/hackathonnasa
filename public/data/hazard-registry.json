@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Data transparency, not emergency warning",
+  "primary_challenge_hazards": [
+    "earthquakes",
+    "landslides",
+    "glaciers"
+  ],
+  "layers": [
+    {
+      "id": "earthquakes",
+      "source": "USGS ComCat",
+      "publicFeed": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson",
+      "cadence": "provider-updated; checked no more than every 2 minutes",
+      "measures": "event time, magnitude, depth, location",
+      "analysis": "NISAR/ARIA post-event LOS displacement",
+      "classification": "observations only; no earthquake prediction",
+      "status": "operational catalogue only"
+    },
+    {
+      "id": "landslides",
+      "source": "NASA EONET, NASA LHASA; Landslide4Sense benchmark",
+      "publicFeed": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=landslides&limit=200",
+      "cadence": "EONET polling every 10 minutes; LHASA product timing independent",
+      "measures": "reported events; separate NASA hazard outlook; post-event scar segmentation",
+      "analysis": "susceptibility and rainfall-trigger outlook are not the same as detected scars",
+      "classification": "post-event scar model is not calibrated hazard probability",
+      "status": "catalogue + independent analysis"
+    },
+    {
+      "id": "glaciers",
+      "source": "NASA ITS_LIVE and ESA Sentinel-1 published study",
+      "publicFeed": "/data/glof-study/catalog.json",
+      "cadence": "static observations dated through 2024; no live updates",
+      "measures": "annual glacier speed and per-acquisition modelled lake area",
+      "analysis": "historical change; no water-level or breach probability",
+      "classification": "historical evidence only",
+      "status": "non-operational"
+    },
+    {
+      "id": "wildfires",
+      "source": "NASA EONET; NASA FIRMS planned",
+      "publicFeed": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&limit=200",
+      "cadence": "EONET reports not equivalent to FIRMS latency",
+      "measures": "reported event; VIIRS detections require separate integration",
+      "analysis": "fuel/dryness and wind-sector logic planned, not validated",
+      "classification": "no wildfire risk score currently validated",
+      "status": "catalogue only"
+    },
+    {
+      "id": "floods",
+      "source": "NASA EONET, NASA GIBS; Sentinel-1 and GloFAS planned",
+      "publicFeed": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=floods&limit=200",
+      "cadence": "varies by raster and provider",
+      "measures": "reported floods and dated satellite scenes",
+      "analysis": "surface-water mapping not discharge probability",
+      "classification": "GloFAS not integrated as a validated forecast yet",
+      "status": "catalogue and satellite context"
+    }
+  ],
+  "exposure": {
+    "potential": "OSM buildings, roads, rail, bridges, power, dams plus population grids",
+    "status": "on-demand spatially scoped research assessment; incompleteness must be surfaced",
+    "priority": "hazard class + verified exposure + separate trigger evidence; not official alerts"
+  },
+  "thresholds": "src/priority-core.js (transparent research triage; validate regionally before any safety use)",
+  "notes": [
+    "Remove landslide catalogue from public layer list, not from scientific training archives",
+    "Unavailable is not zero",
+    "Historical velocities are not animated movement",
+    "Provider timestamps are not guaranteed detection latency"
+  ]
+}

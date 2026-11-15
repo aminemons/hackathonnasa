@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:reliability": "node --test src/alarm-core.test.js"
+    "test:reliability": "node --test src/alarm-core.test.js src/hazard-feeds.test.js src/priority-core.test.js"
   },
   "repository": {
     "type": "git",
