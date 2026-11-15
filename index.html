@@ -93,11 +93,6 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
      <p style="color:var(--m);font-size:12px">Default is the last 30 years. M5+ is about 45,000 events and takes a minute or so to load; M6+ is much faster.</p>
      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="hShow">Show on map</button><button class="btn" id="hCsv">Download CSV</button></div>
      <div id="hStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
-    <div class="ts" data-t="glc">
-     <div class="g">Landslide catalog years</div>
-     <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="lFrom" placeholder="all" min="1900" max="2100"> to <input type="number" id="lTo" placeholder="all" min="1900" max="2100"></div>
-     <p style="color:var(--m);font-size:12px">Leave empty to show every year, then press the button.</p>
-     <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="lApply">Show landslides</button><button class="btn" id="lCsv">Download CSV</button></div></div>
     <div class="ts" data-t="ehist">
      <div class="g">Past events (NASA EONET archive)</div>
      <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="xFrom" min="1990" max="2100"> to <input type="number" id="xTo" min="1990" max="2100"></div>
@@ -204,20 +199,7 @@ const eonetHist=(id,cat,color,label)=>async()=>{EV_NAME[id]=label;const y0=+$('#
  xstat(label+': '+rows.length+' events'+(rows.length?' ('+Math.min(...ys)+'–'+Math.max(...ys)+')':'')+(bad?', '+bad+' year(s) failed to load':''));
  if(!rows.length)toast('NASA EONET has no '+label+' events for '+y0+'–'+y1+'.');
  return g};
-/* ---------- NASA global landslide catalog (embedded by Python when possible) ---------- */
 const CV=L.canvas({padding:.5});
-const GLC_EMBED=null;
-let GLC_ALL=[];const glcYears=()=>{const a=parseInt($('#lFrom').value),b=parseInt($('#lTo').value);return[isFinite(a)?a:-1e9,isFinite(b)?b:1e9]};
-const glcMarkers=rows=>{GLC_ALL=rows;const[y0,y1]=glcYears();const g=L.layerGroup();let n=0;rows.forEach(r=>{if(r[3]){const y=new Date(r[3]).getUTCFullYear();if(y<y0||y>y1)return}n++;const lo=r[0],la=r[1],fat=+r[6]||0;
- L.circleMarker([la,lo],{renderer:CV,radius:fat>=100?14:fat>=10?10:7,color:'#fff',weight:1.5,fillColor:fat>=10?'#c2185b':COL.slide,fillOpacity:.95})
-  .bindPopup(`<b>${esc(r[2])||'Landslide'}</b><br>${r[3]?new Date(r[3]).toISOString().slice(0,10):''}<br>${esc(r[4])}${r[5]?' · trigger: '+esc(r[5]):''}<br>${esc(r[7])}${fat?'<br>Fatalities: '+fat:''}<br><small>NASA Global LandslideCatalog</small>`).addTo(g)});toast(n?n+' landslides shown.':'No landslides in that year range.');return g};
-const glc=async()=>{if(GLC_EMBED&&GLC_EMBED.length)return glcMarkers(GLC_EMBED);
- const base='https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/COOLR_Reports_Points/FeatureServer/0/query?where=1%3D1&outFields=event_title,event_date,landslide_category,landslide_trigger,fatality_count,country_name&outSR=4326&orderByFields=objectid&resultRecordCount=2000&f=geojson';
- const rows=[];
- for(let off=0;off<40000;off+=2000){const d=await fetchJ(base+'&resultOffset='+off);if(d.error)throw new Error(d.error.message||'NASA service error');const fs=d.features||[];
-  fs.forEach(f=>{const c=f.geometry&&f.geometry.coordinates;if(!c)return;const p=f.properties||{};rows.push([c[0],c[1],p.event_title||'',p.event_date||0,p.landslide_category||'',p.landslide_trigger||'',p.fatality_count||0,p.country_name||''])});
-  if(fs.length<2000)break}
- if(!rows.length)throw new Error('no landslide records returned');return glcMarkers(rows)};
 /* ---------- glacier and ice outlines (embedded by Python when possible) ---------- */
 const GLAC_EMBED=null;
 const glac=async()=>{let R=GLAC_EMBED;
@@ -338,8 +320,6 @@ async function downloadHist(){try{if(!hist.length)await fetchHist()}catch(e){ret
  a.download='earthquakes_'+$('#hFrom').value+'-'+$('#hTo').value+'_M'+$('#hMag').value+'.csv';a.click()}
 $('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-30;
 $('#hShow').onclick=()=>reloadHist();$('#hCsv').onclick=downloadHist;
-async function reloadGlc(){const s=state.glc;if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}await setLayer('glc',true)}
-$('#lApply').onclick=reloadGlc;
 async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}
 $('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-30;
 $('#xShow').onclick=async()=>{for(const id of Object.keys(state).filter(k=>k.startsWith('h_')&&state[k].on))await reloadLayer(id)};
@@ -348,9 +328,6 @@ $('#xCsv').onclick=()=>{const ids=Object.keys(EV_HIST);if(!ids.length)return xst
  const r=['id,hazard,time_iso,latitude,longitude,title,link'];
  ids.forEach(id=>EV_HIST[id].forEach(x=>r.push([x[0],EV_NAME[id],isFinite(x[1])?new Date(x[1]).toISOString():'',x[2],x[3],'"'+String(x[4]).replace(/"/g,'""')+'"','"'+String(x[5]||'')+'"'].join(','))));
  saveCsv(r,'past_events_'+$('#xFrom').value+'-'+$('#xTo').value+'.csv')};
-$('#lCsv').onclick=()=>{if(!GLC_ALL.length)return alert('Turn on the Global landslide catalog first.');const[y0,y1]=glcYears();
- const rows=GLC_ALL.filter(r=>{if(!r[3])return true;const y=new Date(r[3]).getUTCFullYear();return y>=y0&&y<=y1});
- saveCsv(['longitude,latitude,title,date,category,trigger,fatalities,country'].concat(rows.map(x=>[x[0],x[1],'"'+String(x[2]).replace(/"/g,'""')+'"',x[3]?new Date(x[3]).toISOString().slice(0,10):'','"'+x[4]+'"','"'+x[5]+'"',x[6],'"'+x[7]+'"'].join(','))),'landslides.csv')};
 /* ---------- Earth Engine layers.json (join the matching disaster group) ---------- */
 async function loadEE(){try{const j=await fetchJ('layers.json');
  const arr=Array.isArray(j)?j:Object.entries(j).map(([n,v])=>typeof v==='string'?{name:n,url:v}:{name:n,...v});
@@ -399,59 +376,15 @@ async function run(raw){say(raw.replace(/</g,'&lt;'),1);const t=' '+raw.toLowerC
  if(!place){const al={usa:'united states of america','united states':'united states of america',us:'united states of america',uk:'united kingdom',drc:'democratic republic of the congo'};for(const k in al)if(t.includes(' '+k+' ')&&cL[al[k]])place=al[k]}
  if(place&&/zoom|go to|fly|show|where|in |on |at |map of/.test(t)){go('Map');map.fitBounds(cL[place].getBounds(),{maxZoom:7});done.push('zoomed to '+place.replace(/\b\w/g,c=>c.toUpperCase()))}
  say(done.length?'Done: '+done.join('; ')+'.':'I did not understand that. Try “show earthquakes”, “zoom to Chile” or “help”.')}
-/* ----------alarm: the five main hazards, in this order ---------- */
-const ALARMS=[
- {id:'eq',n:'Earthquakes',icon:'🌍',every:2,note:'Live earthquakes from USGS. WATCH = PAGER yellow, tsunami flag or high significance. WARNING = PAGER orange or red.'},
- {id:'ls',n:'Landslides',icon:'⛰️',every:10,cat:'landslides',note:'Live landslide events from NASA EONET'},
- {id:'gl',n:'Glaciers & ice',icon:'🧊',every:10,cat:'seaLakeIce',note:'Sea ice, lake ice and iceberg events from NASA EONET'},
- {id:'fi',n:'Wildfires',icon:'🔥',every:10,cat:'wildfires',note:'Live wildfire events from NASA EONET'},
- {id:'fl',n:'Floods',icon:'🌊',every:10,cat:'floods',note:'Live flood events from NASA EONET'}];
-const AL={};let alerts=[];
-function beep(){if(!$('#aSound')||!$('#aSound').checked)return;try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.15,c.currentTime);o.start();o.stop(c.currentTime+.35)}catch(e){}}
-function notify(a,it){if(it.level&&it.level!=='Info')beep();if(window.Notification&&Notification.permission==='granted')new Notification((it.level&&it.level!=='Info'?it.level.toUpperCase()+' · ':'')+a.icon+' '+a.n,{body:it.title+(it.sub?' ('+it.sub+')':'')})}
-async function eqItems(first){const mag=+($('#aMag')&&$('#aMag').value)||5;
- const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmagnitude=${mag}&starttime=${new Date(Date.now()-36e5*(first?24:2)).toISOString()}`);
- return d.features.map(f=>{const p=f.properties,al=p.alert||'';
-  const lv=(al==='red'||al==='orange')?'Warning':(p.tsunami==1||al==='yellow'||p.sig>=600)?'Watch':'Info';
-  const sub=[al?'PAGER '+al:'',p.tsunami==1?'tsunami flag':'',p.felt?'felt by '+p.felt:'',p.mmi?'shaking MMI '+(+p.mmi).toFixed(1):''].filter(Boolean).join(' · ');
-  return{id:f.id,title:'M '+(p.mag||0).toFixed(1)+' – '+p.place,sub,level:lv,when:p.time,lon:f.geometry.coordinates[0],lat:f.geometry.coordinates[1],url:p.url}})}
-async function eonetItems(cat){const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=3&category=${cat}`);
- return d.events.map(e=>{const g=e.geometry[e.geometry.length-1];let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];return{id:e.id,title:e.title,when:Date.parse(g.date),lon:c[0],lat:c[1],url:e.link}})}
-async function check(a){const st=AL[a.id];if(!st||!st.on)return;
- try{const items=a.id==='eq'?await eqItems(st.first):await eonetItems(a.cat);if(AL[a.id]!==st)return;
-  items.forEach(it=>{if(st.seen.has(it.id))return;st.seen.add(it.id);alerts.push({...it,kind:a.id,icon:a.icon,name:a.n});if(!st.first)notify(a,it)});
-  st.first=false;st.last=new Date();st.err=null}catch(e){if(AL[a.id]===st)st.err=e.message}
- alerts.sort((x,y)=>y.when-x.when);alerts=alerts.slice(0,80);renderAlarm()}
-function setAlarm(id,on){const a=ALARMS.find(x=>x.id===id);const old=AL[id];if(old&&old.timer)clearInterval(old.timer);
- if(!on){AL[id]={on:false};alerts=alerts.filter(x=>x.kind!==id);renderAlarm();return}
- if(window.Notification&&Notification.permission==='default')Notification.requestPermission();
- const st=AL[id]={on:true,seen:new Set(),first:true,last:null,err:null};st.timer=setInterval(()=>check(a),a.every*6e4);check(a)}
+/* Source-attributed opt-in reports in src/alarm-system.js. */
+function renderAlarm(){window.TerraPulseAlarm?.render()}
+function alarmInit(){ /* mounted by the extension */ }
 const TT=d=>d.id==='quakes'||d.id==='depth'?'eq':d.id==='hist'?'hist':d.id==='glc'?'glc':d.id.startsWith('h_')?'ehist':d.dated?'dated':null;
 function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=new Set(on.map(TT).filter(Boolean));
  $$('#tTime .ts').forEach(e=>e.classList.toggle('show',!on.length||types.has(e.dataset.t)));
  const named=on.filter(TT).map(d=>d.n);
  $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
-const AMAP={'Earthquakes':'eq','Landslides':'ls','Glaciers & ice':'gl','Wildfires':'fi','Floods':'fl'};
 function syncSide(){updateTime();renderAlarm()}
-function renderAlarm(){
- ALARMS.forEach(a=>{const st=AL[a.id],el=$('#as_'+a.id);if(el)el.textContent=!st||!st.on?'Off':st.err?'On · could not reach the service':st.last?'On · checked '+st.last.toLocaleTimeString():'On · checking…'});
- const item=(x,i)=>`<div class="alert" data-i="${i}" style="cursor:pointer"><b>${x.icon} ${esc(x.name)}</b> ${x.level&&x.level!=='Info'?'<span class="lv lv'+x.level+'">'+x.level.toUpperCase()+'</span> ':''}${esc(x.title)}${x.sub?'<br><small>'+esc(x.sub)+'</small>':''}<br><small>${new Date(x.when).toUTCString()}${x.url?' · <a target=_blank rel=noopener href="'+esc(x.url)+'">details</a>':''}</small></div>`;
- const any=ALARMS.some(a=>AL[a.id]&&AL[a.id].on);
- $('#aList').innerHTML=alerts.map(item).join('')||`<p style="color:var(--m)">${any?'No alerts yet. New events will appear here.':'Switch on a hazard above to start.'}</p>`;
- ALARMS.forEach(a=>{const c=$('#ac_'+a.id);if(c)c.checked=!!(AL[a.id]&&AL[a.id].on)});
- const fk=AMAP[focusG],fa=ALARMS.find(a=>a.id===fk),fst=fk&&AL[fk];
- $('#miniHead').innerHTML=fa?fa.icon+' Alerts: '+fa.n:'Latest alerts';
- $('#miniCtl').innerHTML=fa?`<label class="r" style="font-weight:700"><input type="checkbox" id="mc" ${fst&&fst.on?'checked':''}> Watch ${fa.n}</label><small style="color:var(--m)">${!fst||!fst.on?'Off':fst.err?'On · could not reach the service':fst.last?'On · checked '+fst.last.toLocaleTimeString():'On · checking…'}</small>`:'<small style="color:var(--m)">No live alarm for this dataset. Showing the latest alerts of the five main hazards.</small>';
- if(fa)$('#mc').onchange=e=>{setAlarm(fk,e.target.checked)};
- const list=fa?alerts.filter(x=>x.kind===fk):alerts;
- $('#miniAlarm').innerHTML=list.slice(0,6).map(x=>item(x,alerts.indexOf(x))).join('')||(fa?(fst&&fst.on?'No alerts yet for '+fa.n+'. New events will appear here.':'Switch on “Watch” to start.'):'No alerts yet.')}
-function alarmInit(){
- $('#aCards').innerHTML=ALARMS.map(a=>`<div class="acard"><label class="r" style="flex:1;font-weight:700"><input type="checkbox" id="ac_${a.id}"> ${a.icon} ${a.n}</label>${a.id==='eq'?'<span>Minimum magnitude <input type="number" id="aMag" value="5" min="2" max="9" step="0.5" style="width:80px;display:inline-block"></span>':''}<small id="as_${a.id}" style="color:var(--m)">Off</small><small style="flex-basis:100%;color:var(--m)">${a.note}</small></div>`).join('');
- ALARMS.forEach(a=>$('#ac_'+a.id).onchange=e=>setAlarm(a.id,e.target.checked));
- $('#aMag').onchange=()=>{if(AL.eq&&AL.eq.on)setAlarm('eq',true)};
- const open=e=>{const el=e.target.closest('.alert');if(!el||e.target.tagName==='A')return;const x=alerts[+el.dataset.i];if(x&&isFinite(x.lat)){go('Map');map.flyTo([x.lat,x.lon],6,{duration:1})}};
- $('#aList').onclick=open;$('#miniAlarm').onclick=open;
- $('#ac_eq').checked=true;setAlarm('eq',true);renderAlarm()}
 /* ---------- start ---------- */
 buildList();legend();updateTime();setLayer('quakes',true);loadCountries();loadEE();alarmInit();go('Map');
 window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList};
