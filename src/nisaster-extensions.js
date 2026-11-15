@@ -1,4 +1,5 @@
 import './nisaster-extensions.css';
+import {initializeAlarmSystem} from './alarm-system.js';
 
 const TP = window.TerraPulseMap;
 if (!TP?.map) throw new Error('NISASTER reference map did not initialize');
@@ -284,7 +285,7 @@ function showNISAR() {
 // Ishaq's historical GLOF evidence: React only supplies the research panel.
 // The public map stays Meryem's original Leaflet map, never a second canvas.
 let glofReady = null;
-function showGlof() {
+function showGlof(requestedSite = null) {
   if (!glofReady) {
     TP.toast('Loading the five-lake GLOF observatory…');
     glofReady = Promise.all([
@@ -309,7 +310,12 @@ function showGlof() {
     let attempts = 0;
     const openPanel = () => {
       const dialog = document.getElementById('glof-monitor');
-      if (dialog && !dialog.open) dialog.showModal();
+      if (dialog) {
+        if (requestedSite && typeof requestedSite === 'string') {
+          window.dispatchEvent(new CustomEvent('tp:glof-open', {detail:{site:requestedSite}}));
+        }
+        if(!dialog.open) dialog.showModal();
+      }
       else if (!dialog && attempts++ < 15) requestAnimationFrame(openPanel);
       else if (!dialog) TP.toast('GLOF view did not mount. Refresh the app and try again.');
     };
@@ -318,6 +324,7 @@ function showGlof() {
     TP.toast('Unable to load GLOF view: '+error.message);
   });
 }
+window.TerraPulseOpenGlof = showGlof;
 window.TerraPulseGlofMap = (site, geometry, date) => {
   if (!TP.map || !site || !geometry || geometry.type !== 'FeatureCollection'
       || !Array.isArray(geometry.features)) return false;
@@ -406,3 +413,7 @@ window.tpAsk=async raw=>{
     chatSay('The assistant service is temporarily unavailable. The Dataset sidebar and map controls remain usable. ('+e.message+')');
   }finally{chatInFlight=false;}
 };
+
+// Mounted after the core Leaflet map and DOM have loaded. No automatic browser
+// notifications or permission requests are performed on page load.
+initializeAlarmSystem(TP);
