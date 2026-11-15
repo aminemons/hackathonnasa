@@ -113,6 +113,10 @@ def main():
         expect(page.locator("#tp-speak")).to_be_visible()
         expect(page.locator("#tp-voice-state")).to_be_visible()
         assert page.locator("#tp-speak").get_attribute("aria-pressed")=="false"
+        page.locator("#nav button[data-p='Sources']").click()
+        page.locator("#tp-check-sources").click()
+        expect(page.locator("#tp-source-results")).to_contain_text("USGS earthquakes",timeout=20000)
+        expect(page.locator("#tp-source-results")).to_contain_text("Historical glacial lakes")
         # The page must have no uncaught execution errors.
         if errors:
             raise AssertionError("Browser JS exceptions: "+" | ".join(errors[:7]))

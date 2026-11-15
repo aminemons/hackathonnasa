@@ -126,7 +126,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: catalogue reports for earthquakes and landslides, plus historical glacial-lake observations (not warnings). <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
   <p>Hover a country to see its earthquakes for the chosen period.</p>
   <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
-  <p><b>SAR layers</b> (floods, land subsidence, glacial motion) come from Sentinel-1 via Google Earth Engine. Their links expire, so regenerate <code>layers.json</code> when they go blank.</p></div></section>
+  <p><b>Radar evidence</b> uses real dated NISAR research imagery and historical glacier observations. Missing Earth Engine tiles are not represented as live measurements.</p></div></section>
  <section class="page" id="pSources"><div class="doc"><h2>Sources</h2><ul>
   <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
   <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>
@@ -135,9 +135,14 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – dated satellite fire, flood, aerosol and imagery products; availability varies</li>
   <li><a target="_blank" href="https://github.com/fraxen/tectonicplates">Tectonic plates (Bird, 2003)</a></li>
   <li>Esri basemaps and hillshade; OpenStreetMap contributors</li>
-  <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
+  <li>Sentinel-1 historical radar acquisitions; NASA ITS_LIVE and NISAR evidence examples</li>
   <li><a href="/data/hazard-registry.json" target="_blank" rel="noopener">Data registry: source, update semantics, uncertainty and model status (JSON)</a></li>
-  <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul></div></section>
+  <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul>
+  <section style="margin-top:20px"><h3>Connection diagnostics</h3>
+   <p>Test the catalogue sources. A successful empty feed does not imply a broken service or zero disaster risk.</p>
+   <button type="button" class="btn" id="tp-check-sources">Check data sources</button>
+   <div id="tp-source-results" role="status" aria-live="polite"></div>
+  </section></div></section>
  <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
   <p>Monitor reported earthquakes (USGS, 2 minutes) and landslides (NASA EONET, 10 minutes) while this page is open. Glacial-lake monitoring shows <strong>historical measurements through 2024</strong>, refreshed daily; it is not a live breach alarm. Browser notifications are opt-in, and no catalogue monitor replaces an official emergency-warning system.</p>
   <div id="aCards"></div>
@@ -612,7 +617,7 @@ function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=n
  $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
 function syncSide(){updateTime();renderAlarm()}
 /* ---------- start ---------- */
-buildList();legend();updateTime();setLayer('quakes',true);loadEE();alarmInit();go('Map');
+buildList();legend();updateTime();setLayer('quakes',true);alarmInit();go('Map');
 window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG,loadCountries};
 </script>
 <script type="module" src="/src/nisaster-extensions.js"></script>

@@ -469,6 +469,38 @@ window.tpAsk=async raw=>{
   }finally{chatInFlight=false;}
 };
 
+// On-demand diagnostics. These requests reuse bounded source caches.
+const checkSources=$('#tp-check-sources');
+checkSources.onclick=async()=>{
+  checkSources.disabled=true;checkSources.textContent='Checking…';
+  const host=$('#tp-source-results');host.replaceChildren();
+  const feeds=[['eq','USGS earthquakes'],['ls','NASA landslides'],
+    ['fl','NASA/GDACS floods'],['fi','NASA wildfires'],['gl','Historical glacial lakes']];
+  const answers=await Promise.allSettled(feeds.map(async ([id,label])=>{
+    const f=await fetchHazardFeed({hazard:id,include_recent:id==='ls'||id==='fl'});
+    return {label,count:f.records.length,scope:f.search_scope||'catalogue reports',
+      source:f.source||label};
+  }));
+  const table=document.createElement('table');table.className='tp-source-table';
+  const head=document.createElement('tr');
+  for(const field of ['Source','Status','Observation scope']){
+    const th=document.createElement('th');th.textContent=field;head.appendChild(th);
+  }table.appendChild(head);
+  answers.forEach((answer,i)=>{
+    const x=answer.status==='fulfilled'?answer.value:
+      {label:feeds[i][1],count:null,scope:String(answer.reason?.message||'Unavailable').slice(0,100)};
+    const row=document.createElement('tr');
+    for(const v of [x.label,x.count===null?'Source unavailable':
+      x.count?'Loaded · '+x.count+' dated reports':'Loaded · no reports in source scope',x.scope]){
+      const cell=document.createElement('td');cell.textContent=v;row.appendChild(cell);
+    }table.appendChild(row);
+  });
+  host.appendChild(table);
+  const info=document.createElement('p');
+  info.textContent='Live-source health is not proof of satellite image coverage, hazard severity, or emergency-warning accuracy.';
+  host.appendChild(info);checkSources.disabled=false;checkSources.textContent='Check again';
+};
+
 // Native speech is entirely optional; no separate speech server or GPU required.
 const voiceButton=$('#tp-speak');
 voiceButton.onclick=()=>{
