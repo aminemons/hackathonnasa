@@ -142,7 +142,7 @@ def respond(message, history=None, gateway_token: str | None = None) -> dict:
     safe_history = clean_history(history)
     evidence = select(message, safe_history)
     generic_replies = ("I can explain the evidence", "I can control map layers")
-    exact_answer = planned.get("intent") in ("safety", "help") or (
+    exact_answer = bool(planned["actions"]) or planned.get("intent") in ("safety", "help") or (
         planned.get("intent") == "explain"
         and not planned["reply"].startswith(generic_replies)
     )

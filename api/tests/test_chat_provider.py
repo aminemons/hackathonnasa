@@ -55,9 +55,14 @@ class ChatProviderTests(unittest.TestCase):
     @patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-secret"}, clear=True)
     @patch.object(chat_provider, "urlopen", side_effect=TimeoutError)
     def test_gemini_outage_preserves_local_answers_and_deterministic_actions(self, _urlopen):
+        explanation = chat_provider.respond("How does radar measure the surface?")
+        self.assertFalse(explanation["model_is_generative"])
+        self.assertTrue(_urlopen.called)
+        _urlopen.reset_mock()
         result = chat_provider.respond("show faults")
         self.assertFalse(result["model_is_generative"])
         self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
+        _urlopen.assert_not_called()
 
     @patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-secret", "GEMINI_MODEL": "../other-host"}, clear=True)
     @patch.object(chat_provider, "urlopen")
@@ -115,7 +120,8 @@ class ChatProviderTests(unittest.TestCase):
     def test_actions_always_come_from_deterministic_router(self, model_reply):
         result = chat_provider.respond("show faults")
         self.assertEqual(result["actions"], [{"type": "layer", "value": "faults", "enabled": True}])
-        self.assertTrue(model_reply.called)
+        model_reply.assert_not_called()
+        self.assertFalse(result["model_is_generative"])
 
     @patch.dict("os.environ", {"GROQ_API_KEY": "groq-key"}, clear=True)
     @patch.object(chat_provider, "_model_reply")
