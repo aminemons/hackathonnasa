@@ -1,4 +1,7 @@
 import './nisaster-extensions.css';
+import './field-atlas.css';
+import {initializeEqualEarthAtlas} from './equal-earth-atlas.js';
+import {initializeProximityWatch} from './proximity-watch.js';
 import {initializeAlarmSystem} from './alarm-system.js';
 import {fetchHazardFeed} from './hazard-feeds.js';
 window.TerraPulseHazardFeeds = fetchHazardFeed;
@@ -274,6 +277,7 @@ function showExposure(coords=null, provenance='User-nominated location; not a ve
         L.circleMarker([lat,lon],{color:'#d62828',radius:8,weight:2,fillColor:'#ff6b35',fillOpacity:.9})
           .bindPopup('Nominated review location, NOT confirmed landslide').addTo(group);
         toggleMapLayer(group);
+        TP.showRegional?.();
         TP.map.setView([lat,lon],14);
         TP.toast('OSM assets shown: nearby is not automatically in the landslide path.');
       }
@@ -513,7 +517,7 @@ voiceButton.onclick=()=>{
   }
   spokenReplies=!spokenReplies;
   voiceButton.setAttribute('aria-pressed',String(spokenReplies));
-  voiceButton.textContent=spokenReplies?'🔊':'🔇';
+  voiceButton.textContent=spokenReplies?'Sound on':'Sound off';
   voiceButton.title=spokenReplies?'Disable spoken replies':'Enable spoken replies';
   voiceStatus(spokenReplies?'Spoken replies enabled.':'Spoken replies disabled.');
   if(!spokenReplies)window.speechSynthesis.cancel();
@@ -546,6 +550,8 @@ if(!Recognition){
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
 // notifications or permission requests are performed on page load.
 initializeAlarmSystem(TP);
+initializeProximityWatch(TP);
+initializeEqualEarthAtlas(TP).catch(e=>TP.toast('Equal Earth overview unavailable: '+e.message));
 TP.loadCountries(loadCountriesLocal).catch(error=>
   TP.toast('Country hover boundaries unavailable: '+error.message));
 // Local plates come from a versioned packaged source, not GitHub live requests.

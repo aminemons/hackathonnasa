@@ -38,7 +38,7 @@ export function initializeAlarmSystem(mapAPI) {
   $('#aCards').before(settings);
 
   $('#aCards').innerHTML=HAZARDS.map(h=>`<div class="acard">
-    <label class="r" style="flex:1;font-weight:700"><input type="checkbox" id="ac_${h.id}"> ${h.icon} ${h.name}</label>
+    <label class="r" style="flex:1;font-weight:700"><input type="checkbox" id="ac_${h.id}"> ${h.name}</label>
     ${h.id==='eq'?'<label>Minimum magnitude <input type="number" id="aMag" value="5" min="2" max="9" step="0.5" style="width:74px;display:inline-block"></label>':''}
     <small id="as_${h.id}" class="tp-monitor-state">Off</small>
     <small style="flex-basis:100%;color:var(--m)">${h.source} · every ${h.minutes} min · ${h.id==='eq'?'USGS catalogue, not earthquake prediction':h.id==='gl'?'Dated observations through 2024; NOT a live glacier breach alarm':'NASA EONET reports, not a safety warning'}</small>
@@ -71,12 +71,12 @@ export function initializeAlarmSystem(mapAPI) {
     if(!notificationEnabled || !window.Notification || Notification.permission!=='granted')return;
     if(Date.now()-event.time>2*60*60*1000)return; // not a "new" event if hours old
     try {
-      const notice=new Notification(`${h.icon} New ${h.source} report`,{
+      const notice=new Notification(`New ${h.source} report`,{
         body:event.title+' · Informational catalogue report, not emergency warning',
         tag:'terrapulse-'+h.id+'-'+event.id,
       });
       notice.onclick=()=>{window.focus(); if(isValidLocation(event)) {
-        mapAPI.go('Map');mapAPI.map.flyTo([event.lat,event.lon],6);
+        mapAPI.showRegional?.();mapAPI.go('Map');mapAPI.map.flyTo([event.lat,event.lon],6);
       }};
     }catch{}
   }
@@ -166,7 +166,7 @@ export function initializeAlarmSystem(mapAPI) {
       event.level==='notable'?'USGS notable event':'Reported event';
     const loc=isValidLocation(event);
     return `<article class="alert tp-alarm-item" data-event-index="${index}" ${loc?'tabindex="0" role="button"':''}>
-      <div><strong>${h.icon} ${esc(h.name)}</strong>
+      <div><strong>${esc(h.name)}</strong>
       <span class="tp-alarm-type">${esc(title)}</span></div>
       <p>${esc(event.title)}</p>
       <small>${date.toLocaleString()} · ${esc(event.notes||h.source)} ·
@@ -191,7 +191,7 @@ export function initializeAlarmSystem(mapAPI) {
     const focus=mapAPI.getFocusGroup?.();
     const h=HAZARDS.find(h=>h.name===focus)||(focus==='Glaciers & ice'?HAZARDS.find(h=>h.id==='gl'):null);
     const state=h&&states[h.id];
-    $('#miniHead').textContent=h? h.icon+' '+h.name+' reports':'Latest source reports';
+    $('#miniHead').textContent=h? h.name+' reports':'Latest source reports';
     $('#miniCtl').innerHTML=h?`<label class="r"><input id="mc" type="checkbox" ${state.on?'checked':''}> Monitor ${esc(h.name)}</label>
       <small class="${state.error?'tp-source-error':''}">${esc(feedStatus(state))}</small>`:
       '<small>Monitoring updates are available on the Alarm page.</small>';
@@ -206,7 +206,7 @@ export function initializeAlarmSystem(mapAPI) {
     if(!el)return;
     const a=history[Number(el.dataset.eventIndex)];
     if(a&&isValidLocation(a)) {
-      mapAPI.go('Map');mapAPI.map.flyTo([a.lat,a.lon],6,{duration:1});
+      mapAPI.showRegional?.();mapAPI.go('Map');mapAPI.map.flyTo([a.lat,a.lon],6,{duration:1});
     }
   }
   $('#aList').onclick=clickEvent;$('#miniAlarm').onclick=clickEvent;
