@@ -40,6 +40,7 @@ def main():
         page=browser.new_page(viewport={"width":1440,"height":900})
         errors=[]
         history_years=set()
+        exposure_available=True
         page.on("pageerror",lambda error:errors.append(str(error)))
         def interceptor(route):
             url=route.request.url
@@ -55,6 +56,10 @@ def main():
             if "eonet.gsfc.nasa.gov/api/v3/events" in url:
                 return route.fulfill(status=200,content_type="application/json",
                     headers={"access-control-allow-origin":"*"},body=json.dumps({"events":[]}))
+            if "/api/exposure" in url:
+                payload={"counts":{},"nearest_m":{"buildings":13,"roads":1,"sensitive_places":131},"osm_timestamp":"2026-11-14T21:20:00Z","availability":{"mode":"fixture"}}
+                if not exposure_available: payload={"error":"OSM unavailable"}
+                return route.fulfill(status=200 if exposure_available else 503,content_type="application/json",body=json.dumps(payload))
             if "/api/catalog" in url:
                 return route.fulfill(status=200,content_type="application/json",
                     body=json.dumps({"status":"ok","events":[]}))
@@ -72,6 +77,14 @@ def main():
         page.route("**/*",interceptor)
         page.goto("http://127.0.0.1:4173",wait_until="domcontentloaded",timeout=30000)
         expect(page.locator("#tabs button[data-t='Time']")).to_be_visible()
+        # Global overview is genuinely Equal Earth; local raster inspection stays available.
+        expect(page.locator("#equal-earth-atlas")).to_be_visible()
+        expect(page.locator("#global-view")).to_have_attribute("aria-pressed","true")
+        expect(page.locator(".atlas-evidence circle")).to_have_count(1,timeout=15000)
+        page.locator("#regional-view").click()
+        expect(page.locator("#equal-earth-atlas")).not_to_be_visible()
+        page.locator("#global-view").click()
+        expect(page.locator("#equal-earth-atlas")).to_be_visible()
         # User-requested removals: both real map menu and Time section.
         assert page.locator("#ds label:has-text('Global landslide catalog')").count()==0
         assert page.locator("#ds label:has-text('Snow cover')").count()==0
@@ -118,6 +131,18 @@ def main():
         page.locator("#nav button[data-p='Alarm']").click()
         expect(page.locator("#aAll")).to_be_visible()
         assert page.locator("#aSound").is_checked() is False
+        # Mapped activity is a review cue, with missing exposure kept unknown.
+        page.locator("#proximity-lat").fill("58.3019")
+        page.locator("#proximity-lon").fill("-134.4197")
+        page.locator("#proximity-check").click()
+        expect(page.locator("#proximity-result")).to_contain_text("Proximity review alert")
+        expect(page.locator("#proximity-result")).to_contain_text("13 m")
+        expect(page.locator("#proximity-result")).to_contain_text("People present: unknown")
+        exposure_available=False
+        page.locator("#proximity-check").click()
+        expect(page.locator("#proximity-status")).to_contain_text("Exposure unknown")
+        expect(page.locator("#proximity-result")).to_be_empty()
+        exposure_available=True
         page.locator("#aAll").click()
         for key in ("eq","ls","gl"):
             expect(page.locator("#ac_"+key)).to_be_checked(timeout=10000)

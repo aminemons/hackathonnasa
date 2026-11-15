@@ -1,4 +1,7 @@
 import './nisaster-extensions.css';
+import './field-atlas.css';
+import {initializeEqualEarthAtlas} from './equal-earth-atlas.js';
+import {initializeProximityWatch} from './proximity-watch.js';
 import {initializeAlarmSystem} from './alarm-system.js';
 import {fetchHazardFeed} from './hazard-feeds.js';
 window.TerraPulseHazardFeeds = fetchHazardFeed;
@@ -112,6 +115,7 @@ function clearAnalysisLayer() {
   }
 }
 function toggleMapLayer(layer) {
+  TP.showRegional?.();
   clearAnalysisLayer();
   activeLayer = layer.addTo(TP.map);
   TP.go('Map');
@@ -255,10 +259,14 @@ function showExposure(coords=null, provenance='User-nominated location; not a ve
       Source OSM timestamp: ${escape(r.osm_timestamp||'unknown')}.</p>
       <p>${r.availability?.mode==='cached_fallback'?'Cached OSM snapshot · live providers unavailable':r.availability?.mode==='memory_cache'?'Cached OSM snapshot':'OSM provider response'} · ${escape(r.availability?.provider||'provider unknown')}. Retrieved ${escape(r.availability?.retrieved_at||'time unknown')}.</p>
       ${r.map_features_truncated?'<p>The map preview is limited to 300 assets; counts include all matching assets returned within the search area.</p>':''}
-      <button class="tp-btn" id="tp-show-assets" type="button">Show buildings and roads on map</button>
+      <div class="tp-controls"><button class="tp-btn" id="tp-show-assets" type="button">Show buildings and roads on map</button><button class="tp-btn secondary" id="tp-watch-site" type="button">Review this site in Alarm</button></div>
       <div class="tp-note">This is <strong>NOT a danger rating</strong>. No downslope debris runout, occupancy or building vulnerability has been measured. An incomplete OSM map never establishes safety.</div>
       <div class="tp-links"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors · ODbL</a></div>
     </div>`);
+    $('#tp-watch-site').onclick=()=>{
+      window.dispatchEvent(new CustomEvent('tp:proximity-site',{detail:{lon,lat,name:'Nominated landslide site'}}));
+      close();TP.go('Alarm');
+    };
     $('#tp-show-assets').onclick = () => {
       if (r.osm_geojson?.features) {
         const group=L.layerGroup();
@@ -274,6 +282,7 @@ function showExposure(coords=null, provenance='User-nominated location; not a ve
         L.circleMarker([lat,lon],{color:'#d62828',radius:8,weight:2,fillColor:'#ff6b35',fillOpacity:.9})
           .bindPopup('Nominated review location, NOT confirmed landslide').addTo(group);
         toggleMapLayer(group);
+        TP.showRegional?.();
         TP.map.setView([lat,lon],14);
         TP.toast('OSM assets shown: nearby is not automatically in the landslide path.');
       }
@@ -394,7 +403,7 @@ async function applyAction(action) {
   if(!action||typeof action!=='object')return;
   const kind=action.type, name=action.value;
   if(kind==='open_tool'&&legalPanels.has(name)){tools[name]();return;}
-  if(kind==='basemap'&&legalBasemaps.has(name)){TP.setBase(name);return;}
+  if(kind==='basemap'&&legalBasemaps.has(name)){TP.showRegional?.();TP.setBase(name);return;}
   if(kind==='tab'&&legalTabs.has(name)){TP.openTab(name);return;}
   if(kind==='page'&&legalPages.has(name)){TP.go(name);return;}
   if(kind==='clear'){TP.clearAll();return;}
@@ -403,7 +412,7 @@ async function applyAction(action) {
   }
   if(kind==='zoom'&&Number.isFinite(action.lon)&&Number.isFinite(action.lat)
       &&Math.abs(action.lat)<=85&&Math.abs(action.lon)<=180) {
-    TP.go('Map');TP.map.setView([action.lat,action.lon],Math.min(10,Math.max(2,action.zoom||6)));return;
+    TP.showRegional?.();TP.go('Map');TP.map.setView([action.lat,action.lon],Math.min(10,Math.max(2,action.zoom||6)));return;
   }
   if(kind==='period'&&[1,7,30].includes(action.days))TP.setPeriod(action.days);
 }
@@ -513,7 +522,7 @@ voiceButton.onclick=()=>{
   }
   spokenReplies=!spokenReplies;
   voiceButton.setAttribute('aria-pressed',String(spokenReplies));
-  voiceButton.textContent=spokenReplies?'🔊':'🔇';
+  voiceButton.textContent=spokenReplies?'Sound on':'Sound off';
   voiceButton.title=spokenReplies?'Disable spoken replies':'Enable spoken replies';
   voiceStatus(spokenReplies?'Spoken replies enabled.':'Spoken replies disabled.');
   if(!spokenReplies)window.speechSynthesis.cancel();
@@ -546,6 +555,8 @@ if(!Recognition){
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
 // notifications or permission requests are performed on page load.
 initializeAlarmSystem(TP);
+initializeProximityWatch(TP);
+initializeEqualEarthAtlas(TP).catch(e=>TP.toast('Equal Earth overview unavailable: '+e.message));
 TP.loadCountries(loadCountriesLocal).catch(error=>
   TP.toast('Country hover boundaries unavailable: '+error.message));
 // Local plates come from a versioned packaged source, not GitHub live requests.
