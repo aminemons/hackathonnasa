@@ -1,5 +1,6 @@
 import './nisaster-extensions.css';
 import {initializeAlarmSystem} from './alarm-system.js';
+import {loadCountriesLocal,loadPlateBoundariesLocal} from './geo-sources.js';
 
 const TP = window.TerraPulseMap;
 if (!TP?.map) throw new Error('NISASTER reference map did not initialize');
@@ -417,3 +418,8 @@ window.tpAsk=async raw=>{
 // Mounted after the core Leaflet map and DOM have loaded. No automatic browser
 // notifications or permission requests are performed on page load.
 initializeAlarmSystem(TP);
+TP.loadCountries(loadCountriesLocal).catch(error=>
+  TP.toast('Country hover boundaries unavailable: '+error.message));
+// Local plates come from a versioned packaged source, not GitHub live requests.
+window.TerraPulseGeo={loadPlateBoundariesLocal};
+
