@@ -36,3 +36,17 @@ export function classifyReviewPriority(input, cfg = PRIORITY_THRESHOLDS) {
   return {priority:'high_review',reason:'High hazard class intersects assessed people or infrastructure',
     operational:false};
 }
+
+/**
+ * These are display-only bins for NASA LHASA 2.1 numerical score, not a
+ * validated rainfall-triggered event probability for an individual slope.
+ * Change after regional calibration and official source interpretation.
+ */
+export const LHASA_DISPLAY_BINS=Object.freeze({
+  moderate:0.02,elevated:0.10,
+});
+export function classifyLHASA(score,bins=LHASA_DISPLAY_BINS){
+  if(!Number.isFinite(score)||score<0||score>1)return {label:'not_assessed',operational:false};
+  return {label:score>=bins.elevated?'elevated':score>=bins.moderate?'moderate':'low',
+    operational:false,meaning:'Experimental model-score display bin, not local risk'};
+}

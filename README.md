@@ -277,3 +277,24 @@ Recreate the imagery with `python scripts/prepare_radar_browse.py` after install
 ## Base map
 
 NASA GIBS Blue Marble Shaded Relief and Bathymetry is the default basemap. The bundled Web Mercator overview mosaics the sixteen level-2 tiles, so the world opens without waiting on the satellite tile service. At regional zooms, the map requests finer NASA tiles. The browser fallback renders the same overview and observation locations. The optional [PB2002](https://github.com/fraxen/tectonicplates) plate boundaries by Peter Bird and Hugo Ahlenius / Nordpil are redistributed under [ODC-BY 1.0](https://opendatacommons.org/licenses/by/1-0/), with rounded coordinates and line segments split at the antimeridian.
+
+### Further reliability and conversational improvements
+
+- Same-origin EONET fallback uses a bounded official-category allowlist; archived
+  reports are labeled as historical. Flood maps may show a dated GDACS bulletin
+  snapshot when current EONET records are empty.
+- GEM faults and Natural Earth glacier outlines are bundled locally.
+  The GEM geometry is simplified for visualization, not engineering use.
+- NASA GIBS imagery retries two older dates on tile errors. No-data regions
+  may remain unavailable; this is not evidence a hazard is absent.
+- The prominent **30 years · archive** control fetches historical USGS
+  earthquakes year-by-year; this is distinct from live reports.
+- The Sources page includes a user-run **Check data sources** table.
+- Voice input uses browser SpeechRecognition when supported; spoken answers
+  use SpeechSynthesis after explicit opt-in. No speech-service key is needed.
+- For an optional real conversational LLM, add a Groq free-tier API key
+  in Vercel Project Settings → Environment Variables as `GROQ_API_KEY`
+  (optional model override `GROQ_MODEL`, default `llama-3.1-8b-instant`).
+  Then redeploy. See https://console.groq.com/keys . Free quotas and
+  provider limits are not guaranteed. Without a key, grounded scientific
+  explanations and deterministic map actions remain functional.

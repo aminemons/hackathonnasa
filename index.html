@@ -82,7 +82,7 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
    <div class="tc" id="tTime">
     <div id="tFocus" style="font-weight:700;color:var(--blue);margin-bottom:8px"></div>
     <div class="ts" data-t="eq">
-     <h4>Earthquake period</h4><div class="seg" id="seg"><button data-d="1">24 h</button><button data-d="7" class="on">7 days</button><button data-d="30">30 days</button></div>
+     <h4>Earthquake period</h4><div class="seg" id="seg"><button data-d="1">24 h</button><button data-d="7" class="on">7 days</button><button type="button" data-history="30">30 years · archive</button></div>
      <div class="g">Minimum magnitude: <b id="magV">4.5</b></div><input type="range" id="mag" min="2" max="7" step="0.5" value="4.5">
      <div class="g">Data</div><button class="btn" id="csv">Download earthquakes (CSV)</button></div>
     <div class="ts" data-t="hist">
@@ -90,7 +90,8 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
      <div style="display:flex;gap:6px;align-items:center">From <input type="number" id="hFrom" min="1900" max="2100"> to <input type="number" id="hTo" min="1900" max="2100"></div>
      <div class="g">Minimum magnitude</div>
      <select id="hMag" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px"><option>5</option><option selected>6</option><option>6.5</option><option>7</option></select>
-     <p style="color:var(--m);font-size:12px">Use up to ten years per request to avoid source timeouts. Load older periods in batches.</p>
+     <p style="color:var(--m);font-size:12px">Historical USGS catalogue, not live events. Choose up to <strong>30 calendar years</strong> and load on demand (older data may be incomplete).</p>
+     <button type="button" id="h30" class="btn" style="margin:8px 0">Last 30 years · Load history</button>
      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="hShow">Show on map</button><button class="btn" id="hCsv">Download CSV</button></div>
      <div id="hStat" style="color:var(--m);font-size:12px;margin-top:6px"></div></div>
     <div class="ts" data-t="ehist">
@@ -113,14 +114,19 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
    <div class="card" id="bm"><button id="bmBtn">Base map ▾</button><div id="bmList"></div></div>
    <div class="card" id="info"><b>Hover a country</b><div style="color:var(--m)">to see earthquake info</div></div>
    <div class="card" id="chat"><button id="chatBtn">Chat with chatbot <span class="logo lslot"></span></button>
-    <div id="chatBox"><div id="chatHead">TerraPulse assistant</div><div id="log"></div><form id="cf"><input type="text" id="ci" placeholder="e.g. show floods in Algeria" autocomplete="off"><button class="btn">Send</button></form></div></div>
+    <div id="chatBox"><div id="chatHead">
+      <span>TerraPulse assistant</span>
+      <span class="tp-voice-buttons">
+        <button type="button" id="tp-listen" title="Speak to assistant" aria-label="Speak to assistant">🎙</button>
+        <button type="button" id="tp-speak" aria-pressed="false" title="Enable spoken replies" aria-label="Enable spoken replies">🔇</button>
+      </span></div><div id="tp-voice-state" role="status" aria-live="polite">Type or speak a question. Voice replies are optional.</div><div id="log" role="log" aria-label="TerraPulse assistant conversation"></div><form id="cf"><input type="text" id="ci" placeholder="Ask about Earth data or control the map…" autocomplete="off"><button class="btn">Send</button></form></div></div>
   </div>
  </section>
  <section class="page" id="pHow"><div class="doc"><h2>How to use TerraPulse</h2>
   <p><b>Dataset</b> tab: the five main natural disasters are listed first: earthquakes, landslides, glaciers, wildfires and floods. Open one to see its datasets and tick the ones you want. Press <b>Show more datasets</b> at the bottom for more hazards and data (volcanoes, storms, land subsidence, drought, satellite imagery), or use the search box. <b>Time</b>: earthquake period, minimum magnitude, satellite image date, CSV download and the 30-year historical earthquake archive. <b>Legend</b>: symbols of the active layers. <b>Alarm</b>: catalogue reports for earthquakes and landslides, plus historical glacial-lake observations (not warnings). <b>Base map</b> (top right) switches satellite, streets and topographic. The ☰ button hides the panel.</p>
   <p>Hover a country to see its earthquakes for the chosen period.</p>
   <p><b>Chatbot</b> (bottom right) controls everything: “show floods”, “hide volcanoes”, “zoom to Japan”, “magnitude 5 last 30 days”, “satellite”, “open legend”, “clear all”.</p>
-  <p><b>SAR layers</b> (floods, land subsidence, glacial motion) come from Sentinel-1 via Google Earth Engine. Their links expire, so regenerate <code>layers.json</code> when they go blank.</p></div></section>
+  <p><b>Radar evidence</b> uses real dated NISAR research imagery and historical glacier observations. Missing Earth Engine tiles are not represented as live measurements.</p></div></section>
  <section class="page" id="pSources"><div class="doc"><h2>Sources</h2><ul>
   <li><a target="_blank" href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS Earthquake Catalog</a> and <a target="_blank" href="https://earthquake.usgs.gov/hazards/">USGS hazards</a></li>
   <li><a target="_blank" href="https://github.com/GEMScienceTools/gem-global-active-faults">GEM Global Active Faults</a> (CC BY-SA 4.0)</li>
@@ -129,9 +135,14 @@ button.more{width:100%;margin:10px 0 4px;padding:9px;border:1px dashed var(--blu
   <li><a target="_blank" href="https://earthdata.nasa.gov/gibs">NASA GIBS</a> – dated satellite fire, flood, aerosol and imagery products; availability varies</li>
   <li><a target="_blank" href="https://github.com/fraxen/tectonicplates">Tectonic plates (Bird, 2003)</a></li>
   <li>Esri basemaps and hillshade; OpenStreetMap contributors</li>
-  <li>Copernicus Sentinel-1 SAR via Google Earth Engine</li>
+  <li>Sentinel-1 historical radar acquisitions; NASA ITS_LIVE and NISAR evidence examples</li>
   <li><a href="/data/hazard-registry.json" target="_blank" rel="noopener">Data registry: source, update semantics, uncertainty and model status (JSON)</a></li>
-  <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul></div></section>
+  <li><a target="_blank" href="https://github.com/johan/world.geo.json">world.geo.json</a> – country outlines</li></ul>
+  <section style="margin-top:20px"><h3>Connection diagnostics</h3>
+   <p>Test the catalogue sources. A successful empty feed does not imply a broken service or zero disaster risk.</p>
+   <button type="button" class="btn" id="tp-check-sources">Check data sources</button>
+   <div id="tp-source-results" role="status" aria-live="polite"></div>
+  </section></div></section>
  <section class="page" id="pAlarm"><div class="doc"><h2>Alarm</h2>
   <p>Monitor reported earthquakes (USGS, 2 minutes) and landslides (NASA EONET, 10 minutes) while this page is open. Glacial-lake monitoring shows <strong>historical measurements through 2024</strong>, refreshed daily; it is not a live breach alarm. Browser notifications are opt-in, and no catalogue monitor replaces an official emergency-warning system.</p>
   <div id="aCards"></div>
@@ -183,19 +194,55 @@ let quakes=[],period=7,minMag=4.5,imgDate=ymd(3);$('#imgDate').value=imgDate;$('
 /* ---------- dataset helpers ---------- */
 const COL={vol:'#e63946',fire:'#ff6b35',storm:'#c28be8',flood:'#3b8fe8',slide:'#ff2d95',dry:'#e8a23b'};
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',8000)};
-const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{const d=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
- const l=L.tileLayer(`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${d}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`,{maxNativeZoom:lvl,opacity:.85,attribution:'NASA GIBS',className:cls});
- let ok=0,bad=0;l.on('tileload',()=>ok++);l.on('tileerror',()=>{bad++;if(bad===8&&!ok)toast('No image found for '+id.replace(/_/g,' ')+' on '+d+'. Try an earlier date under Time.')});return l};
+const gibs=(id,lvl,ext='png',lag=0,cls='')=>()=>{
+ const base=lag?new Date(new Date(imgDate)-lag*864e5).toISOString().slice(0,10):imgDate;
+ const dated=days=>new Date(new Date(base+'T12:00:00Z').getTime()-days*864e5).toISOString().slice(0,10);
+ const address=day=>`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${id}/default/${day}/GoogleMapsCompatible_Level${lvl}/{z}/{y}/{x}.${ext}`;
+ const layer=L.tileLayer(address(dated(0)),{maxNativeZoom:lvl,opacity:.85,
+    attribution:'NASA GIBS · acquisition date varies',className:cls});
+ layer._terrapulseRecovers=true;
+ let attempt=0,success=0,fail=0;
+ const lagDays=[0,7,21];
+ layer.terrapulse={status:'loading',source:'NASA GIBS',date:dated(0)};
+ layer.on('tileload',()=>{
+   success++;layer.terrapulse.status='ready';
+ });
+ layer.on('tileerror',()=>{
+   fail++;
+   if(fail<6||success>0)return;
+   if(attempt>=lagDays.length-1){
+     layer.terrapulse.status='error';
+     toast('NASA GIBS layer '+id.replaceAll('_',' ')+
+        ' has no accessible imagery at this map extent on '+lagDays.map(dated).join(', ')+
+        '. Data coverage is unknown; try another region or date.');
+     return;
+   }
+   attempt++;success=0;fail=0;
+   layer.terrapulse={status:'loading',source:'NASA GIBS',date:dated(lagDays[attempt])};
+   layer.setUrl(address(dated(lagDays[attempt])));
+   toast('No NASA image for '+id.replaceAll('_',' ')+' at selected date. Trying '+dated(lagDays[attempt])+'…');
+ });
+ return layer;
+};
 const eonet=(cat,color,rad=7)=>async()=>{
  const mapped={landslides:'ls',wildfires:'fi',floods:'fl'},hazard=mapped[cat];
  let records=[],source='NASA EONET';
  if(hazard){
-   const d=await sourceFeed({hazard});
+   const d=await sourceFeed({hazard,include_recent:hazard==='ls'||hazard==='fl'});
    if(d.status!=='ok'||d.hazard!==hazard||!Array.isArray(d.records))
      throw Error('NASA source status could not be verified');
    records=d.records;
+   source=d.source||source;
+   if(d.search_scope&&d.search_scope!=='currently_open')
+     toast((d.search_scope==='bundled_historical_snapshot'?'Archived GDACS snapshot':
+       'Historical EONET reports, including closed events')+
+       ' for '+cat+'. These are NOT currently active incidents.');
  }else{
-   const d=await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category='+encodeURIComponent(cat)+'&limit=200');
+   const fetchCategory=async()=>{const query=new URLSearchParams({status:'open',category:cat,limit:'200'});
+     try{return await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?'+query);}
+     catch{return fetchJ('/api/catalog?'+query);}
+   };
+   const d=await fetchCategory();
    records=(d.events||[]).map(e=>{
      const gm=e.geometry?.at(-1);
      const c=gm?.type==='Point'?gm.coordinates:null;
@@ -215,7 +262,7 @@ const eonet=(cat,color,rad=7)=>async()=>{
      .addTo(g);
  });
  g.terrapulse={status:records.length?'ready':'empty',count:records.length,shown:drawn,source};
- if(!records.length)toast('NASA EONET has no currently open '+cat+' reports. The dataset loaded successfully.');
+ if(!records.length)toast(source+' returned no available '+cat+' reports. Try the dated forecast or radar datasets.');
  else if(drawn<records.length)toast('NASA EONET returned '+records.length+
    ' reports; '+(records.length-drawn)+' lack point coordinates and cannot be pinned exactly.');
  return g;
@@ -259,12 +306,12 @@ const quakesByDepth=async()=>{
  return group;
 };
 const FAULTS_EMBED=null;
-const FAULT_URLS=['https://static.geodataviewer.com/datasets/gem-active-faults.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults_harmonized.geojson'];
+const FAULT_URLS=['/data/gem_active_faults_simplified.geojson','https://raw.githubusercontent.com/GEMScienceTools/gem-global-active-faults/master/geojson/gem_active_faults.geojson'];
 const faults=async()=>{let j=FAULTS_EMBED;
  for(const u of FAULT_URLS){if(j)break;try{const r=await fetch(u);if(r.ok)j=await r.json()}catch(e){}}
  if(!j)throw new Error('GEM faults file not reachable');
  return L.geoJSON(j,{style:{color:'#ff4d6d',weight:1.2,opacity:.9},onEachFeature:(f,l)=>{const p=f.properties||{};
-  l.bindPopup(`<b>${p.name||p.catalog_name||'Active fault'}</b>${p.slip_type?'<br>Slip type: '+p.slip_type:''}${p.net_slip_rate?'<br>Slip rate: '+p.net_slip_rate:''}<br><small>GEM Global Active Faults, CC BY-SA 4.0</small>`)}})};
+  l.bindPopup(`<b>${esc(p.name||p.catalog_name||'Active fault')}</b>${p.slip_type?'<br>Slip type: '+esc(p.slip_type):''}${p.net_slip_rate?'<br>Slip rate: '+esc(p.net_slip_rate):''}<br><small>GEM Global Active Faults, CC BY-SA 4.0 · generalized display</small>`)}})};
 /* ---------- past events (NASA EONET archive, loaded year by year) ---------- */
 const EV_HIST={},EV_NAME={};
 const xstat=t=>{const e=$('#xStat');if(e)e.textContent=t};
@@ -272,7 +319,11 @@ const eonetHist=(id,cat,color,label)=>async()=>{EV_NAME[id]=label;const y0=+$('#
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
  if(y1-y0>7)throw Error('Select up to 8 years per request; load older NASA EONET years in batches.');
  const years=[];for(let y=y0;y<=y1;y++)years.push(y);const rows=[];let done=0,bad=0;
- const one=async y=>{try{const d=await fetchJ(`https://eonet.gsfc.nasa.gov/api/v3/events?status=all&category=${cat}&start=${y}-01-01&end=${y}-12-31&limit=3000`);
+ const one=async y=>{try{const query=new URLSearchParams({status:'all',category:cat,
+   start:y+'-01-01',end:y+'-12-31',limit:'1500'});
+   let d;try{d=await fetchJ('https://eonet.gsfc.nasa.gov/api/v3/events?'+query);}
+   catch{d=await fetchJ('/api/catalog?'+query);}
+
    (d.events||[]).forEach(e=>{const g=e.geometry&&e.geometry[0];if(!g)return;let c=g.coordinates;while(Array.isArray(c[0]))c=c[0];if(!isFinite(c[0])||!isFinite(c[1]))return;rows.push([e.id,Date.parse(g.date),c[1],c[0],e.title,e.link])})}catch(err){bad++}
   done++;xstat('Loading '+label+': '+done+'/'+years.length+' years … '+rows.length+' events')};
  for(let i=0;i<years.length;i+=5)await Promise.all(years.slice(i,i+5).map(one));
@@ -287,7 +338,7 @@ const CV=L.canvas({padding:.5});
 /* ---------- glacier and ice outlines (embedded by Python when possible) ---------- */
 const GLAC_EMBED=null;
 const glac=async()=>{let R=GLAC_EMBED;
- if(!R)R=await Promise.all(['ne_10m_glaciated_areas','ne_10m_antarctic_ice_shelves_polys'].map(n=>fetchJ(`https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/${n}.geojson`).catch(()=>null)));
+ if(!R)R=await Promise.all(['ne_50m_glaciated_areas','ne_50m_antarctic_ice_shelves_polys'].map(n=>fetchJ(`/data/${n}.geojson`).catch(()=>null)));
  R=(R||[]).filter(Boolean);if(!R.length)throw new Error('glacier outlines not reachable');const g=L.layerGroup();
  R.forEach(j=>L.geoJSON(j,{renderer:CV,style:{color:'#6ec6ff',weight:.6,fillColor:'#bfe9ff',fillOpacity:.75}}).addTo(g));return g};
 
@@ -305,7 +356,7 @@ const DS=[
  // Volcanoes
  {id:'vol',g:'Volcanoes',n:'Active volcanoes (NASA EONET)',kw:'volcano volcanoes eruption',leg:[COL.vol,'Active volcano'],load:eonet('volcanoes',COL.vol)},
  // Floods
- {id:'eflood',g:'Floods',n:'Flood events (NASA EONET)',kw:'flood floods',leg:[COL.flood,'Flood event'],load:eonet('floods',COL.flood)},
+ {id:'eflood',g:'Floods',n:'Flood reports (EONET / GDACS historical)',kw:'flood floods',leg:[COL.flood,'Reported flood location (source date shown)'],load:eonet('floods',COL.flood)},
  {id:'modis',g:'Floods',dated:1,n:'Mapped surface flooding (MODIS, 3-day)',kw:'flood floods water modis inundation',leg:['#2b6cb0','MODIS mapped flood extent (cloud gaps possible)'],load:gibs('MODIS_Combined_Flood_3-Day',9,'png',2)},
  // Wildfires
  {id:'fire',g:'Wildfires',n:'Wildfire events (NASA EONET)',kw:'fire fires wildfire wildfires',leg:[COL.fire,'Wildfire'],load:eonet('wildfires',COL.fire)},
@@ -314,7 +365,22 @@ const DS=[
  {id:'storm',g:'Storms',n:'Severe storms (NASA EONET)',kw:'storm storms cyclone hurricane typhoon',leg:[COL.storm,'Severe storm'],load:eonet('severeStorms',COL.storm)},
  {id:'wv',g:'Storms',dated:1,n:'Cloud fraction (MODIS; atmospheric context)',kw:'cloud clouds atmosphere storm fraction context',leg:['#6a9fd8','Cloud fraction (not rainfall)'],load:gibs('MODIS_Terra_Cloud_Fraction_Day',6,'png',2)},
  // Landslides
- {id:'slide',g:'Landslides',n:'Landslide events (NASA EONET)',kw:'landslide landslides',leg:[COL.slide,'Landslide'],load:eonet('landslides',COL.slide,12)},
+ {id:'slide',g:'Landslides',n:'Landslide reports (current / archived EONET)',kw:'landslide landslides',leg:[COL.slide,'Reported landslide location (dated, not a forecast)'],load:eonet('landslides',COL.slide,12)},
+ {id:'lhasa',g:'Landslides',n:'Landslide hazard outlook (NASA LHASA, map center)',kw:'landslide landslides susceptibility forecast hazard score classification',leg:['#ee803c','NASA model score bins; not a probability or official warning'],load:async()=>{
+   const center=map.getCenter(),p=new URLSearchParams({lon:String(center.lng),lat:String(center.lat)});
+   if(center.lat>60||center.lat< -60)throw Error('LHASA data cover latitudes 60°S to 60°N. Zoom to a supported region.');
+   const d=await fetchJ('/api/forecast?'+p,24000);
+   if(!Array.isArray(d.bounds)||d.bounds.length!==4||!d.preview_png?.startsWith('data:image/png;base64,'))
+     throw Error('NASA LHASA raster not available for this location');
+   const b=d.bounds;
+   const layer=L.imageOverlay(d.preview_png,[[b[1],b[0]],[b[3],b[2]]],{opacity:.75,
+      alt:'NASA LHASA Hazard Tomorrow model score, dated source'});
+   layer.terrapulse={status:d.valid_pixels>0?'ready':'empty',source:'NASA LHASA 2.1',
+      fetched_at:d.retrieved_at,issued_at:d.issued_at,valid_pixels:d.valid_pixels};
+   layer.on('add',()=>map.fitBounds([[b[1],b[0]],[b[3],b[2]]],{maxZoom:9}));
+   toast('NASA LHASA outlook: score <0.02 low, 0.02–0.10 moderate, ≥0.10 elevated (visual research bins only). Check source validity.');
+   return layer;
+ }},
  // Land subsidence (SAR layers from layers.json join here)
  {id:'lst',g:'Land subsidence',dated:1,n:'Land surface temperature (context; MODIS)',kw:'land temperature heat surface context',leg:['#f2994a','Surface temperature; not subsidence displacement'],load:gibs('MODIS_Terra_L3_Land_Surface_Temp_Daily_Day_TES',7,'png',3)},
  {id:'hill',g:'Land subsidence',n:'Terrain hillshade',kw:'terrain hillshade relief subsidence context',load:()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',{opacity:.6,maxZoom:13})},
@@ -337,7 +403,7 @@ const DS=[
 ];
 const state={},openG=new Set(['Earthquakes']);let showMore=false;let focusG='Earthquakes';
 function row(d){const l=document.createElement('label');l.className='r';
- const st=state[d.id],badge=st?.status==='loading'?'Loading…':st?.status==='empty'?'No open reports':st?.status==='error'?'Unavailable':'';
+ const st=state[d.id],badge=st?.status==='loading'?'Loading…':st?.status==='empty'?'No reports for scope':st?.status==='error'?'Source unavailable':'';
  l.innerHTML=`<input type="checkbox" id="c_${d.id}" ${st?.on?'checked':''}><span class="tp-dataset-name">${d.n}${badge?'<small class="tp-dataset-status '+(st.status==='error'?'tp-source-error':'')+'">'+badge+'</small>':''}</span>`;
  if(st?.error)l.title=st.error;
  l.querySelector('input').onchange=e=>setLayer(d.id,e.target.checked);return l}
@@ -388,7 +454,7 @@ async function setLayer(id,on) {
    if(!st.on||st.gen!==token)return; // async request canceled by user
    if(!layer||typeof layer.addTo!=='function')throw Error('Layer returned no usable map data');
    st.layer=layer;st.status=layer.terrapulse?.status||'ready';
-   if(d.dated && layer instanceof L.TileLayer) {
+   if(d.dated && layer instanceof L.TileLayer && !layer._terrapulseRecovers) {
      let successfulTiles=0,failedTiles=0;
      layer.on('tileload',()=>successfulTiles++);
      layer.on('tileerror',()=>{
@@ -434,7 +500,15 @@ async function loadQuakes(){
 }
 async function reloadQuakes(){for(const id of ['quakes','depth']){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}}
 function setPeriod(p){period=p;$$('#seg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===p));reloadQuakes()}
-$('#seg').onclick=e=>{if(e.target.dataset.d)setPeriod(+e.target.dataset.d)};
+$('#seg').onclick=e=>{
+  if(e.target.dataset.history==='30'){
+    $('#hFrom').value=new Date().getFullYear()-29;
+    $('#hTo').value=new Date().getFullYear();
+    openTab('Time');reloadHist();
+    return;
+  }
+  if(e.target.dataset.d)setPeriod(+e.target.dataset.d);
+};
 $('#mag').oninput=e=>$('#magV').textContent=e.target.value;$('#mag').onchange=e=>{minMag=+e.target.value;reloadQuakes()};
 function setMag(v){minMag=v;$('#mag').value=v;$('#magV').textContent=v;reloadQuakes()}
 $('#imgDate').onchange=e=>{imgDate=e.target.value||ymd(1);DS.filter(d=>d.dated).forEach(d=>{const s=state[d.id];if(s&&s.layer){map.removeLayer(s.layer);s.layer=null;if(s.on)setLayer(d.id,true)}})};
@@ -446,11 +520,26 @@ let hist=[];
 const hstat=t=>{const e=$('#hStat');if(e)e.textContent=t};
 async function fetchHist(){const mag=+$('#hMag').value,y0=+$('#hFrom').value,y1=+$('#hTo').value,rows=[];
  if(!(y0<=y1))throw new Error('"From" year must not be after "To" year');
- if(y1-y0>9)throw Error('Select at most 10 years per USGS request; download longer archives in batches.');
- for(let y=y0;y<=y1;y++){hstat('Loading '+y+' … ('+rows.length+' so far)');
-  const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`);
-  d.features.forEach(f=>{const[lo,la,dp]=f.geometry.coordinates,p=f.properties;rows.push([f.id,p.time,la,lo,dp,p.mag,p.place||''])})}
- hist=rows;hstat(rows.length+' earthquakes, '+y0+'–'+y1+', M≥'+mag);return rows}
+ if(y1-y0>29)throw Error('Select at most 30 calendar years.');
+ let failed=[];
+ for(let i=y0;i<=y1;i+=3){
+  const years=Array.from({length:Math.min(3,y1-i+1)},(_,j)=>i+j);
+  const data=await Promise.allSettled(years.map(async y=>{
+   const d=await fetchJ(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&limit=20000&minmagnitude=${mag}&starttime=${y}-01-01&endtime=${y+1}-01-01`,30000);
+   if(!Array.isArray(d.features))throw Error('Invalid USGS response for '+y);
+   return d.features.flatMap(f=>{
+      const p=f?.properties||{},coords=f?.geometry?.coordinates;
+      if(!Array.isArray(coords)||coords.length<2||
+         !Number.isFinite(coords[0])||!Number.isFinite(coords[1])||
+         !Number.isFinite(p.time)||!Number.isFinite(p.mag))return [];
+      return [[f.id,p.time,coords[1],coords[0],coords[2]??null,p.mag,p.place||'']];
+   });
+  }));
+  data.forEach((r,j)=>r.status==='fulfilled'?rows.push(...r.value):failed.push(years[j]));
+  hstat('USGS '+y0+'–'+y1+': processed '+Math.min(i+2,y1)+' / '+y1+' · '+rows.length+' events · '+failed.length+' failed year(s)');
+ }
+ if(failed.length){hstat('Some years unavailable: '+failed.join(', ')+'. Results are incomplete.');if(!rows.length)throw Error('USGS historical source unavailable');}
+ hist=rows;if(!failed.length)hstat(rows.length+' earthquakes, '+y0+'–'+y1+', M≥'+mag);return rows}
 async function loadHist(){const rows=await fetchHist();const g=L.layerGroup();
  rows.forEach(r=>{const m=r[5]||0;L.circleMarker([r[2],r[3]],{renderer:CV,radius:Math.max(2.5,m*1.3),color:'#fff',weight:.4,fillColor:qc(m),fillOpacity:.75})
   .bindPopup(`<b>M ${m.toFixed(1)}</b> ${esc(r[6])}<br>${new Date(r[1]).toUTCString()}<br>Depth: ${(+r[4]).toFixed(1)} km`).addTo(g)});return g}
@@ -459,7 +548,8 @@ async function downloadHist(){try{if(!hist.length)await fetchHist()}catch(e){ret
  const r=['id,time_iso,latitude,longitude,depth_km,magnitude,place'].concat(hist.map(x=>[x[0],new Date(x[1]).toISOString(),x[2],x[3],x[4],x[5],'"'+String(x[6]).replace(/"/g,'""')+'"'].join(',')));
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([r.join('\n')],{type:'text/csv'}));
  a.download='earthquakes_'+$('#hFrom').value+'-'+$('#hTo').value+'_M'+$('#hMag').value+'.csv';a.click()}
-$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-7;
+$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-29;
+ $('#h30').onclick=()=>{$('#hTo').value=new Date().getFullYear();$('#hFrom').value=new Date().getFullYear()-29;reloadHist()};
 $('#hShow').onclick=()=>reloadHist();$('#hCsv').onclick=downloadHist;
 async function reloadLayer(id){const s=state[id];if(s&&s.layer)map.removeLayer(s.layer);if(s){s.layer=null;s.gen=(s.gen||0)+1;s.pend=null}if(s&&s.on)await setLayer(id,true)}
 $('#xTo').value=new Date().getFullYear();$('#xFrom').value=new Date().getFullYear()-4;
@@ -527,7 +617,7 @@ function updateTime(){const on=DS.filter(d=>state[d.id]&&state[d.id].on),types=n
  $('#tFocus').innerHTML=!on.length?'Turn on a dataset to see its time settings.':named.length?'Time settings for: '+named.map(esc).join(', '):'“'+esc(on[on.length-1].n)+'” shows currently open events, so no time setting applies.'}
 function syncSide(){updateTime();renderAlarm()}
 /* ---------- start ---------- */
-buildList();legend();updateTime();setLayer('quakes',true);loadEE();alarmInit();go('Map');
+buildList();legend();updateTime();setLayer('quakes',true);alarmInit();go('Map');
 window.TerraPulseMap={map,DS,state,setLayer,setBase,setPeriod,setMag,go,openTab,clearAll,toast,run,say,esc,buildList,getFocusGroup:()=>focusG,loadCountries};
 </script>
 <script type="module" src="/src/nisaster-extensions.js"></script>

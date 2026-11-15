@@ -19,6 +19,7 @@
       "includeFiles": "server_data/glof/**",
       "maxDuration": 10
     },
+    "api/catalog.py": {"maxDuration": 20},
     "api/events.py": {
       "maxDuration": 20
     }

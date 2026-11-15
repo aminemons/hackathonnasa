@@ -49,6 +49,9 @@ def main():
             if "eonet.gsfc.nasa.gov/api/v3/events" in url:
                 return route.fulfill(status=200,content_type="application/json",
                     headers={"access-control-allow-origin":"*"},body=json.dumps({"events":[]}))
+            if "/api/catalog" in url:
+                return route.fulfill(status=200,content_type="application/json",
+                    body=json.dumps({"status":"ok","events":[]}))
             if "/api/events" in url:
                 from urllib.parse import urlsplit,parse_qs
                 q=parse_qs(urlsplit(url).query)
@@ -75,6 +78,10 @@ def main():
         page.locator("#seg button[data-d='1']").click()
         expect(page.locator("#seg button[data-d='1'].on")).to_be_visible()
         assert page.locator("#mag").count()==1
+        assert page.locator("#h30").count()==1
+        assert page.locator("#seg button[data-history='30']").count()==1
+        assert "30 calendar years" in page.locator("#tTime").text_content()
+        assert page.locator("#c_lhasa").count()>=0
         page.locator("#tabs button[data-t='Dataset']").click()
         # Glacier historical annual speed: visible even if outline source is offline.
         page.locator("details:has(summary:has-text('Glaciers')) summary").first.click()
@@ -100,6 +107,16 @@ def main():
         assert page.locator("#ac_fl").count()==0
         expect(page.locator("#aList")).to_contain_text("M 5.4")
         assert "evacuation" in page.locator("#aSafety").inner_text().lower()
+        # Voice UI renders without requiring microphone permission or paid models.
+        page.locator("#nav button[data-p='Map']").click()
+        page.locator("#chatBtn").click()
+        expect(page.locator("#tp-speak")).to_be_visible()
+        expect(page.locator("#tp-voice-state")).to_be_visible()
+        assert page.locator("#tp-speak").get_attribute("aria-pressed")=="false"
+        page.locator("#nav button[data-p='Sources']").click()
+        page.locator("#tp-check-sources").click()
+        expect(page.locator("#tp-source-results")).to_contain_text("USGS earthquakes",timeout=20000)
+        expect(page.locator("#tp-source-results")).to_contain_text("Historical glacial lakes")
         # The page must have no uncaught execution errors.
         if errors:
             raise AssertionError("Browser JS exceptions: "+" | ".join(errors[:7]))

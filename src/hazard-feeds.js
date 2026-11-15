@@ -93,7 +93,39 @@ async function json(url,timeout=17000) {
     return await response.json();
   }finally{clearTimeout(timer);}
 }
-async function direct(hazard,days,minMagnitude) {
+async function catalog(category,options) {
+  const args=new URLSearchParams({category,...options});
+  let initial;
+  try{return await json('https://eonet.gsfc.nasa.gov/api/v3/events?'+args);}
+  catch(error){initial=error;}
+  try{return await json('/api/catalog?'+args);}
+  catch(error){throw Error('NASA EONET direct connection: '+String(initial?.message).slice(0,65)+
+    '; server fallback: '+String(error?.message).slice(0,65));}
+}
+async function serverFallback(hazard,days,mag) {
+  const qs=new URLSearchParams({hazard,days:String(days),min_magnitude:String(mag)});
+  const data=await json('/api/events?'+qs);
+  if(data?.status!=='ok'||data.hazard!==hazard||!Array.isArray(data.records))
+    throw Error('Same-origin source returned invalid records');
+  return {...data,transport:'same_origin'};
+}
+async function floodArchiveSnapshot() {
+  const data=await json('/data/world-floods.json');
+  if(!Array.isArray(data.items))throw Error('Local GDACS flood snapshot malformed');
+  const records=data.items.flatMap(row=>{
+    const [id,lon,lat,country,start,end,level]=row;
+    const time=Date.parse(String(end)+'T00:00:00Z');
+    if(!Number.isFinite(time)||!Number.isFinite(lon)||!Number.isFinite(lat))return [];
+    return [{id:'gdacs:'+id,lon,lat,time,
+      title:'Historical flood report · '+country,
+      level:'observation',
+      notes:'GDACS archived bulletin '+start+'–'+end+' · source alert level '+String(level)+
+        ' (historical, not a live flood forecast)',url:'https://www.gdacs.org/'}];
+  });
+  return {records:sorted(records),source:'GDACS archived bulletin',
+    search_scope:'bundled_historical_snapshot',monitor_kind:'historical bulletin, not real-time'};
+}
+async function direct(hazard,days,minMagnitude,includeRecent=false) {
   if(hazard==='gl') {
     const catalog=await json(SITE_ROOT+'catalog.json');
     if(!Array.isArray(catalog.sites)||!catalog.sites.length)
@@ -139,26 +171,63 @@ async function direct(hazard,days,minMagnitude) {
   }
   const category=EONET[hazard];
   if(!category)throw Error('Unknown hazard');
-  const data=await json('https://eonet.gsfc.nasa.gov/api/v3/events?'+new URLSearchParams({
-    status:'open',category,limit:'200'
-  }));
-  return {hazard,source:'NASA EONET',records:normalizeEONET(data,hazard),
+  const data=await catalog(category,{status:'open',limit:'200'});
+  let records=normalizeEONET(data,hazard),scope='currently_open',source='NASA EONET';
+  if(includeRecent&&records.length===0&&['ls','fl'].includes(hazard)){
+    try{
+      const archive=await catalog(category,{status:'all',days:'365',limit:'500'});
+      records=normalizeEONET(archive,hazard).map(r=>({...r,
+        notes:r.notes+' · archived event from last 365 days; not currently active'}));
+      scope='last_365_days_including_closed';
+    }catch(error){
+      if(hazard==='fl'){
+        const saved=await floodArchiveSnapshot();
+        return {hazard,...saved};
+      }
+      throw error;
+    }
+    if(hazard==='fl'&&!records.length){
+      const saved=await floodArchiveSnapshot();
+      return {hazard,...saved};
+    }
+  }
+  return {hazard,source,records,search_scope:scope,
     monitor_kind:'catalogue observations, not hazard or impact forecasts'};
 }
-/** @param {{hazard:string,days?:number,min_magnitude?:number}} input */
-export async function fetchHazardFeed({hazard,days=1,min_magnitude=5}={}) {
+/** @param {{hazard:string,days?:number,min_magnitude?:number,include_recent?:boolean}} input */
+export async function fetchHazardFeed({hazard,days=1,min_magnitude=5,include_recent=false}={}) {
   if(!(hazard in TTL))throw Error('Unsupported hazard');
   if(![1,7,30].includes(days))throw Error('Unsupported earthquake period');
   const mag=Number(min_magnitude);
   if(!Number.isFinite(mag)||mag<2||mag>9)throw Error('Invalid magnitude');
-  const key=[hazard,days,mag].join(':');
+  const key=[hazard,days,mag,include_recent?'historic':'open'].join(':');
   const local=memory.get(key);
   if(local&&Date.now()<local.until)return local.data;
   const cached=readSession(key);
   if(cached){memory.set(key,{data:cached.data,until:cached.until});return cached.data;}
   if(inFlight.has(key))return inFlight.get(key);
   const task=(async()=>{
-    const batch=await direct(hazard,days,mag);
+    let batch;
+    try {batch=await direct(hazard,days,mag,include_recent);}
+    catch(original){
+      if(hazard==='gl')throw original;
+      try{batch=await serverFallback(hazard,days,mag);}
+      catch(fallback){throw Error('Public source: '+String(original.message).slice(0,75)+
+        '; fallback: '+String(fallback.message).slice(0,75));}
+    }
+    if(include_recent&&['ls','fl'].includes(hazard)&&batch.records.length===0&&
+       batch.transport==='same_origin'){
+      try {
+        const archived=await catalog(EONET[hazard],{status:'all',days:'365',limit:'500'});
+        batch.records=normalizeEONET(archived,hazard).map(r=>({...r,
+          notes:r.notes+' · historical report; not an active hazard'}));
+        batch.search_scope='last_365_days_including_closed';
+        if(hazard==='fl'&&!batch.records.length)batch={hazard,...await floodArchiveSnapshot()};
+      }catch(error){
+        if(hazard==='fl')batch={hazard,...await floodArchiveSnapshot()};
+        else throw error;
+      }
+    }
     const data={...batch,status:'ok',fetched_at:new Date().toISOString()};
     memory.set(key,{data,until:Date.now()+TTL[hazard]});
     putSession(key,data,TTL[hazard]);
