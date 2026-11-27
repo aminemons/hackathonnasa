@@ -1,313 +1,88 @@
-> **Jury submission:** https://terrapulse-nasa-submission.vercel.app — managed Vercel production hosting with same-origin Python APIs; no SSH server or temporary tunnel is required. The global map uses Equal Earth; local imagery uses Regional detail. The Alarm page provides experimental mapped-activity proximity reviews, not emergency warnings.
-
 # TerraPulse
 
-## Reliability, science and low-compute deployment (November 2026)
+TerraPulse is a map-first Earth observation atlas for exploring natural hazards. It brings satellite imagery, event catalogues, dated scientific observations and model results into one interface so readers can check what was observed, when it was recorded and what the evidence supports.
 
-TerraPulse's **primary NISAR research narrative** is earthquakes, landslides and glaciers.
-Wildfire and flood layers remain useful supporting datasets; they are not part of
-the three-hazard Alarm panel. Do not claim five operational predictions.
+**[Open the live TerraPulse demo](https://terrapulse-nasa-submission.vercel.app)**
 
-### How data reaches the user
+> TerraPulse is a research demonstration. The location-based NASA LHASA forecast and OpenStreetMap infrastructure screening are temporarily unavailable. Please leave private locations out of those tools. TerraPulse does not issue official warnings.
 
-```text
-Visitor browser (HTTPS)
-  |-- USGS direct public GeoJSON ----> normalized + timestamped earthquake reports
-  |-- NASA EONET public JSON --------> normalized + timestamped landslide / fire / flood reports
-  |-- NASA GIBS / ArcGIS tiles ------> third-party map tile CDN (provider latency varies)
-  |-- Vercel static /data/* ---------> GLOF historical catalog, data, study geometry, images
-  |-- browser session cache --------> feed TTL, shared pending requests, deduplicated reports
-  `-- /api/... (on demand only) -----> ONNX scar inference, LHASA raster, exposure, assistant
-```
+## What you can do in the live demo
 
-- **Normal map browsing and alarm monitoring no longer need `/api/events`**.
-  `src/hazard-feeds.js` calls public sources in the browser, with validation,
-  timeout, same-tab request sharing and limited session cache.
-  USGS is refreshed at most every 2 minutes, EONET at most every 10 minutes,
-  and dated glacial studies are cached for 24 hours. TTL is **our fetch
-  interval**, not a promise of provider freshness.
-- Browser cross-origin requests require provider **CORS** support. A blocked or
-  malformed feed is **unavailable**, never reported as zero events.
-  If the public-source adapter fails to initialize completely, the original
-  `/api/events` remains a rare compatibility fallback.
-- **No WebSockets** for these provider catalogues: they are polled upstream
-  and do not become more immediate from a persistent client connection.
-  WebSockets would require connection management or a separate backend and
-  could raise cost. A future server-sent stream is only justified if a real
-  provider publishes an event stream and operational infrastructure exists.
-- **Historical GLOF studies are static**, at `public/data/glof-study/`.
-  The normal viewer no longer invokes Python six times per glacier click.
-  Each study retains original dates, source IDs, units and limitations.
-  Map geometry loads only when requested; CSV exports locally in the browser.
-  Data are **not continuously updated**; new evidence requires a reviewed
-  export/commit/deploy. Assets are cached by the CDN and browsers.
-- **Model inference remains server-side**: `/api/landslide` loads a bundled
-  ONNX model; `/api/forecast` fetches an upstream NASA LHASA raster.
-  These are deliberately not run for every visitor automatically.
-  OSM exposure requests should be bounded to an examined site, never
-  whole-Earth queries. Do not embed FIRMS MAP_KEY, Earthdata credentials,
-  or private GPU SSH credentials in client JavaScript.
-- **Function/build quotas are separate**. Reducing invocations cannot lift
-  a Vercel daily deployment limit. Check Vercel Usage and actual HTTP error
-  before assuming which quota is exhausted. A hosted static page still uses
-  CDN requests and data-transfer bandwidth.
+| Feature | What it shows |
+| --- | --- |
+| Hazard atlas | Explore the Equal Earth overview and drill down to the regional Leaflet map. Use layer and time controls to inspect earthquakes, landslides, glaciers, wildfires and floods. |
+| Satellite evidence | Compare dated NISAR radar browse imagery for Guelma, Lake Réghaïa and Pine Island Glacier. Explore sourced case studies such as the Lower Limpopo flood and Northern Venezuela earthquake. |
+| Glacial lake evidence | Explore five historical glacial lake outburst flood (GLOF) study sites, including South Lhonak. Compare 253 dated radar acquisitions and their quality flags, view dated lake outlines and export measurements as CSV. |
+| Landslide scar inference | Run the held-out Landslide4Sense example or score a compatible prepared tile. Compare the predicted post-event scar with the reference mask when one is available. |
+| Ask TerraPulse | Ask about the atlas or its evidence. A server-side Google Gemini integration handles conversational replies. Supported map actions use a deterministic router. |
+| Alarm | Opt in to catalogue checks or a site watch for nearby reported landslides. Browser-only simulated proximity alerts use fictional observations and are labelled **Simulated**. OSM-based infrastructure checks are disabled in the live demo. |
 
-### Method names and epistemic boundaries
+Live catalogues and satellite overlays depend on provider coverage and availability. Dated archives can still be explored when a live feed is unavailable. The Sources view identifies providers, observation dates, retrieval times and verification status where available.
 
-| Hazard | Measured / available | Review or forecast role | Not established |
-| --- | --- | --- | --- |
-| Earthquakes | USGS event catalogue; dated radar displacement research | Post-event geophysical change | Earthquake occurrence prediction; seconds-ahead public warning |
-| Landslides | EONET observations; LHASA hazard outlook; Landslide4Sense scars | Susceptibility + rain trigger + verified exposure | Operational event timing, local calibrated probability, evacuation alert |
-| Glacial lakes | ITS_LIVE historical annual velocity; Sentinel-1 area | Dated change evidence for five lakes | Current flow vector at every map point, water-level forecast, GLOF breach probability |
-| Fires | EONET catalogue; additional FIRMS source planned | Fuel/vegetation/dryness/wind research plan | Calibrated fire spread forecast |
-| Floods | EONET, GIBS, example radar/water benchmark | Sentinel-1 delineation; GloFAS integration plan | Operational discharge forecast in this UI |
+## Scientific methods and limits
 
-**Hazard layer × assessed exposure → research review priority** is a workflow,
-not literally multiplication of two unitless uncalibrated scores. Separately
-measured trigger evidence can raise review priority. `src/priority-core.js`
-contains the visible, adjustable research-triage thresholds. Missing exposure,
-coverage, hazard provenance or timestamp => **not assessed**, never 'safe'.
-Even 'urgent review' is not an emergency warning or a 'catastrophic' forecast.
-Never promote an unvalidated heuristic to an automatic browser notification.
+- **Event reports and imagery.** The atlas uses USGS earthquake reports, NASA EONET event metadata, archived GDACS flood bulletins and NASA GIBS imagery. NISAR browse mosaics support visual comparisons. Quantitative backscatter needs calibrated source data. See [data and models](docs/data-and-models.md).
+- **Glacial lakes.** The historical studies preserve acquisition dates, area measurements, threshold sensitivity, geometry and quality flags. Missing measurements stay blank. Lake area and outlines alone cannot establish water level, breach probability or downstream impact. See the [GLOF methods and API](docs/glof-monitoring.md).
+- **Landslide scars.** A U-Net trained on Landslide4Sense uses prepared Sentinel-2 and terrain inputs. The bundled ONNX model runs on the server. Its F1 of 0.723 was measured on the previously evaluated 80-chip test subset. It measures benchmark segmentation performance and cannot establish event likelihood or site safety. See the [model and training notes](machine%20learning/README.md) and [infrastructure screening methods](docs/landslide-human-exposure.md).
 
-**Landlside catalogue removal:** the deprecated Global Landslide Catalog is
-not an interactive layer; historical cases may still support training with
-independently defined labels and event-level holdouts. Regional lithology and
-local precipitation intensity-duration threshold must be validated rather than
-assumed globally. InSAR acceleration requires repeat phase/coherence/geometry
-and dates; a single radar amplitude image is insufficient.
+The atlas distinguishes catalogue reports, satellite observations, model outputs and simulations. Use official agencies for emergency guidance.
 
-**Actual quality evidence:** the current Landslide4Sense U-Net record reports
-test F1 about 0.723 on the repeated 80-chip benchmark. The Sen1Floods11 water model reports event-split F1 about
-0.739. Those are benchmark values, not a live event risk precision. Glacier
-studies remain non-operational and largely dated to 2022–2024.
-Test controls with `npm run test:reliability`, `npm run build`, Python
-`python -m unittest discover -s api/tests -v`, and Chromium
-`python scripts/smoke_browser.py` after starting the built preview.
+## Technology
 
-### Next scientific work
+The frontend uses HTML, CSS and JavaScript served by Vite. Leaflet renders the regional map, D3-Geo draws the Equal Earth overview, and React powers the glacial lake viewer. Python serves the scientific and chat APIs, with ONNX Runtime for scar inference and Google Gemini for conversational generation. Vercel hosts the live demo and same-origin Python functions. A Flask/Gunicorn container is documented for [portable hosting](docs/portable-hosting.md).
 
-1. Validate acquisition manifests for NISAR/ESA data (orbit, swath, polarization,
-   UTC, incidence angle, masks, units, effective resolution).
-2. Train on spatially **held-out events and countries**, compare baselines,
-   calculate false positives, precision–recall and uncertainty; do not tune
-   repeatedly on an inspected test set.
-3. Review on the two-L40 GPU host using
-   `bash scripts/train_landslide_gpu_detached.sh`; evaluate model promotion
-   only after independent validation. The script never auto-replaces the model.
-4. Add geography-bounded verified OSM and population overlap with freshness,
-   missingness and downstream-flow assumptions explicitly recorded.
-5. Add FIRMS fire and GloFAS discharge sources only with valid credentials,
-   provider agreements, measurement units, source dates and benchmark tests;
-   do not display placeholders as live predictions.
+## Run locally
 
-
-## Ishaq GLOF monitoring: dated real data, not breach forecasts
-
-The Dataset sidebar now includes Glaciers & ice → Monitor GLOFs.
-Five historical sites and 253 published radar epochs are served by
-the Python endpoint GET /api/glof and displayed in the blue/white
-NISASTER-style UI. Selected dated lake geometry is overlaid onto the
-same Leaflet atlas. Missing data remain missing, never zero water.
-
-- GET /api/glof : catalog
-- GET /api/glof?site=south_lhonak : site time series and quality
-- GET /api/glof?site=south_lhonak&view=geometry&date=2023-10-07 : dated polygons
-- GET /api/glof?site=south_lhonak&view=csv : downloadable observations
-- docs/glof-monitoring.md : measurements, sources, and limits
-- machine learning/glof/check_example.py : independent offline inference check
-- python -m api.local_server : local Python backend for all five API routes
-
-The API serves offline precomputed scientific outputs; it does not
-retrain the model during a website request. These observations are not
-lake water level, breach probability, or operational emergency warnings.
-## Interface: Meryem's NISASTER reference
-
-The root `index.html` implements the supplied NISASTER/Leaflet interface,
-retaining the **blue gradient header**, **white Dataset/Time/Legend/Alarm
-sidebar**, **full map**, **base-map switcher**, and **floating chatbot**.
-The TerraPulse hazard modules are extensions of that interface—not a separate
-dark-themed UI.
-
-In the **Landslides** dataset category, open:
-
-- **NASA LHASA next-day forecast**: retrieves publicly available NASA hazard
-  raster through `/api/forecast`. Scores are not locally calibrated probabilities.
-- **Post-event scar detector**: existing Sentinel-2 + ALOS U-Net at
-  `/api/landslide`, including held-out example, reference mask,
-  TP/FP/FN visual comparison and 72.3% F1 on the repeated 80-chip benchmark.
-- **Human exposure**: `/api/exposure` fetches nearby mapped OpenStreetMap
-  building footprints, roads and sensitive facilities. Its review priority
-  is not a physical danger/safety assessment.
-- **NISAR radar evidence**: genuine 2026 Oct/Nov radar change product,
-  explicitly NOT the August landslide's detection model.
-
-The chatbot uses an optional server-side conversational model and a
-deterministic router for map actions. With Vercel OIDC enabled, the default is
-Vercel AI Gateway's `nvidia/nemotron-3.5-lightning-free` open-weight model.
-The model catalog lists zero input/output price. The provider may retain
-prompts and responses for model improvement. Source-linked explanations and
-supported map commands remain available during model outages. The browser
-keeps a short, in-memory conversation history for follow-up questions. Voice
-input and opt-in read-aloud use the browser's speech features.
-
-To use another OpenAI-compatible provider, configure server-side
-`TERRAPULSE_CHAT_API_URL` (complete `/chat/completions` URL),
-`TERRAPULSE_CHAT_MODEL`, and optional `TERRAPULSE_CHAT_API_KEY`. The endpoint
-must be reachable from Vercel over HTTPS and return an OpenAI-compatible
-completion within the request timeout. `GROQ_API_KEY` enables the optional
-Groq fallback.
-
-For Google Gemini, set server-side `GEMINI_API_KEY` and optionally
-`GEMINI_MODEL` (default `gemini-3.5-flash-lite`). This uses Google's native
-`generateContent` API and takes precedence over an older custom provider.
-The key is sent only in Google's authentication header; map actions remain
-deterministic and local answers remain available during provider outages.
-Never put real keys in this repository or browser assets.
-
-This repository is open source under MIT (see LICENSE);
-external OSM, NASA and map-tile/data usage remains subject to
-their own attribution and licenses.
-
-To develop locally: `npm ci && npm run dev`; the Vite proxy sends
-`/api` to local Python when separately configured. Production uses
-the Vercel Python serverless routes. Run
-`python -m unittest discover -s api/tests -v` and `npm run build`.
-
-## Human exposure screening (OpenStreetMap)
-
-Public OSM requests use coverage-checked regional services for Europe/North
-America, bounded global fallback, recent-result caching and provider/source
-timestamps. See [OSM availability](docs/osm-availability.md) for coverage and limits.
-
-The **Human exposure** map control performs one user-triggered, bounded
-OpenStreetMap query near a nominated landslide location. It measures geometric
-distance to building footprints, roads and sensitive facilities and reports
-**urgent/high/medium/low review priority**. It is **not** an earthquake,
-landslide danger, casualty, safety, or runout prediction; a site with no OSM
-buildings is not necessarily uninhabited.
-
-The scar U-Net (post-event Sentinel-2 + terrain) remains a distinct model.
-If a prepared inference JSON tile includes user-supplied `geo_bounds`
-[west, south, east, north] in EPSG:4326 and a nonempty `geo_source`,
-the model response includes the largest predicted scar component's approximate
-geographic centroid. A user can explicitly inspect mapped buildings there.
-The standard Landslide4Sense example has no trusted georeference and cannot
-be matched to buildings automatically.
-
-- Endpoint: `GET /api/exposure?lon=85.53&lat=28.29&radius_m=500`
-- Unit-tested geometry distances to actual mapped polygons/road lines
-- OSM data attribution: © OpenStreetMap contributors, ODbL,
-  https://www.openstreetmap.org/copyright
-- See [human exposure data and limitations](docs/landslide-human-exposure.md).
-- For public production scale, replace community Overpass queries with
-  maintained cached regional OSM extracts or a licensed provider.
-
-## Landslide scar screening and GPU follow-up
-
-**What is a scar?** It is land visibly disturbed *after* a landslide. The
-Sentinel-2 + terrain U-Net segments these post-event pixels; it is not a
-forecast of where a future landslide will happen.
-
-The **Detect scars** panel now shows the held-out satellite tile, independent
-reference mask, model prediction, and true-positive/false-positive/
-false-negative overlay at the same time. It reports metrics for that one tile
-separately from the fixed 80-chip test benchmark.
-
-The API's `screening.review_priority` is a **heuristic review queue**, *not*
-danger to people or a calibrated risk probability. Its low/medium/high tiers
-are assigned from connected candidate-pixel extent; no-candidate is not
-a safe-land declaration. Real consequence/severity classification requires
-independently assessed slope stability, event dynamics, runout, infrastructure
-and population exposure, and dedicated labels.
-
-The repo contains a reusable two-NVIDIA-L40 training script at
-`scripts/train_landslide_gpu_detached.sh`. It stages up to 2,200 pinned
-Landslide4Sense training chips (reusing any matching local chips), fits two
-independent spatial models and evaluates the fixed benchmark. It exports an
-ONNX candidate under `~/castor-audit/landslide-scar-gpu-v2/release/`, but
-**does not automatically replace the deployed model**. Promotion uses only
-validation AP, never test F1; the test set has already been inspected during
-prior iterations and is not a new independent generalization test.
-
-The October/November GCOV gallery is explicitly post-event radar monitoring,
-not a detector of the August 26 Rasuwa rock-ice avalanche. NISAR-GUNW
-preprocessing and reviewed terrain-failure labels are a separate research task.
-
-An observation atlas for the 2026 NASA Space Apps Challenge, [Dancing with the SARs](https://www.spaceappschallenge.org/2026/challenges/dancing-with-the-sars/).
-
-## Run
-
-Use Node 22.12 or later within the Node 22 release line.
+Use **Node.js 22.12 or later within the Node 22 line**, npm and **Python 3.12**. The deployed Phase 4D build is `f2bb732d87b921cb58081ed49187fb132ff2e670`. This repository's `main` branch predates that snapshot, so the local interface and feature availability can differ from the live demo.
 
 ```sh
+git clone https://github.com/aminemons/hackathonnasa.git
+cd hackathonnasa
 npm ci
-npm run dev
-npm run build
+
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m api.local_server
 ```
 
-Install the runtime dependencies with `python -m pip install -r requirements.txt` and run `python -m api.local_server` in a second terminal. Vite proxies `/api` to port 8765. On Vercel the Vite frontend and Python API share a domain.
-
-Use **Landslide forecast** to request a 30-arcsecond tile from NASA LHASA’s rainfall-triggered **Hazard Tomorrow** feed. Enter coordinates or use the map center (60°S–60°N). The Python route `GET /api/forecast?lon=3.05&lat=36.70` returns a preview, source GeoTIFF link, and retrieval timestamp. The public GIS service exposes no forecast issuance or validity timestamps. NASA supplies the model and forecasts. TerraPulse retrieves and displays its output.
-
-Use **Find NISAR** to search anywhere by coordinates, map point or place name. Catalog matches show NISAR acquisitions. The dialog also retrieves dated NASA COOLR inventory features and opens an illustrative NISAR GCOV comparison of Rasuwa. Existing flood, earthquake and glacier cases display sourced observations.
-
-Use **Detect scars → Run held-out example** to run a real Landslide4Sense test chip. The service also accepts compatible prepared tiles.
-
-- `GET /api/landslide` returns the model card, channel order and held-out metrics.
-- `GET /api/landslide?example=1` scores the example and returns its RGB preview and reference labels.
-- `POST /api/landslide` accepts JSON with integer `width` and `height` (1–128) and `rows` in row-major order. Each pixel requires 14 values in Landslide4Sense order and units. Use null for missing bands. An entirely missing pixel returns a null score.
-
-The second spatial-detector release trained two residual U-Nets on 2,200 Landslide4Sense chips using two NVIDIA L40 GPUs. Candidate selection and threshold fitting used 48 validation chips. Validation average precision rose from 0.665 to 0.769. On the previously evaluated 80-chip test subset, average precision was 0.763 and F1 was 0.723. The bundled example chip reached F1 of 0.292. These are benchmark results from the same dataset. The Python API runs the ONNX model on CPU and edge-pads tiles smaller than 128 × 128. Custom inference uses prepared Sentinel-2 and terrain chips.
-
-Training uses [Landslide4Sense](https://github.com/iarai/Landslide4Sense-2022). The `machine learning/l4s_stage.py` script takes the baseline metrics, an output data directory, and the training chip count. Run `l4s_spatial.py train --help` for CUDA training and `l4s_spatial.py select --help` for validation selection, held-out evaluation, and ONNX export. The model artifact and split IDs are stored in `server_data/`. The separate `stage_gfs_window.py` script extracts timestamped NOAA GFS 24-hour precipitation from an archived, specified run for future forecast evaluation.
-
-## Published observations
-
-- **Lower Limpopo, Mozambique.** Downloaded NASA GIBS Terra MODIS band 7/2/1 composites for 17 December 2025 and 25 January 2026. The app compares these optical observations and links to NASA's NISAR observations on 5 and 17 January 2026. The default flood layer displays NASA LANCE’s VIIRS three-day flood classification ending 25 January 2026. TerraPulse maps the published classes and exposes them on click.
-- **Northern Venezuela.** Downloaded the numeric NASA JPL ARIA raster for NISAR's 13–25 June 2026 pair, reprojected and sampled it, and published the display raster and little-endian numeric grid. The grid conservatively suppresses the service's ambiguous zero fill. The two USGS event locations and the M7.5 ShakeMap contours provide separate earthquake context.
-- **Pine Island Glacier.** Compare NASA GIBS NISAR radar observations from 3 and 15 October 2026. The case links to NASA’s ICESat-2 surface-height change visualization and the October NISAR GOFF record.
-
-To rebuild the derived assets:
+In a second terminal at the repository root, run `npm run dev` and open the local URL printed by Vite. The development proxy forwards `/api` to `http://127.0.0.1:8765`.
 
 ```sh
-python -m pip install -r scripts/requirements.txt
-python scripts/prepare_data.py
+npm run test:reliability
+npm run test:glof
+npm run build
+python -m unittest discover -s api/tests -v
 ```
 
-The repository includes the processed outputs for the cases. The [NASA Earthdata GIBS](https://www.earthdata.nasa.gov/data/projects/gibs), [NASA JPL ARIA](https://aria.jpl.nasa.gov/), [USGS](https://earthquake.usgs.gov/) and Natural Earth products retain their own terms and attribution. The NASA Space Apps logo identifies the event. This is a participant project.
+### Configuration
 
-The sourced hazard cases present dated observations. The landslide forecast uses the independent NASA LHASA feed documented above.
+| Variable | Where it applies |
+| --- | --- |
+| `GEMINI_API_KEY` | Optional server-side Gemini credential. Set it in the Python process or hosting secret store. Local setup needs no key for the atlas or deterministic chat replies. |
+| `GEMINI_MODEL` | Optional server-side model override. The default is `gemini-3.5-flash-lite`. |
+| `TERRAPULSE_API_PORT` | Optional local Python port, default `8765`. |
+| `TERRAPULSE_API_URL` | Optional Vite proxy target. Set it when changing the local API address. |
+| `TP_DISABLE_LOCATION_APIS` | Server-side maintenance switch used on the deployed Phase 4D build. Production sets it to `1`. |
 
-## Worldwide map
+Keep real credentials out of Git and browser code. To enable Gemini locally, set `GEMINI_API_KEY` in the environment of the Python server before starting it.
 
-The three hazard tabs open worldwide catalogs. The default earthquake view shows magnitude 4.0+ in the seven days before the downloaded USGS snapshot. Switch to 1, 7, or 30 days, change the magnitude threshold, or toggle plate boundaries. Flood reports come from GDACS, with a separate dated NASA LANCE VIIRS satellite layer (visible after zooming in). Glacier points show the latest available annual mass balance and up to 12 recorded years from WGMS. These are monitored sites, and dates vary by site. Outlined markers open the detailed satellite cases.
+## Repository guide
 
-Refresh the compact provider snapshots with `python scripts/prepare_world.py /path/to/DOI-WGMS-FoG-2026-02-10.zip`. The WGMS source is [Fluctuations of Glaciers Database, release 2026-02-10](https://doi.org/10.5904/wgms-fog-2026-02-10).
+| Path | Contents |
+| --- | --- |
+| `index.html`, `src/` | Map workspace, data feeds, Alarm, and the GLOF viewer |
+| `api/`, `deployment/` | Python handlers, local server and portable gateway |
+| `public/data/`, `server_data/` | Published observations, geometry, scientific evidence and model artifacts |
+| `machine learning/`, `scripts/` | Reproducible research workflows, model training and data preparation |
+| `docs/` | Data provenance, scientific methods and hosting notes |
 
-The sidebar lists observations in the selected hazard and lets readers filter them by place. **Ask TerraPulse** supports follow-up questions, validated map actions, browser speech recognition where available, and optional read-aloud replies. Try “Compare Guelma”, “Earthquakes in Japan”, “Show M5+ earthquakes”, “Show rainfall” or “Open Pine Island”. Voice input starts only after the microphone button is pressed; transcripts remain editable before sending.
+## Credits and license
 
-See [Data and models](docs/data-and-models.md) for collection IDs and units, the Guelma Earth Engine export workflow, and an evaluation plan for each hazard.
+TerraPulse is a participant project for the [2026 NASA Space Apps Challenge](https://science.nasa.gov/universe/nasa-welcomes-all-ages-experience-levels-for-space-apps-challenge/), for the *Dancing with the SARs* challenge. Thanks to [the project contributors](https://github.com/aminemons/hackathonnasa/graphs/contributors), including Amine (aminemons) and Ishaq Kolla (Ishaq-ML). The atlas draws on Meryem's NISASTER interface reference, and Ishaq contributed the glacial lake monitoring work.
 
-## NISAR radar comparisons
+Scientific and map credits include [NASA Earthdata GIBS](https://nasa-gibs.github.io/gibs-api-docs/), [NASA JPL ARIA](https://science.jpl.nasa.gov/projects/ARIA/), NASA/ASF NISAR, NASA EONET and LANCE, [USGS](https://earthquake.usgs.gov/), GDACS, WGMS, GEM, Natural Earth, and Esri, Maxar (Vantor) and Earthstar Geographics. [Landslide4Sense](https://github.com/iarai/Landslide4Sense-2022) provides the scar model benchmark. [PB2002 plate boundaries](https://github.com/fraxen/tectonicplates) credit Peter Bird and Hugo Ahlenius / Nordpil under [ODC-BY 1.0](https://opendatacommons.org/licenses/by/1-0/). [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) retain attribution under ODbL.
 
-Guelma and Lake Réghaïa are searchable under Floods. Pine Island is under Glaciers. The date controls show georeferenced radar imagery and Compare swipes two NASA GIBS browse crops. Sources links the evaluated CMR records and local event or wetland references.
+Project code is [MIT licensed](LICENSE). External imagery, maps and datasets retain their respective licenses and terms.
 
-Recreate the imagery with `python scripts/prepare_radar_browse.py` after installing `scripts/requirements.txt`. This uses the [NASA GIBS NISAR Worldview layer](https://nisar-docs.asf.alaska.edu/worldview/). It is a daily visualization service that may mosaic acquisitions. The CMR records describe coverage and intended matching observation geometry, while the WebP images show what the service rendered for each date and crop. Numeric backscatter values require the calibrated GCOV arrays. We use NASA Worldview as a reference for dated comparison, and the [ASF NISAR Cookbook](https://github.com/ASFOpenSARlab/NISAR_Cookbook) as a reference for numeric extraction.
-
-## Base map
-
-NASA GIBS Blue Marble Shaded Relief and Bathymetry is the default basemap. The bundled Web Mercator overview mosaics the sixteen level-2 tiles, so the world opens without waiting on the satellite tile service. At regional zooms, the map requests finer NASA tiles. The browser fallback renders the same overview and observation locations. The optional [PB2002](https://github.com/fraxen/tectonicplates) plate boundaries by Peter Bird and Hugo Ahlenius / Nordpil are redistributed under [ODC-BY 1.0](https://opendatacommons.org/licenses/by/1-0/), with rounded coordinates and line segments split at the antimeridian.
-
-### Map data availability
-
-- The same-origin EONET fallback covers the supported NASA categories. The map
-  labels archived reports as historical. Flood maps may show a dated GDACS bulletin
-  snapshot when current EONET records are empty.
-- GEM faults and Natural Earth glacier outlines are bundled locally.
-  The simplified GEM geometry is for map visualization.
-- NASA GIBS imagery can retry older observations after tile errors. Coverage
-  varies by product, date and map location.
-- The earthquake archive in **Time** loads historical USGS reports by year and
-  labels CSV exports when any requested year was unavailable.
-- The Sources page includes a user-run **Check data sources** table.
+The [original submission notes](https://github.com/aminemons/hackathonnasa/blob/1d795d09efb7f0bb833fab0422d1607cb5291452/README.md) record earlier case-study dates, benchmarks and data preparation commands.
